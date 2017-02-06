@@ -1,0 +1,1 @@
+# Showdown-Replay-Scouter
