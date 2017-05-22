@@ -45,7 +45,7 @@ namespace Showdown_Replay_Scouter
                 thread = new Thread(delegate()
                 {
                     teamToLinks = new Dictionary<string, Dictionary<int, List<string>>>();
-                    bool bisaboard = checkBox1.Checked;
+                    bool bisaboard = false;
                     bool showdown = checkBox2.Checked;
                     bool google = checkBox3.Checked;
                     saveRef = new Dictionary<string, List<Team>>();
