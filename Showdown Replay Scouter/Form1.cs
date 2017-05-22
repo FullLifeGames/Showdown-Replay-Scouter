@@ -768,6 +768,11 @@ namespace Showdown_Replay_Scouter
                                                         mons["Arceus-*"].name = realmon;
                                                         realmon = "Arceus-*";
                                                     }
+                                                    else if (realmon.Contains("Silvally") && (!mons.ContainsKey(realmon) || mons[realmon].name == "Silvally-*"))
+                                                    {
+                                                        mons["Silvally-*"].name = realmon;
+                                                        realmon = "Silvally-*";
+                                                    }
                                                     else if (realmon.Contains("Genesect"))
                                                     {
                                                         realmon = "Genesect-*";
