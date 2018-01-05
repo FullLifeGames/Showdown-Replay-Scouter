@@ -24,9 +24,9 @@ namespace Showdown_Replay_Scouter
             this.opp = opp;
         }
 
+        private static Regex rgx = new Regex("[^a-zA-Z0-9]");
         private static string Regex(string toFilter)
         {
-            Regex rgx = new Regex("[^a-zA-Z0-9]");
             toFilter = rgx.Replace(toFilter, "");
             return toFilter.ToLower();
         }
@@ -150,11 +150,13 @@ namespace Showdown_Replay_Scouter
 
                     string lastLine = "";
 
+                    bool canTakeReplay = false;
+
                     List<string> currentTeams = new List<string>();
 
                     foreach (string line in site.Split('\n'))
                     {
-                        HandleLine(url, tour, pageCount, ref blockStarted, ref blockText, ref postStarted, ref postLink, ref postLikes, ref postDate, ref postedBy, ref likeStarted, ref timerHeader, currentTeams, line, ref lastLine, user);
+                        HandleLine(url, tour, pageCount, ref blockStarted, ref blockText, ref postStarted, ref postLink, ref postLikes, ref postDate, ref postedBy, ref likeStarted, ref timerHeader, currentTeams, line, ref lastLine, user, ref canTakeReplay);
                     }
                 }
             }
@@ -166,9 +168,25 @@ namespace Showdown_Replay_Scouter
             }
         }
 
-        private void HandleLine(string url, string tour, int pageCount, ref bool blockStarted, ref string blockText, ref bool postStarted, ref string postLink, ref int postLikes, ref DateTime postDate, ref string postedBy, ref bool likeStarted, ref bool timerHeader, List<string> currentTeams, string line, ref string lastLine, string user)
+        private void HandleLine(string url, string tour, int pageCount, ref bool blockStarted, ref string blockText, ref bool postStarted, ref string postLink, ref int postLikes, ref DateTime postDate, ref string postedBy, ref bool likeStarted, ref bool timerHeader, List<string> currentTeams, string line, ref string lastLine, string user, ref bool canTakeReplay)
         {
-            if (line.Contains("replay.pokemonshowdown.com/") && Regex(line).Contains(Regex(user)))
+            if (line.Contains("<article class=\"message message--post js-post js-inlineModContainer"))
+            {
+                postStarted = true;
+                canTakeReplay = false;
+            }
+            else if (line.StartsWith("\t</article>"))
+            {
+                postStarted = false;
+                canTakeReplay = false;
+            }
+            else if (line.Contains("data-author=\""))
+            {
+                postedBy = line.Substring(line.IndexOf("data-author") + 5);
+                postedBy = postedBy.Substring(postedBy.IndexOf("\"") + 1);
+                postedBy = postedBy.Substring(0, postedBy.IndexOf("\""));
+            }
+            else if (line.Contains("replay.pokemonshowdown.com/") && (Regex(line).Contains(Regex(user)) || canTakeReplay)) 
             {
                 string tempLine = line;
                 while (tempLine.Contains("replay.pokemonshowdown.com/"))
@@ -211,6 +229,10 @@ namespace Showdown_Replay_Scouter
                         tempLine = tempLine.Substring(tempLine.IndexOf("\""));
                     }
                 }
+            }
+            else if ((Regex(postedBy) == user && (Regex(line).Contains("gg") || Regex(line).Contains(Regex(" won ")) || Regex(line).Contains(Regex(" win ")) || Regex(line).Contains(Regex(" lost ")) || Regex(line).Contains(Regex(" lose ")))) || Regex(line).Contains(Regex("vs " + user)))
+            {
+                canTakeReplay = true;
             }
         }
     }

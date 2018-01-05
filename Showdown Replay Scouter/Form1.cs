@@ -604,9 +604,9 @@ namespace Showdown_Replay_Scouter
             return tempBattle;
         }
 
+        private Regex rgx = new Regex("[^a-zA-Z0-9]");
         private string Regex(string toFilter)
         {
-            Regex rgx = new Regex("[^a-zA-Z0-9]");
             toFilter = rgx.Replace(toFilter, "");
             return toFilter.ToLower();
         }
