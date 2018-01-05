@@ -221,6 +221,8 @@ namespace Showdown_Replay_Scouter
                                     noRegexUser = noRegexOpp;
                                 }
 
+                                links = links.Distinct().ToList();
+
                                 foreach (string link in links)
                                 {
                                     client.Headers.Add("User-Agent: Other");
