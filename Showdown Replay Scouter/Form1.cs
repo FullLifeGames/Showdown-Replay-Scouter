@@ -46,8 +46,9 @@ namespace Showdown_Replay_Scouter
                 {
                     teamToLinks = new Dictionary<string, Dictionary<int, List<string>>>();
                     bool bisaboard = false;
-                    bool showdown = checkBox2.Checked;
-                    bool google = checkBox3.Checked;
+                    bool tournament = tournamentCheckBox.Checked;
+                    bool showdown = showdownCheckbox.Checked;
+                    bool google = googleCheckbox.Checked;
                     saveRef = new Dictionary<string, List<Team>>();
                     if (textBox1.Text.Trim() != "")
                     {
@@ -120,6 +121,8 @@ namespace Showdown_Replay_Scouter
                                 string tempBattle = "";
 
                                 Bisaboard(bisaboard, client, links, user, tier, ref tempBattle, opp);
+
+                                TournamentFunction(tournament, client, links, user, tier, tempBattle, opp);
 
                                 tempBattle = Showdown(showdown, client, links, noRegexUser, tier, tempBattle, opp);
 
@@ -223,7 +226,8 @@ namespace Showdown_Replay_Scouter
                                     client.Headers.Add("User-Agent: Other");
                                     bool timeout = true;
                                     string replay = "";
-                                    while (timeout)
+                                    int tries = 0;
+                                    while (timeout && tries < 10)
                                     {
                                         try
                                         {
@@ -233,6 +237,7 @@ namespace Showdown_Replay_Scouter
                                         catch (Exception)
                                         {
                                             timeout = true;
+                                            tries++;
                                         }
                                     }
                                     string realReplay = replay;
@@ -251,6 +256,7 @@ namespace Showdown_Replay_Scouter
 
                                     Team team = new Team();
                                     int monCount = 0;
+                                    string playerName = "";
                                     foreach (string line in realReplay.Split('\n'))
                                     {
                                         if (line.Contains("|player"))
@@ -258,9 +264,46 @@ namespace Showdown_Replay_Scouter
                                             string[] playerinf = line.Split('|');
                                             if (playerinf.Length > 3)
                                             {
-                                                if (Regex(playerinf[3]).Replace(" ", "") == user.Replace(" ", ""))
+                                                int distance = LevenshteinDistance.Compute(Regex(playerinf[3]).Replace(" ", ""), user.Replace(" ", ""));
+                                                if(Regex(playerinf[3]).Replace(" ", "").Contains(user.Replace(" ", "")))
                                                 {
-                                                    playerValue = playerinf[2];
+                                                    if (playerName != "")
+                                                    {
+                                                        if(playerName.Contains(user.Replace(" ", "")))
+                                                        {
+                                                            if (LevenshteinDistance.Compute(playerName, user.Replace(" ", "")) > distance)
+                                                            {
+                                                                playerValue = playerinf[2];
+                                                                playerName = Regex(playerinf[3]).Replace(" ", "");
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            playerValue = playerinf[2];
+                                                            playerName = Regex(playerinf[3]).Replace(" ", "");
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        playerValue = playerinf[2];
+                                                        playerName = Regex(playerinf[3]).Replace(" ", "");
+                                                    }
+                                                }
+                                                else if (distance < 10)
+                                                {
+                                                    if (playerName != "")
+                                                    {
+                                                        if(LevenshteinDistance.Compute(playerName, user.Replace(" ", "")) > distance && !playerName.Contains(user.Replace(" ", "")))
+                                                        {
+                                                            playerValue = playerinf[2];
+                                                            playerName = Regex(playerinf[3]).Replace(" ", "");
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        playerValue = playerinf[2];
+                                                        playerName = Regex(playerinf[3]).Replace(" ", "");
+                                                    }
                                                 }
                                             }
                                         }
@@ -414,6 +457,15 @@ namespace Showdown_Replay_Scouter
                 });
                 thread.SetApartmentState(ApartmentState.STA);
                 thread.Start();
+            }
+        }
+
+        private void TournamentFunction(bool tournament, WebClient client, List<string> links, string user, string tier, string tempBattle, string opp)
+        {
+            if (tournament)
+            {
+                Tournament tour = new Tournament(tournament, client, links, tier, tempBattle, opp);
+                tour.AddReplaysForUser(user);
             }
         }
 

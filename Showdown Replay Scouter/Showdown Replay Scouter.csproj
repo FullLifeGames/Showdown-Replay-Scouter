@@ -136,6 +136,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="LevenshteinDistance.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Showdown.cs">
       <SubType>Form</SubType>
@@ -152,6 +153,7 @@
     <Compile Include="Pokemon.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Team.cs" />
+    <Compile Include="Tournament.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -172,7 +174,9 @@
     <None Include="bin\Debug\HtmlAgilityPack.CssSelectors.dll" />
     <None Include="bin\Debug\HtmlAgilityPack.dll" />
     <None Include="bin\Debug\Zlib.Portable.dll" />
-    <None Include="FodyWeavers.xml" />
+    <None Include="FodyWeavers.xml">
+      <SubType>Designer</SubType>
+    </None>
     <Content Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>

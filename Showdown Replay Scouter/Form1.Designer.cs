@@ -35,10 +35,11 @@
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.textBox3 = new System.Windows.Forms.TextBox();
             this.button2 = new System.Windows.Forms.Button();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
-            this.checkBox3 = new System.Windows.Forms.CheckBox();
+            this.showdownCheckbox = new System.Windows.Forms.CheckBox();
+            this.googleCheckbox = new System.Windows.Forms.CheckBox();
             this.button3 = new System.Windows.Forms.Button();
             this.checkBox4 = new System.Windows.Forms.CheckBox();
+            this.tournamentCheckBox = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // textBox1
@@ -50,7 +51,7 @@
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox1.Size = new System.Drawing.Size(269, 363);
+            this.textBox1.Size = new System.Drawing.Size(269, 340);
             this.textBox1.TabIndex = 0;
             this.textBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TextBox1_KeyDown);
             // 
@@ -117,31 +118,31 @@
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.Button2_Click);
             // 
-            // checkBox2
+            // showdownCheckbox
             // 
-            this.checkBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.showdownCheckbox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Checked = true;
-            this.checkBox2.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox2.Location = new System.Drawing.Point(30, 390);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(175, 17);
-            this.checkBox2.TabIndex = 7;
-            this.checkBox2.Text = "replay.pokemonshowdown.com";
-            this.checkBox2.UseVisualStyleBackColor = true;
+            this.showdownCheckbox.AutoSize = true;
+            this.showdownCheckbox.Checked = true;
+            this.showdownCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.showdownCheckbox.Location = new System.Drawing.Point(30, 390);
+            this.showdownCheckbox.Name = "showdownCheckbox";
+            this.showdownCheckbox.Size = new System.Drawing.Size(175, 17);
+            this.showdownCheckbox.TabIndex = 7;
+            this.showdownCheckbox.Text = "replay.pokemonshowdown.com";
+            this.showdownCheckbox.UseVisualStyleBackColor = true;
             // 
-            // checkBox3
+            // googleCheckbox
             // 
-            this.checkBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.googleCheckbox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkBox3.AutoSize = true;
-            this.checkBox3.Location = new System.Drawing.Point(30, 413);
-            this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(60, 17);
-            this.checkBox3.TabIndex = 8;
-            this.checkBox3.Text = "Google";
-            this.checkBox3.UseVisualStyleBackColor = true;
+            this.googleCheckbox.AutoSize = true;
+            this.googleCheckbox.Location = new System.Drawing.Point(30, 413);
+            this.googleCheckbox.Name = "googleCheckbox";
+            this.googleCheckbox.Size = new System.Drawing.Size(60, 17);
+            this.googleCheckbox.TabIndex = 8;
+            this.googleCheckbox.Text = "Google";
+            this.googleCheckbox.UseVisualStyleBackColor = true;
             // 
             // button3
             // 
@@ -167,15 +168,28 @@
             this.checkBox4.Text = "Just Smogtour Replays";
             this.checkBox4.UseVisualStyleBackColor = true;
             // 
+            // tournamentCheckBox
+            // 
+            this.tournamentCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tournamentCheckBox.AutoSize = true;
+            this.tournamentCheckBox.Location = new System.Drawing.Point(30, 367);
+            this.tournamentCheckBox.Name = "tournamentCheckBox";
+            this.tournamentCheckBox.Size = new System.Drawing.Size(88, 17);
+            this.tournamentCheckBox.TabIndex = 11;
+            this.tournamentCheckBox.Text = "Tournaments";
+            this.tournamentCheckBox.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(948, 495);
+            this.Controls.Add(this.tournamentCheckBox);
             this.Controls.Add(this.checkBox4);
             this.Controls.Add(this.button3);
-            this.Controls.Add(this.checkBox3);
-            this.Controls.Add(this.checkBox2);
+            this.Controls.Add(this.googleCheckbox);
+            this.Controls.Add(this.showdownCheckbox);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.textBox3);
             this.Controls.Add(this.comboBox1);
@@ -200,10 +214,11 @@
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.TextBox textBox3;
         private System.Windows.Forms.Button button2;
-        public System.Windows.Forms.CheckBox checkBox2;
-        public System.Windows.Forms.CheckBox checkBox3;
+        public System.Windows.Forms.CheckBox showdownCheckbox;
+        public System.Windows.Forms.CheckBox googleCheckbox;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.CheckBox checkBox4;
+        public System.Windows.Forms.CheckBox tournamentCheckBox;
     }
 }
 
