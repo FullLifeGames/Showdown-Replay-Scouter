@@ -261,51 +261,7 @@ namespace Showdown_Replay_Scouter
                                     {
                                         if (line.Contains("|player"))
                                         {
-                                            string[] playerinf = line.Split('|');
-                                            if (playerinf.Length > 3)
-                                            {
-                                                int distance = LevenshteinDistance.Compute(Regex(playerinf[3]).Replace(" ", ""), user.Replace(" ", ""));
-                                                if(Regex(playerinf[3]).Replace(" ", "").Contains(user.Replace(" ", "")))
-                                                {
-                                                    if (playerName != "")
-                                                    {
-                                                        if(playerName.Contains(user.Replace(" ", "")))
-                                                        {
-                                                            if (LevenshteinDistance.Compute(playerName, user.Replace(" ", "")) > distance)
-                                                            {
-                                                                playerValue = playerinf[2];
-                                                                playerName = Regex(playerinf[3]).Replace(" ", "");
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            playerValue = playerinf[2];
-                                                            playerName = Regex(playerinf[3]).Replace(" ", "");
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        playerValue = playerinf[2];
-                                                        playerName = Regex(playerinf[3]).Replace(" ", "");
-                                                    }
-                                                }
-                                                else if (distance < 10)
-                                                {
-                                                    if (playerName != "")
-                                                    {
-                                                        if(LevenshteinDistance.Compute(playerName, user.Replace(" ", "")) > distance && !playerName.Contains(user.Replace(" ", "")))
-                                                        {
-                                                            playerValue = playerinf[2];
-                                                            playerName = Regex(playerinf[3]).Replace(" ", "");
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        playerValue = playerinf[2];
-                                                        playerName = Regex(playerinf[3]).Replace(" ", "");
-                                                    }
-                                                }
-                                            }
+                                            DeterminePlayer(user, ref playerValue, ref playerName, line);
                                         }
                                         else if (playerValue == "")
                                         {
@@ -760,22 +716,16 @@ namespace Showdown_Replay_Scouter
                         }
                     }
 
+                    string playerName = "";
                     foreach (string line in realReplay.Split('\n'))
                     {
                         if (line.Contains("</script>"))
                         {
                             continue;
                         }
-                        else if (line.Contains("|player") && playerValue == "")
+                        else if (line.Contains("|player"))
                         {
-                            string[] playerinf = line.Split('|');
-                            if (playerinf.Length > 3)
-                            {
-                                if (Regex(playerinf[3]).Replace(" ", "") == (user.Substring(0, user.LastIndexOf("(")).Trim().Replace(" ", "")))
-                                {
-                                    playerValue = playerinf[2];
-                                }
-                            }
+                            DeterminePlayer(user, ref playerValue, ref playerName, line);
                         }
                         else if (playerValue == "")
                         {
@@ -1078,6 +1028,55 @@ namespace Showdown_Replay_Scouter
             }
 
             return Pokemon.PrintPokemon(pokes);
+        }
+
+        private void DeterminePlayer(string user, ref string playerValue, ref string playerName, string line)
+        {
+            string[] playerinf = line.Split('|');
+            if (playerinf.Length > 3)
+            {
+                int distance = LevenshteinDistance.Compute(Regex(playerinf[3]).Replace(" ", ""), user.Replace(" ", ""));
+                if (Regex(playerinf[3]).Replace(" ", "").Contains(user.Replace(" ", "")))
+                {
+                    if (playerName != "")
+                    {
+                        if (playerName.Contains(user.Replace(" ", "")))
+                        {
+                            if (LevenshteinDistance.Compute(playerName, user.Replace(" ", "")) > distance)
+                            {
+                                playerValue = playerinf[2];
+                                playerName = Regex(playerinf[3]).Replace(" ", "");
+                            }
+                        }
+                        else
+                        {
+                            playerValue = playerinf[2];
+                            playerName = Regex(playerinf[3]).Replace(" ", "");
+                        }
+                    }
+                    else
+                    {
+                        playerValue = playerinf[2];
+                        playerName = Regex(playerinf[3]).Replace(" ", "");
+                    }
+                }
+                else if (distance < 10)
+                {
+                    if (playerName != "")
+                    {
+                        if (LevenshteinDistance.Compute(playerName, user.Replace(" ", "")) > distance && !playerName.Contains(user.Replace(" ", "")))
+                        {
+                            playerValue = playerinf[2];
+                            playerName = Regex(playerinf[3]).Replace(" ", "");
+                        }
+                    }
+                    else
+                    {
+                        playerValue = playerinf[2];
+                        playerName = Regex(playerinf[3]).Replace(" ", "");
+                    }
+                }
+            }
         }
 
         private string[] ofAbilites = new string[] {
