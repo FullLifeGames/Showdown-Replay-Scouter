@@ -274,6 +274,16 @@ namespace Showdown_Replay_Scouter
                                             string[] pokeinf = line.Split('|');
                                             if (pokeinf[2] == playerValue)
                                             {
+                                                if(monCount == 6)
+                                                {
+                                                    team.pokemon[0] = "undefined";
+                                                    team.pokemon[1] = "undefined";
+                                                    team.pokemon[2] = "undefined";
+                                                    team.pokemon[3] = "undefined";
+                                                    team.pokemon[4] = "undefined";
+                                                    team.pokemon[5] = "undefined";
+                                                    break;
+                                                }
                                                 team.pokemon[monCount] = pokeinf[3].Split(',')[0];
                                                 monCount++;
                                             }
@@ -292,6 +302,16 @@ namespace Showdown_Replay_Scouter
                                                     }
                                                     else
                                                     {
+                                                        if (monCount == 6)
+                                                        {
+                                                            team.pokemon[0] = "undefined";
+                                                            team.pokemon[1] = "undefined";
+                                                            team.pokemon[2] = "undefined";
+                                                            team.pokemon[3] = "undefined";
+                                                            team.pokemon[4] = "undefined";
+                                                            team.pokemon[5] = "undefined";
+                                                            break;
+                                                        }
                                                         team.pokemon[monCount] = maybepoke;
                                                     }                                                    
                                                     monCount++;
@@ -694,6 +714,11 @@ namespace Showdown_Replay_Scouter
                 pokes.Add(p);
             }
 
+            if(pokes.Count == 1 && pokes[0].name == "undefined")
+            {
+                return "";
+            }
+
             foreach (string link in links)
             {
                 if (smogtours && !link.Contains("smogtours"))
@@ -1032,8 +1057,10 @@ namespace Showdown_Replay_Scouter
             return Pokemon.PrintPokemon(pokes);
         }
 
-        private void DeterminePlayer(string user, ref string playerValue, ref string playerName, string line)
+        private int LevenshtenDistanceAcceptable = 5;
+        private void DeterminePlayer(string rawUser, ref string playerValue, ref string playerName, string line)
         {
+            string user = rawUser.Split(' ')[0];
             string[] playerinf = line.Split('|');
             if (playerinf.Length > 3)
             {
@@ -1062,7 +1089,7 @@ namespace Showdown_Replay_Scouter
                         playerName = Regex(playerinf[3]).Replace(" ", "");
                     }
                 }
-                else if (distance < 10)
+                else if (distance <= LevenshtenDistanceAcceptable)
                 {
                     if (playerName != "")
                     {
@@ -1341,12 +1368,11 @@ namespace Showdown_Replay_Scouter
                         {
                             button3.Enabled = true;
                         });
+                        tempListeIndex = -1;
                     };
                     thread = new Thread(() => exec());
                     thread.Start();
-                }
-                
-                tempListeIndex = -1;
+                }                
             }
         }
     }
