@@ -11,7 +11,7 @@ namespace Showdown_Replay_Scouter
         public int id;
         public string[] pokemon = new string[6];
 
-        public int length()
+        public int Length()
         {
             for (int i = 0; i < pokemon.Length; i++)
             {

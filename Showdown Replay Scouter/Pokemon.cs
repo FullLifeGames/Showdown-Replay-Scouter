@@ -28,5 +28,16 @@ namespace Showdown_Replay_Scouter
             }
             return s;
         }
+
+        public Pokemon Clone()
+        {
+            return new Pokemon
+            {
+                name = this.name + "",
+                item = this.item + "",
+                ability = this.ability + "",
+                moves = this.moves.Select(item => (string)item.Clone()).ToList()
+            };
+        }
     }
 }

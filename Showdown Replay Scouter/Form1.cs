@@ -122,7 +122,7 @@ namespace Showdown_Replay_Scouter
 
                                 Bisaboard(bisaboard, client, links, user, tier, ref tempBattle, opp);
 
-                                TournamentFunction(tournament, client, links, user, tier, tempBattle, opp);
+                                TournamentFunction(tournament, client, links, user, tier, tempBattle, opp, RegexWithSpace(noRegexUser));
 
                                 tempBattle = Showdown(showdown, client, links, noRegexUser, tier, tempBattle, opp);
 
@@ -438,12 +438,12 @@ namespace Showdown_Replay_Scouter
             }
         }
 
-        private void TournamentFunction(bool tournament, WebClient client, List<string> links, string user, string tier, string tempBattle, string opp)
+        private void TournamentFunction(bool tournament, WebClient client, List<string> links, string user, string tier, string tempBattle, string opp, string userWithSpace)
         {
             if (tournament)
             {
                 Tournament tour = new Tournament(tournament, client, links, tier, tempBattle, opp);
-                tour.AddReplaysForUser(user);
+                tour.AddReplaysForUser(user, userWithSpace);
             }
         }
 
@@ -631,37 +631,44 @@ namespace Showdown_Replay_Scouter
             return toFilter.ToLower();
         }
 
-  /*      private void getTiers()
+        private static Regex rgxWithSpace = new Regex("[^a-zA-Z0-9 ]");
+        private static string RegexWithSpace(string toFilter)
         {
-            using (WebClient client = new WebClient())
-            {
-                client.Headers.Add("User-Agent: Other");
-                string bisaboardReplays = client.DownloadString("http://showdown.bisaboard.de/replays/");
-                bool getTiers = false;
-                foreach (string line in bisaboardReplays.Split('\n'))
-                {
-                    if (line.Contains("<ul>"))
-                    {
-                        getTiers = true;
-                    }
-                    else if (line.Contains("</ul>"))
-                    {
-                        break;
-                    }
-                    else if(getTiers)
-                    {
-                        string temp = line.Substring(line.IndexOf("<a"));
-                        temp = temp.Substring(temp.IndexOf(">") + 1);
-                        temp = temp.Substring(0, temp.IndexOf("<"));
-                        comboBox1.Items.Add(temp);
-                    }
-                }
-
-                comboBox1.SelectedItem = "OU";
-                
-            }
+            toFilter = rgxWithSpace.Replace(toFilter, "");
+            return toFilter.ToLower();
         }
-        */
+
+        /*      private void getTiers()
+              {
+                  using (WebClient client = new WebClient())
+                  {
+                      client.Headers.Add("User-Agent: Other");
+                      string bisaboardReplays = client.DownloadString("http://showdown.bisaboard.de/replays/");
+                      bool getTiers = false;
+                      foreach (string line in bisaboardReplays.Split('\n'))
+                      {
+                          if (line.Contains("<ul>"))
+                          {
+                              getTiers = true;
+                          }
+                          else if (line.Contains("</ul>"))
+                          {
+                              break;
+                          }
+                          else if(getTiers)
+                          {
+                              string temp = line.Substring(line.IndexOf("<a"));
+                              temp = temp.Substring(temp.IndexOf(">") + 1);
+                              temp = temp.Substring(0, temp.IndexOf("<"));
+                              comboBox1.Items.Add(temp);
+                          }
+                      }
+
+                      comboBox1.SelectedItem = "OU";
+
+                  }
+              }
+              */
         private void Form1_Load(object sender, EventArgs e)
         {
        //     getTiers();
@@ -838,10 +845,6 @@ namespace Showdown_Replay_Scouter
                                         if (!mons[mon].moves.Contains(move))
                                         {
                                             mons[mon].moves.Add(move);
-                                            textBox3.BeginInvoke((MethodInvoker)delegate
-                                            {
-                                                textBox3.Text = Pokemon.PrintPokemon(pokes);
-                                            });
                                         }
                                     }
                                 }
@@ -869,10 +872,6 @@ namespace Showdown_Replay_Scouter
                                 if (mons[mon].name != newmon)
                                 {
                                     mons[mon].name = newmon;
-                                    textBox3.BeginInvoke((MethodInvoker)delegate
-                                    {
-                                        textBox3.Text = Pokemon.PrintPokemon(pokes);
-                                    });
                                 }
                             }
                         }
@@ -1057,7 +1056,7 @@ namespace Showdown_Replay_Scouter
             return Pokemon.PrintPokemon(pokes);
         }
 
-        private int LevenshtenDistanceAcceptable = 5;
+        private int LevenshtenDistanceAcceptable = 3;
         private void DeterminePlayer(string rawUser, ref string playerValue, ref string playerName, string line)
         {
             string user = rawUser.Split(' ')[0];
@@ -1192,19 +1191,11 @@ namespace Showdown_Replay_Scouter
                 if (!mons[mon].ability.Contains(ability))
                 {
                     mons[mon].ability += " | " + ability;
-                    textBox3.BeginInvoke((MethodInvoker)delegate
-                    {
-                        textBox3.Text = Pokemon.PrintPokemon(pokes);
-                    });
                 }
             }
             else
             {
                 mons[mon].ability = ability;
-                textBox3.BeginInvoke((MethodInvoker)delegate
-                {
-                    textBox3.Text = Pokemon.PrintPokemon(pokes);
-                });
             }
         }
 
@@ -1213,20 +1204,12 @@ namespace Showdown_Replay_Scouter
             if (mons[mon].item == null || mons[mon].item == "")
             {
                 mons[mon].item = item;
-                textBox3.BeginInvoke((MethodInvoker)delegate
-                {
-                    textBox3.Text = Pokemon.PrintPokemon(pokes);
-                });
             }
             else
             {
                 if (!mons[mon].item.Contains(item))
                 {
                     mons[mon].item += " | " + item;
-                    textBox3.BeginInvoke((MethodInvoker)delegate
-                    {
-                        textBox3.Text = Pokemon.PrintPokemon(pokes);
-                    });
                 }
             }
         }
@@ -1330,6 +1313,10 @@ namespace Showdown_Replay_Scouter
                                 if (team != "")
                                 {
                                     tempTeam = GetTeam(team, smogtours);
+                                    textBox3.BeginInvoke((MethodInvoker)delegate
+                                    {
+                                        textBox3.Text = tempTeam;
+                                    });
                                 }
                                 if (!userOutput.Contains(user))
                                 {
