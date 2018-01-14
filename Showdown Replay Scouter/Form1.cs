@@ -48,7 +48,7 @@ namespace Showdown_Replay_Scouter
                     bool bisaboard = false;
                     bool tournament = tournamentCheckBox.Checked;
                     bool showdown = showdownCheckbox.Checked;
-                    bool google = googleCheckbox.Checked;
+                    bool google = false;
                     saveRef = new Dictionary<string, List<Team>>();
                     if (textBox1.Text.Trim() != "")
                     {
@@ -73,6 +73,11 @@ namespace Showdown_Replay_Scouter
                         {
                             comboBox1.Items.Clear();
                         });
+                        progressBar1.Invoke((MethodInvoker)delegate
+                        {
+                            progressBar1.Value = 0;
+                            progressBar1.Visible = true;
+                        });
                         teamBox.Clear();
                         string[] users = textBox1.Text.Split('\n');
                         using (WebClient client = new WebClient())
@@ -87,7 +92,7 @@ namespace Showdown_Replay_Scouter
                                 string noRegexOpp = null;
                                 if (use.Contains('|'))
                                 {
-                                    string[] tmpuser = use.Split('|');                                   
+                                    string[] tmpuser = use.Split('|');
                                     user = Regex(tmpuser[0]);
                                     noRegexUser = tmpuser[0];
                                     tier = Regex(tmpuser[1]);
@@ -102,7 +107,7 @@ namespace Showdown_Replay_Scouter
                                     }
                                     textBox2.BeginInvoke((MethodInvoker)delegate
                                     {
-                                        textBox2.Text += tmpuser[0].Trim() + " (" + tmpuser[1].Trim() + "):\r\n\r\n";                                       
+                                        textBox2.Text += tmpuser[0].Trim() + " (" + tmpuser[1].Trim() + "):\r\n\r\n";
                                     });
                                     tempListe += tmpuser[0].Trim() + " (" + tmpuser[1].Trim() + "):\r\n\r\n";
                                 }
@@ -112,7 +117,7 @@ namespace Showdown_Replay_Scouter
                                     textBox2.BeginInvoke((MethodInvoker)delegate
                                     {
                                         textBox2.Text += tmpuser[0].Trim() + ":\r\n\r\n";
-                                    }); 
+                                    });
                                     tempListe += tmpuser[0].Trim() + ":\r\n\r\n";
                                     user = Regex(tmpuser[0]);
                                     noRegexUser = tmpuser[0];
@@ -122,12 +127,12 @@ namespace Showdown_Replay_Scouter
 
                                 Bisaboard(bisaboard, client, links, user, tier, ref tempBattle, opp);
 
-                                TournamentFunction(tournament, client, links, user, tier, tempBattle, opp, RegexWithSpace(noRegexUser));
+                                TournamentFunction(tournament, client, links, user, tier, tempBattle, opp, RegexWithSpace(noRegexUser), noRegexUser);
 
                                 tempBattle = Showdown(showdown, client, links, noRegexUser, tier, tempBattle, opp);
 
                                 if (google)
-                                {                                    
+                                {
                                     List<string> htmlText = new List<string>();
                                     if (!userToGoogleLinks.ContainsKey(noRegexUser))
                                     {
@@ -152,7 +157,7 @@ namespace Showdown_Replay_Scouter
                                                 if (attr.Name == "href")
                                                 {
                                                     if ((attr.Value.Contains("replay.pokemonshowdown.com/") || attr.Value.Contains("pokemonshowdown.com/replay")) && !attr.Value.Contains("replay.pokemonshowdown.com/search") && !attr.Value.Contains("pokemonshowdown.com/replay/&") && attr.Value != "http://pokemonshowdown.com/replay/")
-                                                    {                                                        
+                                                    {
                                                         string tempLinks = attr.Value;
                                                         if (tempLinks.Contains("&"))
                                                         {
@@ -223,6 +228,13 @@ namespace Showdown_Replay_Scouter
 
                                 links = links.Distinct().ToList();
 
+                                progressBar1.Invoke((MethodInvoker)delegate
+                                {
+                                    progressBar1.Value = 0;
+                                    progressBar1.CustomText = "Scanning collected replays for " + noRegexUser.Trim() + "!";
+                                    progressBar1.Maximum = links.Count;
+                                });
+
                                 foreach (string link in links)
                                 {
                                     client.Headers.Add("User-Agent: Other");
@@ -274,7 +286,7 @@ namespace Showdown_Replay_Scouter
                                             string[] pokeinf = line.Split('|');
                                             if (pokeinf[2] == playerValue)
                                             {
-                                                if(monCount == 6)
+                                                if (monCount == 6)
                                                 {
                                                     team.pokemon[0] = "undefined";
                                                     team.pokemon[1] = "undefined";
@@ -313,7 +325,7 @@ namespace Showdown_Replay_Scouter
                                                             break;
                                                         }
                                                         team.pokemon[monCount] = maybepoke;
-                                                    }                                                    
+                                                    }
                                                     monCount++;
                                                 }
                                             }
@@ -331,7 +343,7 @@ namespace Showdown_Replay_Scouter
                                         team.pokemon[3] = "undefined";
                                         team.pokemon[4] = "undefined";
                                         team.pokemon[5] = "undefined";
-                                    } 
+                                    }
                                     int id = team.Compare(referenz);
                                     if (id == 0)
                                     {
@@ -346,6 +358,8 @@ namespace Showdown_Replay_Scouter
                                     {
                                         teams[id].Add(link);
                                     }
+
+                                    IncrementProgressBar();
                                 }
 
                                 foreach (KeyValuePair<int, List<string>> kv in teams)
@@ -432,18 +446,24 @@ namespace Showdown_Replay_Scouter
                             button3.Enabled = true;
                         }
                     });
+                    progressBar1.Invoke((MethodInvoker)delegate
+                    {
+                        progressBar1.Value = 0;
+                        progressBar1.Visible = false;
+                        progressBar1.CustomText = null;
+                    });
                 });
                 thread.SetApartmentState(ApartmentState.STA);
                 thread.Start();
             }
         }
 
-        private void TournamentFunction(bool tournament, WebClient client, List<string> links, string user, string tier, string tempBattle, string opp, string userWithSpace)
+        private void TournamentFunction(bool tournament, WebClient client, List<string> links, string user, string tier, string tempBattle, string opp, string userWithSpace, string noRegexUser)
         {
             if (tournament)
             {
-                Tournament tour = new Tournament(tournament, client, links, tier, tempBattle, opp);
-                tour.AddReplaysForUser(user, userWithSpace);
+                Tournament tour = new Tournament(tournament, client, links, tier, tempBattle, opp, this);
+                tour.AddReplaysForUser(user, userWithSpace, noRegexUser);
             }
         }
 
@@ -533,46 +553,9 @@ namespace Showdown_Replay_Scouter
             {
                 bool oppCheck = (opp != null);
                 List<string> html = new List<string>();
-                Showdown show_down = new Showdown(noRegexUser, html);
-                show_down.ShowDialog();
-                string showdownReplays = html[0];
-                foreach (string line in showdownReplays.Split('\n'))
-                {
-                    if (line.Contains("<small>"))
-                    {
-                        string tmpTier = line.Substring(line.IndexOf("<small>") + 7, line.IndexOf("<br") - (line.IndexOf("<small>") + 7));
-                        if (tier == null || tier == Regex(tmpTier))
-                        {
-                            if (oppCheck)
-                            {
-                                int countPlayers = 0;
-                                string temp = line.Substring(line.IndexOf("<strong>") + 8);
-                                string playerone = temp.Substring(0, temp.IndexOf("</"));
-                                if (Regex(playerone) == Regex(noRegexUser) || Regex(playerone) == opp)
-                                {
-                                    countPlayers++;
-                                }
-                                temp = temp.Substring(temp.IndexOf("<strong>") + 8);
-                                string playertwo = temp.Substring(0, temp.IndexOf("</"));
-                                if (Regex(playertwo) == Regex(noRegexUser) || Regex(playertwo) == opp)
-                                {
-                                    countPlayers++;
-                                }
-                                if (countPlayers == 2)
-                                {
-                                    oppCheck = false;
-                                }
-                            }
-                            if (!oppCheck)
-                            {
-                                tempBattle = line.Substring(line.IndexOf("\"") + 1);
-                                tempBattle = tempBattle.Substring(0, tempBattle.IndexOf("\""));
-                                tempBattle = "http://replay.pokemonshowdown.com" + tempBattle;
-                                links.Add(tempBattle);
-                            }
-                        }
-                    }
-                }
+                HeadlessShowdown headlessShowdown = new HeadlessShowdown(noRegexUser, html);
+                headlessShowdown.GetReplaysForUser();
+                headlessShowdown.ParseShowdownReplays(html, tier, oppCheck, noRegexUser, opp, links);
             }
             return tempBattle;
         }
@@ -624,8 +607,8 @@ namespace Showdown_Replay_Scouter
             return tempBattle;
         }
 
-        private Regex rgx = new Regex("[^a-zA-Z0-9]");
-        private string Regex(string toFilter)
+        private static Regex rgx = new Regex("[^a-zA-Z0-9]");
+        public static string Regex(string toFilter)
         {
             toFilter = rgx.Replace(toFilter, "");
             return toFilter.ToLower();
@@ -1265,6 +1248,14 @@ namespace Showdown_Replay_Scouter
                         {
                             smogtours = checkBox4.Checked;
                         });
+
+                        progressBar1.Invoke((MethodInvoker)delegate
+                        {
+                            progressBar1.Value = 0;
+                            progressBar1.Visible = true;
+                            progressBar1.CustomText = "Dumping all replays!";
+                            progressBar1.Maximum = teamBox.Count;
+                        });
                         List<string> userOutput = new List<string>();
                         Dictionary<string, string> allUser = new Dictionary<string, string>();
                         string dump = tempListe;
@@ -1333,6 +1324,7 @@ namespace Showdown_Replay_Scouter
                                     output += link + "\r\n";
                                 }
                                 output += "\r\n" + tempTeam + "\r\n";
+                                IncrementProgressBar();
                             }
                         }
                         FileInfo f = new FileInfo((args != null) ? args[1] : ofd.FileName);
@@ -1355,12 +1347,35 @@ namespace Showdown_Replay_Scouter
                         {
                             button3.Enabled = true;
                         });
+                        progressBar1.Invoke((MethodInvoker)delegate
+                        {
+                            progressBar1.Value = 0;
+                            progressBar1.Visible = false;
+                            progressBar1.CustomText = null;
+                        });
                         tempListeIndex = -1;
                     };
                     thread = new Thread(() => exec());
                     thread.Start();
                 }                
             }
+        }
+
+        public void InitProgressBarForTournament(int max, string name)
+        {
+            progressBar1.Invoke((MethodInvoker)delegate {
+                progressBar1.CustomText = "Scanning Tournament threads for " + name.Trim() + "!";
+                progressBar1.Value = 0;
+                progressBar1.Maximum = max;
+            });
+        }
+
+        public void IncrementProgressBar()
+        {
+            progressBar1.Invoke((MethodInvoker)delegate
+            {
+                progressBar1.Value++;
+            });
         }
     }
 }

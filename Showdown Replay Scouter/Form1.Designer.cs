@@ -36,10 +36,10 @@
             this.textBox3 = new System.Windows.Forms.TextBox();
             this.button2 = new System.Windows.Forms.Button();
             this.showdownCheckbox = new System.Windows.Forms.CheckBox();
-            this.googleCheckbox = new System.Windows.Forms.CheckBox();
             this.button3 = new System.Windows.Forms.Button();
             this.checkBox4 = new System.Windows.Forms.CheckBox();
             this.tournamentCheckBox = new System.Windows.Forms.CheckBox();
+            this.progressBar1 = new Showdown_Replay_Scouter.CustomProgressBar();
             this.SuspendLayout();
             // 
             // textBox1
@@ -51,7 +51,7 @@
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox1.Size = new System.Drawing.Size(269, 340);
+            this.textBox1.Size = new System.Drawing.Size(269, 363);
             this.textBox1.TabIndex = 0;
             this.textBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TextBox1_KeyDown);
             // 
@@ -125,24 +125,12 @@
             this.showdownCheckbox.AutoSize = true;
             this.showdownCheckbox.Checked = true;
             this.showdownCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.showdownCheckbox.Location = new System.Drawing.Point(30, 390);
+            this.showdownCheckbox.Location = new System.Drawing.Point(30, 413);
             this.showdownCheckbox.Name = "showdownCheckbox";
-            this.showdownCheckbox.Size = new System.Drawing.Size(175, 17);
+            this.showdownCheckbox.Size = new System.Drawing.Size(152, 17);
             this.showdownCheckbox.TabIndex = 7;
-            this.showdownCheckbox.Text = "replay.pokemonshowdown.com";
+            this.showdownCheckbox.Text = "Showdown Replay Search";
             this.showdownCheckbox.UseVisualStyleBackColor = true;
-            // 
-            // googleCheckbox
-            // 
-            this.googleCheckbox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.googleCheckbox.AutoSize = true;
-            this.googleCheckbox.Location = new System.Drawing.Point(30, 413);
-            this.googleCheckbox.Name = "googleCheckbox";
-            this.googleCheckbox.Size = new System.Drawing.Size(60, 17);
-            this.googleCheckbox.TabIndex = 8;
-            this.googleCheckbox.Text = "Google";
-            this.googleCheckbox.UseVisualStyleBackColor = true;
             // 
             // button3
             // 
@@ -173,22 +161,32 @@
             this.tournamentCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tournamentCheckBox.AutoSize = true;
-            this.tournamentCheckBox.Location = new System.Drawing.Point(30, 367);
+            this.tournamentCheckBox.Location = new System.Drawing.Point(30, 390);
             this.tournamentCheckBox.Name = "tournamentCheckBox";
-            this.tournamentCheckBox.Size = new System.Drawing.Size(88, 17);
+            this.tournamentCheckBox.Size = new System.Drawing.Size(167, 17);
             this.tournamentCheckBox.TabIndex = 11;
-            this.tournamentCheckBox.Text = "Tournaments";
+            this.tournamentCheckBox.Text = "Smogon Tournament Threads";
             this.tournamentCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.CustomText = null;
+            this.progressBar1.DisplayStyle = Showdown_Replay_Scouter.ProgressBarDisplayText.Percentage;
+            this.progressBar1.Location = new System.Drawing.Point(21, 1);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(915, 18);
+            this.progressBar1.TabIndex = 12;
+            this.progressBar1.Visible = false;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(948, 495);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.tournamentCheckBox);
             this.Controls.Add(this.checkBox4);
             this.Controls.Add(this.button3);
-            this.Controls.Add(this.googleCheckbox);
             this.Controls.Add(this.showdownCheckbox);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.textBox3);
@@ -215,10 +213,10 @@
         private System.Windows.Forms.TextBox textBox3;
         private System.Windows.Forms.Button button2;
         public System.Windows.Forms.CheckBox showdownCheckbox;
-        public System.Windows.Forms.CheckBox googleCheckbox;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.CheckBox checkBox4;
         public System.Windows.Forms.CheckBox tournamentCheckBox;
+        private CustomProgressBar progressBar1;
     }
 }
 

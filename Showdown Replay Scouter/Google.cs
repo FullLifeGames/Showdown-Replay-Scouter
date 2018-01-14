@@ -77,7 +77,12 @@ namespace Showdown_Replay_Scouter
                                 webBrowser1.BeginInvoke((MethodInvoker)delegate
                                 {
                                     start += 100;
-                                    webBrowser1.Url = new System.Uri("https://www.google.com/search?q=intitle:%22Pok%C3%A9mon%20Showdown%22%20" + user + "&safe=off&filter=0&nfpr=1&num=1000&start=" + start);
+                                    try
+                                    {
+                                        webBrowser1.Url = new System.Uri("https://www.google.com/search?q=intitle:%22Pok%C3%A9mon%20Showdown%22%20" + user + "&safe=off&filter=0&nfpr=1&num=1000&start=" + start);
+                                    }
+                                    catch (Exception)
+                                    {}
                                 });
                             }
                         }

@@ -24,6 +24,49 @@ namespace Showdown_Replay_Scouter
             InitializeComponent();
         }
 
+        public static void ParseShowdownReplays(List<string> html, string tier, bool oppCheck, string noRegexUser, string opp, List<string> links)
+        {
+            string showdownReplays = html[0];
+            string tempBattle = "";
+            foreach (string line in showdownReplays.Split('\n'))
+            {
+                if (line.Contains("<small>"))
+                {
+                    string tmpTier = line.Substring(line.IndexOf("<small>") + 7, line.IndexOf("<br") - (line.IndexOf("<small>") + 7));
+                    if (tier == null || tier == Form1.Regex(tmpTier))
+                    {
+                        if (oppCheck)
+                        {
+                            int countPlayers = 0;
+                            string temp = line.Substring(line.IndexOf("<strong>") + 8);
+                            string playerone = temp.Substring(0, temp.IndexOf("</"));
+                            if (Form1.Regex(playerone) == Form1.Regex(noRegexUser) || Form1.Regex(playerone) == opp)
+                            {
+                                countPlayers++;
+                            }
+                            temp = temp.Substring(temp.IndexOf("<strong>") + 8);
+                            string playertwo = temp.Substring(0, temp.IndexOf("</"));
+                            if (Form1.Regex(playertwo) == Form1.Regex(noRegexUser) || Form1.Regex(playertwo) == opp)
+                            {
+                                countPlayers++;
+                            }
+                            if (countPlayers == 2)
+                            {
+                                oppCheck = false;
+                            }
+                        }
+                        if (!oppCheck)
+                        {
+                            tempBattle = line.Substring(line.IndexOf("\"") + 1);
+                            tempBattle = tempBattle.Substring(0, tempBattle.IndexOf("\""));
+                            tempBattle = "http://replay.pokemonshowdown.com" + tempBattle;
+                            links.Add(tempBattle);
+                        }
+                    }
+                }
+            }
+        }
+
         private void Showdown_Load(object sender, EventArgs e)
         {
             webBrowser1.Url = new System.Uri("http://replay.pokemonshowdown.com/search/?user=" + user);
@@ -44,7 +87,7 @@ namespace Showdown_Replay_Scouter
         Thread thread;
         volatile bool running = true;
 
-        private void webBrowser1_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
+        private void WebBrowser1_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
             if (thread == null)
             {
@@ -80,7 +123,7 @@ namespace Showdown_Replay_Scouter
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void Button1_Click(object sender, EventArgs e)
         {
             thread.Join();
             this.Close();

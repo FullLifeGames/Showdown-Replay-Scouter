@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace Showdown_Replay_Scouter
 {
@@ -13,11 +14,12 @@ namespace Showdown_Replay_Scouter
         private string tier;
         private string tempBattle;
         private string opp;
+        private Form1 form1;
 
         private string officialTournamentSite = "http://www.smogon.com/forums/forums/tournaments.34/";
         private string ostForum = "http://www.smogon.com/forums/forums/official-smogon-tournament.463/";
 
-        public Tournament(bool tournament, WebClient client, List<string> links, string tier, string tempBattle, string opp)
+        public Tournament(bool tournament, WebClient client, List<string> links, string tier, string tempBattle, string opp, Form1 form1)
         {
             this.tournament = tournament;
             this.client = client;
@@ -25,6 +27,7 @@ namespace Showdown_Replay_Scouter
             this.tier = tier;
             this.tempBattle = tempBattle;
             this.opp = opp;
+            this.form1 = form1;
         }
 
         private static Regex rgx = new Regex("[^a-zA-Z0-9]");
@@ -42,7 +45,7 @@ namespace Showdown_Replay_Scouter
         }
 
 
-        public void AddReplaysForUser(string user, string userWithSpace)
+        public void AddReplaysForUser(string user, string userWithSpace, string noRegexUser)
         {
             string smogonMain = client.DownloadString("http://www.smogon.com/forums/");
             bool scanStartOne = false;
@@ -73,11 +76,21 @@ namespace Showdown_Replay_Scouter
                     scanStartOne = true;
                 }
             }
+
+            if (tournamentToLinks.ContainsKey("Official Smogon Tournament"))
+            {
+                tournamentToLinks.Remove("Official Smogon Tournament");
+            }
+
+            Dictionary<string, List<string>> threadsForForums = new Dictionary<string, List<string>>();
+
+            form1.InitProgressBarForTournament(tournamentToLinks.Keys.Count + 1, noRegexUser);
             
-            ScanOSTThreads(user, userWithSpace);
+            ScanOSTThreads(user, userWithSpace, threadsForForums);
 
             foreach (KeyValuePair<string, string> kv in tournamentToLinks)
             {
+                threadsForForums.Add(kv.Value, new List<string>());
                 string site = client.DownloadString(kv.Value);
                 int pages = 1;
                 if (site.Contains("<nav class=\"pageNavWrapper"))
@@ -111,23 +124,44 @@ namespace Showdown_Replay_Scouter
                             string url = "http://www.smogon.com" + tempInside;
                             if (!url.Contains("season-") && !url.Contains("signup"))
                             {
-                                Console.WriteLine("Currently Scanning: " + url);
-                                int beforeCount = links.Count;
-                                AnalyzeTopic(url, kv.Key, client, user, userWithSpace);
-                                int afterCount = links.Count;
-                                Console.WriteLine("Added " + (afterCount - beforeCount) + " Replays");
-                                Console.WriteLine();
+                                threadsForForums[kv.Value].Add(url);
                             }
                         }
                     }
                 }
+                form1.IncrementProgressBar();
             }
+
+            int totalCount = 0;
+            foreach (KeyValuePair<string, List<string>> kv in threadsForForums)
+            {
+                totalCount += kv.Value.Count;
+            }
+
+            form1.InitProgressBarForTournament(totalCount, noRegexUser);
+
+            foreach (KeyValuePair<string, List<string>> kv in threadsForForums)
+            {
+                foreach (string url in kv.Value)
+                {
+                    Console.WriteLine("Currently Scanning: " + url);
+                    int beforeCount = links.Count;
+                    AnalyzeTopic(url, client, user, userWithSpace);
+                    int afterCount = links.Count;
+                    Console.WriteLine("Added " + (afterCount - beforeCount) + " Replays");
+                    Console.WriteLine();
+                    form1.IncrementProgressBar();
+                }
+            }
+
         }
 
-        private void ScanOSTThreads(string user, string userWithSpace)
+        private void ScanOSTThreads(string user, string userWithSpace, Dictionary<string, List<string>> threadsForForums)
         {
             foreach (string siteString in new string[] { ostForum, officialTournamentSite })
             {
+                threadsForForums.Add(siteString, new List<string>());
+
                 string bigSite = client.DownloadString(siteString);
                 int bigPages = 1;
                 if (bigSite.Contains("<nav class=\"pageNavWrapper"))
@@ -161,12 +195,7 @@ namespace Showdown_Replay_Scouter
                             string url = "http://www.smogon.com" + tempInside;
                             if (!url.Contains("season-") && !url.Contains("signup") && url.Contains("official-smogon-tournament"))
                             {
-                                Console.WriteLine("Currently Scanning: " + url);
-                                int beforeCount = links.Count;
-                                AnalyzeTopic(url, "OST", client, user, userWithSpace);
-                                int afterCount = links.Count;
-                                Console.WriteLine("Added " + (afterCount - beforeCount) + " Replays");
-                                Console.WriteLine();
+                                threadsForForums[siteString].Add(url);
                             }
                         }
                     }
@@ -174,7 +203,7 @@ namespace Showdown_Replay_Scouter
             }
         }
 
-        private void AnalyzeTopic(string url, string tour, WebClient client, string user, string userWithSpace)
+        private void AnalyzeTopic(string url, WebClient client, string user, string userWithSpace)
         {
             try
             {
@@ -219,7 +248,7 @@ namespace Showdown_Replay_Scouter
 
                     foreach (string line in site.Split('\n'))
                     {
-                        HandleLine(url, tour, pageCount, ref blockStarted, ref blockText, ref postStarted, ref postLink, ref postLikes, ref postDate, ref postedBy, ref likeStarted, ref timerHeader, currentTeams, line, ref lastLine, user, ref canTakeReplay, userWithSpace);
+                        HandleLine(url, pageCount, ref blockStarted, ref blockText, ref postStarted, ref postLink, ref postLikes, ref postDate, ref postedBy, ref likeStarted, ref timerHeader, currentTeams, line, ref lastLine, user, ref canTakeReplay, userWithSpace);
                     }
                 }
             }
@@ -231,7 +260,7 @@ namespace Showdown_Replay_Scouter
             }
         }
 
-        private void HandleLine(string url, string tour, int pageCount, ref bool blockStarted, ref string blockText, ref bool postStarted, ref string postLink, ref int postLikes, ref DateTime postDate, ref string postedBy, ref bool likeStarted, ref bool timerHeader, List<string> currentTeams, string line, ref string lastLine, string user, ref bool canTakeReplay, string userWithSpace)
+        private void HandleLine(string url, int pageCount, ref bool blockStarted, ref string blockText, ref bool postStarted, ref string postLink, ref int postLikes, ref DateTime postDate, ref string postedBy, ref bool likeStarted, ref bool timerHeader, List<string> currentTeams, string line, ref string lastLine, string user, ref bool canTakeReplay, string userWithSpace)
         {
             if (line.Contains("<article class=\"message message--post js-post js-inlineModContainer"))
             {
