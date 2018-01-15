@@ -48,7 +48,7 @@ namespace Showdown_Replay_Scouter
                     bool bisaboard = false;
                     bool tournament = tournamentCheckBox.Checked;
                     bool showdown = showdownCheckbox.Checked;
-                    bool google = false;
+                    bool google = googleCheckBox.Checked;
                     saveRef = new Dictionary<string, List<Team>>();
                     if (textBox1.Text.Trim() != "")
                     {

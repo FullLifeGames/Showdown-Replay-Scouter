@@ -30,13 +30,17 @@ namespace Showdown_Replay_Scouter
             webBrowser1.Url = new System.Uri("https://www.google.com/search?q=intitle:%22Pok%C3%A9mon%20Showdown%22%20" + user + "&safe=off&filter=0&nfpr=1&num=1000&start=" + start);
         }
 
-        private void webBrowser1_Navigating(object sender, WebBrowserNavigatingEventArgs e)
+        private void WebBrowser1_Navigating(object sender, WebBrowserNavigatingEventArgs e)
         {    
             if(webBrowser1.DocumentText != "")
             {
                 if (webBrowser1.DocumentText.Split('\n').Length < 30)
                 {
 
+                }
+                else if(!webBrowser1.DocumentText.Contains("<div class=\"rc\"><h3 class=\"r\">"))
+                {
+                    this.Close();
                 }
                 else if (!htmlText.Contains(webBrowser1.DocumentText))
                 {
@@ -52,7 +56,7 @@ namespace Showdown_Replay_Scouter
         Thread thread = null;
         private volatile bool running = true;
 
-        private void webBrowser1_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
+        private void WebBrowser1_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
             if (thread == null)
             {

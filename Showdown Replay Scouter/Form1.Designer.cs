@@ -40,6 +40,7 @@
             this.checkBox4 = new System.Windows.Forms.CheckBox();
             this.tournamentCheckBox = new System.Windows.Forms.CheckBox();
             this.progressBar1 = new Showdown_Replay_Scouter.CustomProgressBar();
+            this.googleCheckBox = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // textBox1
@@ -51,7 +52,7 @@
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox1.Size = new System.Drawing.Size(269, 363);
+            this.textBox1.Size = new System.Drawing.Size(269, 346);
             this.textBox1.TabIndex = 0;
             this.textBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TextBox1_KeyDown);
             // 
@@ -125,7 +126,7 @@
             this.showdownCheckbox.AutoSize = true;
             this.showdownCheckbox.Checked = true;
             this.showdownCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.showdownCheckbox.Location = new System.Drawing.Point(30, 413);
+            this.showdownCheckbox.Location = new System.Drawing.Point(30, 394);
             this.showdownCheckbox.Name = "showdownCheckbox";
             this.showdownCheckbox.Size = new System.Drawing.Size(152, 17);
             this.showdownCheckbox.TabIndex = 7;
@@ -161,7 +162,7 @@
             this.tournamentCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tournamentCheckBox.AutoSize = true;
-            this.tournamentCheckBox.Location = new System.Drawing.Point(30, 390);
+            this.tournamentCheckBox.Location = new System.Drawing.Point(30, 372);
             this.tournamentCheckBox.Name = "tournamentCheckBox";
             this.tournamentCheckBox.Size = new System.Drawing.Size(167, 17);
             this.tournamentCheckBox.TabIndex = 11;
@@ -178,11 +179,22 @@
             this.progressBar1.TabIndex = 12;
             this.progressBar1.Visible = false;
             // 
+            // googleCheckBox
+            // 
+            this.googleCheckBox.AutoSize = true;
+            this.googleCheckBox.Location = new System.Drawing.Point(30, 417);
+            this.googleCheckBox.Name = "googleCheckBox";
+            this.googleCheckBox.Size = new System.Drawing.Size(81, 17);
+            this.googleCheckBox.TabIndex = 13;
+            this.googleCheckBox.Text = "Ask Google";
+            this.googleCheckBox.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(948, 495);
+            this.Controls.Add(this.googleCheckBox);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.tournamentCheckBox);
             this.Controls.Add(this.checkBox4);
@@ -217,6 +229,7 @@
         private System.Windows.Forms.CheckBox checkBox4;
         public System.Windows.Forms.CheckBox tournamentCheckBox;
         private CustomProgressBar progressBar1;
+        private System.Windows.Forms.CheckBox googleCheckBox;
     }
 }
 
