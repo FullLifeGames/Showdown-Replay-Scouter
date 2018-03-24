@@ -45,8 +45,18 @@ namespace Commandline_Showdown_Replay_Scouter
                         {
                             string[] tmpuser = use.Split('|');
                             user = Regex(tmpuser[0]);
+                            if(user == "")
+                            {
+                                //Console.WriteLine("Empty user provided! Execution: {file}.exe {user} {path}");
+                                return;
+                            }
                             noRegexUser = tmpuser[0];
                             tier = Regex(tmpuser[1]);
+                            if(tier == "")
+                            {
+                                //Console.WriteLine("Empty tier provided! Execution: {file}.exe {user} {path}");
+                                return;
+                            }
                             if (tmpuser.Length > 2)
                             {
                                 opp = Regex(tmpuser[2]);
@@ -321,13 +331,17 @@ namespace Commandline_Showdown_Replay_Scouter
                         output += "\r\n" + tempTeam + "\r\n";
                     }
                 }
-                FileInfo f = new FileInfo(args[1]);
-                if (f.Exists)
-                {
-                    f.Delete();
-                }
-                File.WriteAllText(args[1], output);
 
+                // Don't write empty files
+                if (output != "")
+                {
+                    FileInfo f = new FileInfo(args[1]);
+                    if (f.Exists)
+                    {
+                        f.Delete();
+                    }
+                    File.WriteAllText(args[1], output);
+                }
 
             }
         }

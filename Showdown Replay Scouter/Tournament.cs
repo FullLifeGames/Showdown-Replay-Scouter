@@ -325,6 +325,51 @@ namespace Showdown_Replay_Scouter
             else if ((Regex(postedBy) == user && (Regex(line).Contains("gg") || Regex(line).Contains(Regex(" won ")) || Regex(line).Contains(Regex(" win ")) || Regex(line).Contains(Regex(" lost ")) || Regex(line).Contains(Regex(" lose ")))) || Regex(line).Contains(Regex("vs " + user)))
             {
                 canTakeReplay = true;
+
+                if (line.Contains("replay.pokemonshowdown.com/"))
+                {
+                    string tempLine = line;
+                    while (tempLine.Contains("replay.pokemonshowdown.com/"))
+                    {
+                        tempLine = tempLine.Substring(tempLine.IndexOf("replay.pokemonshowdown.com/"));
+                        int quot = tempLine.Contains("\"") ? tempLine.IndexOf("\"") : int.MaxValue;
+                        int arrow = tempLine.Contains("<") ? tempLine.IndexOf("<") : int.MaxValue;
+                        string link;
+                        if (arrow < quot)
+                        {
+                            link = tempLine.Substring(0, tempLine.IndexOf("<"));
+                        }
+                        else
+                        {
+                            link = tempLine.Substring(0, tempLine.IndexOf("\""));
+                        }
+                        if (tier != null)
+                        {
+                            string endPart = link.Replace("replay.pokemonshowdown.com/", "");
+                            endPart = endPart.Substring(0, endPart.LastIndexOf("-"));
+                            if (endPart.Contains("-"))
+                            {
+                                endPart = endPart.Substring(endPart.IndexOf("-") + 1);
+                            }
+                            if (Regex(tier) == Regex(endPart))
+                            {
+                                links.Add("https://" + link);
+                            }
+                        }
+                        else
+                        {
+                            links.Add("https://" + link);
+                        }
+                        if (arrow < quot)
+                        {
+                            tempLine = tempLine.Substring(tempLine.IndexOf("<"));
+                        }
+                        else
+                        {
+                            tempLine = tempLine.Substring(tempLine.IndexOf("\""));
+                        }
+                    }
+                }
             }
         }
     }
