@@ -547,7 +547,13 @@ namespace Commandline_Showdown_Replay_Scouter
                                         }
                                         if (!mons.ContainsKey(realmon))
                                         {
-                                            Console.WriteLine("Debug");
+                                            Pokemon p = new Pokemon();
+                                            p.name = realmon;
+                                            if (!mons.ContainsKey(mon))
+                                            {
+                                                mons.Add(mon, p);
+                                            }
+                                            pokes.Add(p);
                                         }
                                         else
                                         {
@@ -567,18 +573,7 @@ namespace Commandline_Showdown_Replay_Scouter
                                 {
                                     string mon = moveinf[2].Split(':')[1].Trim();
                                     string move = moveinf[3];
-                                    if (!mons.ContainsKey(mon))
-                                    {
-                                        foreach (KeyValuePair<string, Pokemon> kv in mons)
-                                        {
-                                            if (Regex(mon).Contains(Regex(kv.Key)))
-                                            {
-                                                mons.Add(mon, kv.Value);
-                                                kv.Value.name = mon;
-                                                break;
-                                            }
-                                        }
-                                    }
+                                    AddMonIfNotExists(mons, mon);
                                     if (line.Contains("[from]Magic Bounce"))
                                     {
                                         AbilityUpdate(pokes, mons, "Magic Bounce", mon);
@@ -600,18 +595,7 @@ namespace Commandline_Showdown_Replay_Scouter
                             {
                                 string mon = detailinf[2].Split(':')[1].Trim();
                                 string newmon = detailinf[3].Split(',')[0];
-                                if (!mons.ContainsKey(mon))
-                                {
-                                    foreach (KeyValuePair<string, Pokemon> kv in mons)
-                                    {
-                                        if (Regex(mon).Contains(Regex(kv.Key)))
-                                        {
-                                            mons.Add(mon, kv.Value);
-                                            kv.Value.name = mon;
-                                            break;
-                                        }
-                                    }
-                                }
+                                AddMonIfNotExists(mons, mon);
                                 if (mons[mon].name != newmon)
                                 {
                                     mons[mon].name = newmon;
@@ -637,18 +621,7 @@ namespace Commandline_Showdown_Replay_Scouter
                                     {
                                         item = iteminf[5].Split(':')[1].Trim();
                                     }
-                                    if (!mons.ContainsKey(mon))
-                                    {
-                                        foreach (KeyValuePair<string, Pokemon> kv in mons)
-                                        {
-                                            if (Regex(mon).Contains(Regex(kv.Key)))
-                                            {
-                                                mons.Add(mon, kv.Value);
-                                                kv.Value.name = mon;
-                                                break;
-                                            }
-                                        }
-                                    }
+                                    AddMonIfNotExists(mons, mon);
                                     ItemUpdate(pokes, mons, mon, item);
                                 }
                             }
@@ -656,22 +629,11 @@ namespace Commandline_Showdown_Replay_Scouter
                         else if (line.Contains("-damage") && line.Contains("Rocky Helmet"))
                         {
                             string[] iteminf = line.Split('|');
-                            if (iteminf[5].Contains(playerValue))
+                            if (iteminf.Length > 5 && iteminf[5].Contains(playerValue))
                             {
                                 string mon = iteminf[5].Split(':')[1].Trim();
                                 string item = iteminf[4].Split(':')[1].Trim();
-                                if (!mons.ContainsKey(mon))
-                                {
-                                    foreach (KeyValuePair<string, Pokemon> kv in mons)
-                                    {
-                                        if (Regex(mon).Contains(Regex(kv.Key)))
-                                        {
-                                            mons.Add(mon, kv.Value);
-                                            kv.Value.name = mon;
-                                            break;
-                                        }
-                                    }
-                                }
+                                AddMonIfNotExists(mons, mon);
                                 ItemUpdate(pokes, mons, mon, item);
                             }
                         }
@@ -686,18 +648,7 @@ namespace Commandline_Showdown_Replay_Scouter
                                 {
                                     string mon = iteminf[2].Split(':')[1].Trim();
                                     string item = iteminf[3].Trim();
-                                    if (!mons.ContainsKey(mon))
-                                    {
-                                        foreach (KeyValuePair<string, Pokemon> kv in mons)
-                                        {
-                                            if (Regex(mon).Contains(Regex(kv.Key)))
-                                            {
-                                                mons.Add(mon, kv.Value);
-                                                kv.Value.name = mon;
-                                                break;
-                                            }
-                                        }
-                                    }
+                                    AddMonIfNotExists(mons, mon);
                                     ItemUpdate(pokes, mons, mon, item);
                                 }
                             }
@@ -713,18 +664,7 @@ namespace Commandline_Showdown_Replay_Scouter
                                 mon = abilityinf[5].Split(':')[1].Trim();
                                 if (abilityinf[5].Split(':')[1].Contains(playerValue))
                                 {
-                                    if (!mons.ContainsKey(mon))
-                                    {
-                                        foreach (KeyValuePair<string, Pokemon> kv in mons)
-                                        {
-                                            if (Regex(mon).Contains(Regex(kv.Key)))
-                                            {
-                                                mons.Add(mon, kv.Value);
-                                                kv.Value.name = mon;
-                                                break;
-                                            }
-                                        }
-                                    }
+                                    AddMonIfNotExists(mons, mon);
                                     AbilityUpdate(pokes, mons, ability, mon);
                                 }
                             }
@@ -754,18 +694,7 @@ namespace Commandline_Showdown_Replay_Scouter
                             }
                             if (ability != "" && mon != "")
                             {
-                                if (!mons.ContainsKey(mon))
-                                {
-                                    foreach (KeyValuePair<string, Pokemon> kv in mons)
-                                    {
-                                        if (Regex(mon).Contains(Regex(kv.Key)))
-                                        {
-                                            mons.Add(mon, kv.Value);
-                                            kv.Value.name = mon;
-                                            break;
-                                        }
-                                    }
-                                }
+                                AddMonIfNotExists(mons, mon);
                                 AbilityUpdate(pokes, mons, ability, mon);
                             }
                         }
@@ -777,18 +706,7 @@ namespace Commandline_Showdown_Replay_Scouter
                                 string ability = abilityinf[3].Trim();
                                 string mon = abilityinf[2].Split(':')[1].Trim();
 
-                                if (!mons.ContainsKey(mon))
-                                {
-                                    foreach (KeyValuePair<string, Pokemon> kv in mons)
-                                    {
-                                        if (Regex(mon).Contains(Regex(kv.Key)))
-                                        {
-                                            mons.Add(mon, kv.Value);
-                                            kv.Value.name = mon;
-                                            break;
-                                        }
-                                    }
-                                }
+                                AddMonIfNotExists(mons, mon);
                                 AbilityUpdate(pokes, mons, ability, mon);
                             }
                         }
@@ -799,6 +717,21 @@ namespace Commandline_Showdown_Replay_Scouter
             return Pokemon.PrintPokemon(pokes);
         }
 
+        private static void AddMonIfNotExists(Dictionary<string, Pokemon> mons, string mon)
+        {
+            if (!mons.ContainsKey(mon))
+            {
+                foreach (KeyValuePair<string, Pokemon> kv in mons)
+                {
+                    if (Regex(mon).Contains(Regex(kv.Key)) || Regex(mon + "-Mega").Contains(Regex(kv.Key)))
+                    {
+                        mons.Add(mon, kv.Value);
+                        kv.Value.name = mon;
+                        break;
+                    }
+                }
+            }
+        }
 
         private static void AbilityUpdate(List<Pokemon> pokes, Dictionary<string, Pokemon> mons, string ability, string mon)
         {
