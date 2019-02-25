@@ -457,9 +457,32 @@ namespace Commandline_Showdown_Replay_Scouter
             {
                 Pokemon p = new Pokemon();
                 p.name = poke.Replace("(Lead) ", "");
+
+                string toSetName = p.name;
                 if (!mons.ContainsKey(p.name))
                 {
-                    mons.Add(p.name, p);
+                    if (p.name.Contains("Arceus"))
+                    {
+                        toSetName = "Arceus-*";
+                    }
+                    else if (p.name.Contains("Silvally"))
+                    {
+                        toSetName = "Silvally-*";
+                    }
+                    else if (p.name.Contains("Genesect"))
+                    {
+                        toSetName = "Genesect-*";
+                    }
+                    else if (p.name.Contains("Gourgeist"))
+                    {
+                        toSetName = "Gourgeist-*";
+                    }
+                    else if (p.name.Contains("Pumpkaboo"))
+                    {
+                        toSetName = "Pumpkaboo-*";
+                    }
+
+                    mons.Add(toSetName, p);
                 }
                 pokes.Add(p);
             }
@@ -653,7 +676,7 @@ namespace Commandline_Showdown_Replay_Scouter
                                 }
                             }
                         }
-                        else if (line.Contains("ability") && line.Contains("-damage"))
+                        else if ((line.Contains("-ability|") || line.Contains(" ability:")) && line.Contains("-damage"))
                         {
                             string[] abilityinf = line.Split('|');
                             string ability = "";
