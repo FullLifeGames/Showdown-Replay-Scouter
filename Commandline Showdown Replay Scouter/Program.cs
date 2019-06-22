@@ -746,7 +746,7 @@ namespace Commandline_Showdown_Replay_Scouter
             {
                 foreach (KeyValuePair<string, Pokemon> kv in mons)
                 {
-                    if (Regex(mon).Contains(Regex(kv.Key)) || Regex(mon + "-Mega").Contains(Regex(kv.Key)))
+                    if (Regex(mon).Contains(Regex(kv.Key)) || Regex(mon + "-Mega").Contains(Regex(kv.Key)) || Regex(mon + "-Origin").Contains(Regex(kv.Key)))
                     {
                         mons.Add(mon, kv.Value);
                         kv.Value.name = mon;
