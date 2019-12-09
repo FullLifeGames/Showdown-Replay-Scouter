@@ -482,7 +482,10 @@ namespace Commandline_Showdown_Replay_Scouter
                         toSetName = "Pumpkaboo-*";
                     }
 
-                    mons.Add(toSetName, p);
+                    if (!mons.ContainsKey(toSetName))
+                    {
+                        mons.Add(toSetName, p);
+                    }
                 }
                 pokes.Add(p);
             }
@@ -744,14 +747,22 @@ namespace Commandline_Showdown_Replay_Scouter
         {
             if (!mons.ContainsKey(mon))
             {
+                bool found = false;
                 foreach (KeyValuePair<string, Pokemon> kv in mons)
                 {
                     if (Regex(mon).Contains(Regex(kv.Key)) || Regex(mon + "-Mega").Contains(Regex(kv.Key)) || Regex(mon + "-Origin").Contains(Regex(kv.Key)))
                     {
                         mons.Add(mon, kv.Value);
                         kv.Value.name = mon;
+                        found = true;
                         break;
                     }
+                }
+                if (!found)
+                {
+                    Pokemon p = new Pokemon();
+                    mons.Add(mon, p);
+                    p.name = mon;
                 }
             }
         }
