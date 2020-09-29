@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,27 +11,26 @@ namespace Showdown_Replay_Scouter
 {
     public class HeadlessShowdown
     {
-
         private string user;
         private List<string> htmlText;
+        private HttpClient HttpClient;
 
-        public HeadlessShowdown(string user, List<string> htmlText)
+        public HeadlessShowdown(string user, List<string> htmlText, HttpClient HttpClient)
         {
             this.user = user;
             this.htmlText = htmlText;
+            this.HttpClient = HttpClient;
         }
 
-        public void GetReplaysForUser()
+        public async Task GetReplaysForUser()
         {
-            WebClient client = new WebClient();
-
             int page = 1;
-            string pageHtml = client.DownloadString("https://replay.pokemonshowdown.com/search?user=" + user + "&page=" + page);
+            string pageHtml = await HttpClient.GetStringAsync("https://replay.pokemonshowdown.com/search?user=" + user + "&page=" + page);
 
             while (!pageHtml.Contains("Can't search any further back"))
             {
                 htmlText.Add(pageHtml);
-                pageHtml = client.DownloadString("https://replay.pokemonshowdown.com/search?user=" + user + "&page=" + page);
+                pageHtml = await HttpClient.GetStringAsync("https://replay.pokemonshowdown.com/search?user=" + user + "&page=" + page);
                 page++;
             }
         }

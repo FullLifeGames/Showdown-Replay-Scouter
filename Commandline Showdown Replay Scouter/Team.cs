@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,11 +24,33 @@ namespace Showdown_Replay_Scouter
             return pokemon.Length;
         }
 
-        public int Compare(List<Team> referenz)
+        public int Compare(ConcurrentBag<Team> referenz)
         {
             if (pokemon[0] == null)
             {
                 
+            }
+            else
+            {
+                pokemon = pokemon.Select(poke => (poke != null && poke.Trim() != "") ? poke.Trim() : "ZZ").ToArray();
+                Array.Sort(pokemon);
+                pokemon = pokemon.Select(poke => (poke == "ZZ") ? "" : poke).ToArray();
+                foreach (Team t in referenz)
+                {
+                    if (pokemon.SequenceEqual(t.pokemon))
+                    {
+                        return t.id;
+                    }
+                }
+            }
+            return 0;
+        }
+
+        public int Compare(List<Team> referenz)
+        {
+            if (pokemon[0] == null)
+            {
+
             }
             else
             {

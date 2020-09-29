@@ -1,11 +1,14 @@
 ﻿using Showdown_Replay_Scouter;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Commandline_Showdown_Replay_Scouter
@@ -14,12 +17,14 @@ namespace Commandline_Showdown_Replay_Scouter
     {
         private static Dictionary<string, List<Team>> saveRef;
         private static Dictionary<string, Dictionary<int, List<string>>> teamToLinks;
+        private static HttpClient HttpClient = new HttpClient();
 
-        static void Main(string[] args)
+        private static int maxId = 0;
+        static async Task Main(string[] args)
         {
             if (args.Length <= 1)
             {
-                Console.WriteLine("Too few arguments provided! Execution: {file}.exe {user} {path}");
+                Console.WriteLine("Too few arguments provided! Execution: {file} {user} {path}");
             }
             else
             {
@@ -31,234 +36,117 @@ namespace Commandline_Showdown_Replay_Scouter
                 string tempListe = "";
                 List<string> teamBox = new List<string>();
                 string[] users = new string[] { args[0] };
-                using (WebClient client = new WebClient())
+                foreach (string use in users)
                 {
-                    foreach (string use in users)
+                    List<string> links = new List<string>();
+                    string user = "";
+                    string noRegexUser = "";
+                    string tier = null;
+                    string opp = null;
+                    string noRegexOpp = null;
+                    if (use.Contains('|'))
                     {
-                        List<string> links = new List<string>();
-                        string user = "";
-                        string noRegexUser = "";
-                        string tier = null;
-                        string opp = null;
-                        string noRegexOpp = null;
-                        if (use.Contains('|'))
+                        string[] tmpuser = use.Split('|');
+                        user = Regex(tmpuser[0]);
+                        if (user == "")
                         {
-                            string[] tmpuser = use.Split('|');
-                            user = Regex(tmpuser[0]);
-                            if(user == "")
-                            {
-                                //Console.WriteLine("Empty user provided! Execution: {file}.exe {user} {path}");
-                                return;
-                            }
-                            noRegexUser = tmpuser[0];
-                            tier = Regex(tmpuser[1]);
-                            if(tier == "")
-                            {
-                                //Console.WriteLine("Empty tier provided! Execution: {file}.exe {user} {path}");
-                                return;
-                            }
-                            if (tmpuser.Length > 2)
-                            {
-                                opp = Regex(tmpuser[2]);
-                                noRegexOpp = tmpuser[2];
-                            }
-                            if (opp != null)
-                            {
-                                tmpuser[0] = tmpuser[2];
-                            }
-                            tempListe += tmpuser[0].Trim() + " (" + tmpuser[1].Trim() + "):\r\n\r\n";
+                            //Console.WriteLine("Empty user provided! Execution: {file}.exe {user} {path}");
+                            return;
                         }
-                        else
+                        noRegexUser = tmpuser[0];
+                        tier = Regex(tmpuser[1]);
+                        if (tier == "")
                         {
-                            string[] tmpuser = use.Split('|');
-                            tempListe += tmpuser[0].Trim() + ":\r\n\r\n";
-                            user = Regex(tmpuser[0]);
-                            noRegexUser = tmpuser[0];
+                            //Console.WriteLine("Empty tier provided! Execution: {file}.exe {user} {path}");
+                            return;
                         }
-
-                        string tempBattle = "";
-
-                        tempBattle = Showdown(showdown, client, links, noRegexUser, tier, tempBattle, opp);
-
-                        Dictionary<int, List<string>> teams = new Dictionary<int, List<string>>();
-                        List<Team> referenz = new List<Team>();
-                        int maxId = 0;
+                        if (tmpuser.Length > 2)
+                        {
+                            opp = Regex(tmpuser[2]);
+                            noRegexOpp = tmpuser[2];
+                        }
                         if (opp != null)
                         {
-                            user = opp;
-                            noRegexUser = noRegexOpp;
+                            tmpuser[0] = tmpuser[2];
                         }
+                        tempListe += tmpuser[0].Trim() + " (" + tmpuser[1].Trim() + "):\r\n\r\n";
+                    }
+                    else
+                    {
+                        string[] tmpuser = use.Split('|');
+                        tempListe += tmpuser[0].Trim() + ":\r\n\r\n";
+                        user = Regex(tmpuser[0]);
+                        noRegexUser = tmpuser[0];
+                    }
 
-                        links = links.Distinct().ToList();
+                    string tempBattle = "";
 
-                        foreach (string link in links)
-                        {
-                            client.Headers.Add("User-Agent: Other");
-                            bool timeout = true;
-                            string replay = "";
-                            int tries = 0;
-                            while (timeout && tries < 10)
-                            {
-                                try
-                                {
-                                    replay = client.DownloadString(link);
-                                    timeout = false;
-                                }
-                                catch (Exception)
-                                {
-                                    timeout = true;
-                                    tries++;
-                                }
-                            }
-                            string realReplay = replay;
-                            string playerValue = "";
-                            if (link.Contains("showdown.bisaboard"))
-                            {
-                                foreach (string line in replay.Split('\n'))
-                                {
-                                    if (line.Contains("battle.setQueue("))
-                                    {
-                                        realReplay = string.Join("\n", System.Text.RegularExpressions.Regex.Split(line, "\",\""));
-                                        break;
-                                    }
-                                }
-                            }
+                    tempBattle = await Showdown(showdown, HttpClient, links, noRegexUser, tier, tempBattle, opp);
 
-                            Team team = new Team();
-                            int monCount = 0;
-                            string playerName = "";
-                            foreach (string line in realReplay.Split('\n'))
-                            {
-                                if (line.Contains("|player"))
-                                {
-                                    DeterminePlayer(user, ref playerValue, ref playerName, line);
-                                }
-                                else if (playerValue == "")
-                                {
-                                    continue;
-                                }
-                                else if (line.Contains("|poke|"))
-                                {
-                                    string[] pokeinf = line.Split('|');
-                                    if (pokeinf[2] == playerValue)
-                                    {
-                                        if (monCount == 6)
-                                        {
-                                            team.pokemon[0] = "undefined";
-                                            team.pokemon[1] = "undefined";
-                                            team.pokemon[2] = "undefined";
-                                            team.pokemon[3] = "undefined";
-                                            team.pokemon[4] = "undefined";
-                                            team.pokemon[5] = "undefined";
-                                            break;
-                                        }
-                                        team.pokemon[monCount] = pokeinf[3].Split(',')[0];
-                                        monCount++;
-                                    }
-                                }
-                                else if ((line.Contains("|switch") || line.Contains("|drag")) && monCount != 6)
-                                {
-                                    if (line.Contains(playerValue))
-                                    {
-                                        string[] pokeinf = line.Split('|');
-                                        string maybepoke = pokeinf[3].Split(',')[0];
-                                        if (!team.pokemon.Contains(maybepoke) && !team.pokemon.Contains("(Lead) " + maybepoke))
-                                        {
-                                            if (monCount == 0)
-                                            {
-                                                team.pokemon[monCount] = "(Lead) " + maybepoke;
-                                            }
-                                            else
-                                            {
-                                                if (monCount == 6)
-                                                {
-                                                    team.pokemon[0] = "undefined";
-                                                    team.pokemon[1] = "undefined";
-                                                    team.pokemon[2] = "undefined";
-                                                    team.pokemon[3] = "undefined";
-                                                    team.pokemon[4] = "undefined";
-                                                    team.pokemon[5] = "undefined";
-                                                    break;
-                                                }
-                                                team.pokemon[monCount] = maybepoke;
-                                            }
-                                            monCount++;
-                                        }
-                                    }
-                                }
-                                else if (monCount == 6)
-                                {
-                                    break;
-                                }
-                            }
-                            if (team.pokemon[0] == null)
-                            {
-                                team.pokemon[0] = "undefined";
-                                team.pokemon[1] = "undefined";
-                                team.pokemon[2] = "undefined";
-                                team.pokemon[3] = "undefined";
-                                team.pokemon[4] = "undefined";
-                                team.pokemon[5] = "undefined";
-                            }
-                            int id = team.Compare(referenz);
-                            if (id == 0)
-                            {
-                                maxId++;
-                                team.id = maxId;
-                                List<string> linkTeams = new List<string>();
-                                linkTeams.Add(link);
-                                teams.Add(team.id, linkTeams);
-                                referenz.Add(team);
-                            }
-                            else
-                            {
-                                teams[id].Add(link);
-                            }
+                    ConcurrentDictionary<int, List<string>> givenTeams = new ConcurrentDictionary<int, List<string>>();
+                    ConcurrentBag<Team> givenReferenz = new ConcurrentBag<Team>();
+                    maxId = 0;
+                    if (opp != null)
+                    {
+                        user = opp;
+                        noRegexUser = noRegexOpp;
+                    }
 
-                        }
+                    links = links.Distinct().ToList();
 
-                        foreach (KeyValuePair<int, List<string>> kv in teams)
-                        {
-                            Team t = referenz[kv.Key - 1];
-                            teamBox.Add(String.Join(", ", t.pokemon));
-                            tempListe += String.Join(", ", t.pokemon) + ":\r\n";
-                            foreach (string link in kv.Value)
-                            {
-                                tempListe += link + "\r\n";
-                            }
-                            tempListe += "\r\n";
-                        }
+                    HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Other");
+                    int batchSize = 10;
+                    int numberOfBatches = (int)Math.Ceiling((double)links.Count() / batchSize);
+                    for (int i = 0; i < numberOfBatches; i++)
+                    {
+                        var currentLinks = links.Skip(i * batchSize).Take(batchSize);
+                        var tasks = currentLinks.Select(link => GetTeams(user, givenTeams, givenReferenz, link));
+                        await Task.WhenAll(tasks);
+                    }
+                        
 
-                        if (teamToLinks.ContainsKey(user + " (" + tier + ")"))
+                    var teams = new Dictionary<int, List<string>>(givenTeams);
+                    var referenz = new List<Team>(givenReferenz);
+
+                    foreach (KeyValuePair<int, List<string>> kv in teams)
+                    {
+                        Team t = referenz[kv.Key - 1];
+                        teamBox.Add(String.Join(", ", t.pokemon));
+                        tempListe += String.Join(", ", t.pokemon) + ":\r\n";
+                        foreach (string link in kv.Value)
                         {
-                            int count = teamToLinks[user + " (" + tier + ")"].Count;
-                            foreach (KeyValuePair<int, List<string>> kv in teams)
-                            {
-                                teamToLinks[user + " (" + tier + ")"].Add(kv.Key + count, kv.Value);
-                            }
-                        }
-                        else
-                        {
-                            teamToLinks.Add(user + " (" + tier + ")", teams);
-                        }
-                        if (saveRef.ContainsKey(user + " (" + tier + ")"))
-                        {
-                            int count = saveRef[user + " (" + tier + ")"].Count;
-                            foreach (Team t in referenz)
-                            {
-                                t.id += count;
-                                saveRef[user + " (" + tier + ")"].Add(t);
-                            }
-                        }
-                        else
-                        {
-                            saveRef[user + " (" + tier + ")"] = referenz;
+                            tempListe += link + "\r\n";
                         }
                         tempListe += "\r\n";
                     }
+
+                    if (teamToLinks.ContainsKey(user + " (" + tier + ")"))
+                    {
+                        int count = teamToLinks[user + " (" + tier + ")"].Count;
+                        foreach (KeyValuePair<int, List<string>> kv in teams)
+                        {
+                            teamToLinks[user + " (" + tier + ")"].Add(kv.Key + count, kv.Value);
+                        }
+                    }
+                    else
+                    {
+                        teamToLinks.Add(user + " (" + tier + ")", teams);
+                    }
+                    if (saveRef.ContainsKey(user + " (" + tier + ")"))
+                    {
+                        int count = saveRef[user + " (" + tier + ")"].Count;
+                        foreach (Team t in referenz)
+                        {
+                            t.id += count;
+                            saveRef[user + " (" + tier + ")"].Add(t);
+                        }
+                    }
+                    else
+                    {
+                        saveRef[user + " (" + tier + ")"] = referenz;
+                    }
+                    tempListe += "\r\n";
                 }
-
-
 
                 bool smogtours = false;
 
@@ -342,18 +230,129 @@ namespace Commandline_Showdown_Replay_Scouter
                     }
                     File.WriteAllText(args[1], output);
                 }
-
             }
+
         }
 
-        private static string Showdown(bool showdown, WebClient client, List<string> links, string noRegexUser, string tier, string tempBattle, string opp)
+        private static async Task<int> GetTeams(string user, ConcurrentDictionary<int, List<string>> teams, ConcurrentBag<Team> referenz, string link)
+        {
+            string replay =  await HttpClient.GetStringAsync(link);
+
+            string realReplay = replay;
+            string playerValue = "";
+            if (link.Contains("showdown.bisaboard"))
+            {
+                foreach (string line in replay.Split('\n'))
+                {
+                    if (line.Contains("battle.setQueue("))
+                    {
+                        realReplay = string.Join("\n", System.Text.RegularExpressions.Regex.Split(line, "\",\""));
+                        break;
+                    }
+                }
+            }
+
+            Team team = new Team();
+            int monCount = 0;
+            string playerName = "";
+            foreach (string line in realReplay.Split('\n'))
+            {
+                if (line.Contains("|player"))
+                {
+                    DeterminePlayer(user, ref playerValue, ref playerName, line);
+                }
+                else if (playerValue == "")
+                {
+                    continue;
+                }
+                else if (line.Contains("|poke|"))
+                {
+                    string[] pokeinf = line.Split('|');
+                    if (pokeinf[2] == playerValue)
+                    {
+                        if (monCount == 6)
+                        {
+                            team.pokemon[0] = "undefined";
+                            team.pokemon[1] = "undefined";
+                            team.pokemon[2] = "undefined";
+                            team.pokemon[3] = "undefined";
+                            team.pokemon[4] = "undefined";
+                            team.pokemon[5] = "undefined";
+                            break;
+                        }
+                        team.pokemon[monCount] = pokeinf[3].Split(',')[0];
+                        monCount++;
+                    }
+                }
+                else if ((line.Contains("|switch") || line.Contains("|drag")) && monCount != 6)
+                {
+                    if (line.Contains(playerValue))
+                    {
+                        string[] pokeinf = line.Split('|');
+                        string maybepoke = pokeinf[3].Split(',')[0];
+                        if (!team.pokemon.Contains(maybepoke) && !team.pokemon.Contains("(Lead) " + maybepoke))
+                        {
+                            if (monCount == 0)
+                            {
+                                team.pokemon[monCount] = "(Lead) " + maybepoke;
+                            }
+                            else
+                            {
+                                if (monCount == 6)
+                                {
+                                    team.pokemon[0] = "undefined";
+                                    team.pokemon[1] = "undefined";
+                                    team.pokemon[2] = "undefined";
+                                    team.pokemon[3] = "undefined";
+                                    team.pokemon[4] = "undefined";
+                                    team.pokemon[5] = "undefined";
+                                    break;
+                                }
+                                team.pokemon[monCount] = maybepoke;
+                            }
+                            monCount++;
+                        }
+                    }
+                }
+                else if (monCount == 6)
+                {
+                    break;
+                }
+            }
+            if (team.pokemon[0] == null)
+            {
+                team.pokemon[0] = "undefined";
+                team.pokemon[1] = "undefined";
+                team.pokemon[2] = "undefined";
+                team.pokemon[3] = "undefined";
+                team.pokemon[4] = "undefined";
+                team.pokemon[5] = "undefined";
+            }
+            int id = team.Compare(referenz);
+            if (id == 0)
+            {
+                team.id = Interlocked.Increment(ref maxId);
+                List<string> linkTeams = new List<string>();
+                linkTeams.Add(link);
+                teams.AddOrUpdate(team.id, linkTeams, (key, value) => { value.Add(link); return value; });
+                referenz.Add(team);
+            }
+            else
+            {
+                teams[id].Add(link);
+            }
+
+            return maxId;
+        }
+
+        private static async Task<string> Showdown(bool showdown, HttpClient HttpClient, List<string> links, string noRegexUser, string tier, string tempBattle, string opp)
         {
             if (showdown)
             {
                 bool oppCheck = (opp != null);
                 List<string> html = new List<string>();
-                HeadlessShowdown headlessShowdown = new HeadlessShowdown(noRegexUser, html);
-                headlessShowdown.GetReplaysForUser();
+                HeadlessShowdown headlessShowdown = new HeadlessShowdown(noRegexUser, html, HttpClient);
+                await headlessShowdown.GetReplaysForUser();
                 headlessShowdown.ParseShowdownReplays(html, tier, oppCheck, noRegexUser, opp, links);
             }
             return tempBattle;
