@@ -103,17 +103,21 @@ namespace Commandline_Showdown_Replay_Scouter
                         var tasks = currentLinks.Select(link => GetTeams(user, givenTeams, givenReferenz, link));
                         await Task.WhenAll(tasks);
                     }
-                        
-
+                       
+                    // TODO: Sortieren nach Replay Id und Ids saven
                     var teams = new Dictionary<int, List<string>>(givenTeams);
                     var referenz = new List<Team>(givenReferenz);
+                    referenz.Sort((entry1, entry2) => {
+                        var max1 = teams[entry1.id].Max((id) => int.Parse(id.Substring(id.LastIndexOf("-") + 1)));
+                        var max2 = teams[entry2.id].Max((id) => int.Parse(id.Substring(id.LastIndexOf("-") + 1)));
+                        return max1 < max2 ? 1 : (max1 == max2 ? 0 : -1);
+                    });
 
-                    foreach (KeyValuePair<int, List<string>> kv in teams)
+                    foreach (var t in referenz)
                     {
-                        Team t = referenz[kv.Key - 1];
                         teamBox.Add(String.Join(", ", t.pokemon));
                         tempListe += String.Join(", ", t.pokemon) + ":\r\n";
-                        foreach (string link in kv.Value)
+                        foreach (string link in teams[t.id])
                         {
                             tempListe += link + "\r\n";
                         }
