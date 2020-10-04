@@ -6,21 +6,21 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Commandline_Showdown_Replay_Scouter
 {
-    class Program
+    public class Program
     {
         private static Dictionary<string, List<Team>> saveRef;
         private static Dictionary<string, Dictionary<int, List<string>>> teamToLinks;
         private static HttpClient HttpClient = new HttpClient();
 
         private static int maxId = 0;
-        static async Task Main(string[] args)
+
+        public static async Task Main(string[] args)
         {
             if (args.Length <= 1)
             {
@@ -103,20 +103,19 @@ namespace Commandline_Showdown_Replay_Scouter
                         var tasks = currentLinks.Select(link => GetTeams(user, givenTeams, givenReferenz, link));
                         await Task.WhenAll(tasks);
                     }
-                       
-                    // TODO: Sortieren nach Replay Id und Ids saven
+
                     var teams = new Dictionary<int, List<string>>(givenTeams);
                     var referenz = new List<Team>(givenReferenz);
                     referenz.Sort((entry1, entry2) => {
-                        var max1 = teams[entry1.id].Max((id) => int.Parse(id.Substring(id.LastIndexOf("-") + 1)));
-                        var max2 = teams[entry2.id].Max((id) => int.Parse(id.Substring(id.LastIndexOf("-") + 1)));
-                        return max1 < max2 ? 1 : (max1 == max2 ? 0 : -1);
+                        var min1 = teams[entry1.id].Min((link) => links.IndexOf(link));
+                        var min2 = teams[entry2.id].Min((link) => links.IndexOf(link));
+                        return min1 > min2 ? 1 : (min1 == min2 ? 0 : -1);
                     });
 
                     foreach (var t in referenz)
                     {
-                        teamBox.Add(String.Join(", ", t.pokemon));
-                        tempListe += String.Join(", ", t.pokemon) + ":\r\n";
+                        teamBox.Add(string.Join(", ", t.pokemon));
+                        tempListe += string.Join(", ", t.pokemon) + ":\r\n";
                         foreach (string link in teams[t.id])
                         {
                             tempListe += link + "\r\n";
@@ -445,9 +444,7 @@ namespace Commandline_Showdown_Replay_Scouter
             return false;
         }
 
-
-
-        private static String GetTeam(string team, bool smogtours)
+        private static string GetTeam(string team, bool smogtours)
         {
             Team t = new Team();
             t.pokemon = team.Split(',');
