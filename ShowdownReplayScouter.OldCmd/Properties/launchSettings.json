@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Commandline Showdown Replay Scouter": {
-      "commandName": "Project",
-      "commandLineArgs": "\"fulllifegames|gen7ou\" test.txt"
-    }
-  }
-}
