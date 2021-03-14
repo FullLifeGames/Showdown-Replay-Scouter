@@ -1,5 +1,4 @@
 language: csharp
-solution: ShowdownReplayScouter.sln
 dotnet: 5.0.104
 script:
   - dotnet build
