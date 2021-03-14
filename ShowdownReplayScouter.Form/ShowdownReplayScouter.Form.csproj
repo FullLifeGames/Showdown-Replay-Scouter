@@ -1,9 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFramework>net5.0-windows</TargetFramework>
-		<OutputType>Exe</OutputType>
-		<UseWindowsForms>true</UseWindowsForms>
-		<RootNamespace>ShowdownReplayScouter.Form</RootNamespace>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-	</PropertyGroup>
-</Project>
