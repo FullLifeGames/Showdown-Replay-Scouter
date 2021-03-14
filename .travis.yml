@@ -1,9 +1,6 @@
 language: csharp
 solution: ShowdownReplayScouter.sln
 dotnet: 5.0.104
-install:
-  - nuget restore solution-name.sln
-  - nuget install NUnit.Console -Version 3.9.0 -OutputDirectory testrunner
 script:
-  - msbuild /p:Configuration=Release ShowdownReplayScouter.sln
-  - mono ./testrunner/NUnit.ConsoleRunner.3.9.0/tools/nunit3-console.exe ./ShowdownReplayScouter.Tests/bin/Release/net5.0/ShowdownReplayScouter.Tests.dll
+  - dotnet build
+  - dotnet test
