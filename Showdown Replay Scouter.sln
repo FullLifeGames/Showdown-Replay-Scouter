@@ -1,11 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2009
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31105.61
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Showdown Replay Scouter", "Showdown Replay Scouter\Showdown Replay Scouter.csproj", "{9E797266-4C0E-4717-90A7-AC0A4BD18E01}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShowdownReplayScouter.Form", "ShowdownReplayScouter.Form\ShowdownReplayScouter.Form.csproj", "{9E797266-4C0E-4717-90A7-AC0A4BD18E01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commandline Showdown Replay Scouter", "Commandline Showdown Replay Scouter\Commandline Showdown Replay Scouter.csproj", "{6D125DB9-39B0-4984-9E95-349DD207F1BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShowdownReplayScouter.OldCmd", "ShowdownReplayScouter.OldCmd\ShowdownReplayScouter.OldCmd.csproj", "{6D125DB9-39B0-4984-9E95-349DD207F1BD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShowdownReplayScouter.Core", "ShowdownReplayScouter.Core\ShowdownReplayScouter.Core.csproj", "{0D3E46BA-EABB-4FE3-91FE-ECDBC57F4489}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShowdownReplayScouter.Tests", "ShowdownReplayScouter.Tests\ShowdownReplayScouter.Tests.csproj", "{8FA43F3C-77D5-4FA0-99F9-2D467E13D852}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShowdownReplayScouter.Cmd", "ShowdownReplayScouter.Cmd\ShowdownReplayScouter.Cmd.csproj", "{37F2F549-E4A1-4DE1-A36D-097DF4F9C2E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +27,18 @@ Global
 		{6D125DB9-39B0-4984-9E95-349DD207F1BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D125DB9-39B0-4984-9E95-349DD207F1BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D125DB9-39B0-4984-9E95-349DD207F1BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D3E46BA-EABB-4FE3-91FE-ECDBC57F4489}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D3E46BA-EABB-4FE3-91FE-ECDBC57F4489}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D3E46BA-EABB-4FE3-91FE-ECDBC57F4489}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D3E46BA-EABB-4FE3-91FE-ECDBC57F4489}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FA43F3C-77D5-4FA0-99F9-2D467E13D852}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FA43F3C-77D5-4FA0-99F9-2D467E13D852}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FA43F3C-77D5-4FA0-99F9-2D467E13D852}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FA43F3C-77D5-4FA0-99F9-2D467E13D852}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37F2F549-E4A1-4DE1-A36D-097DF4F9C2E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37F2F549-E4A1-4DE1-A36D-097DF4F9C2E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37F2F549-E4A1-4DE1-A36D-097DF4F9C2E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37F2F549-E4A1-4DE1-A36D-097DF4F9C2E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
