@@ -1,5 +1,5 @@
 language: csharp
 dotnet: 5.0.104
 script:
-  - dotnet build
+  - dotnet build ShowdownReplayScouter.Tests
   - dotnet test
