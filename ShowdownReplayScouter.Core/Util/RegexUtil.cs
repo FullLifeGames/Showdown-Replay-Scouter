@@ -10,4 +10,5 @@ namespace ShowdownReplayScouter.Core.Util
             toFilter = _rgx.Replace(toFilter, "");
             return toFilter.ToLower();
         }
+    }
 }
