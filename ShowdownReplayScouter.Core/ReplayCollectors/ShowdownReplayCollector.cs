@@ -24,7 +24,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             var page = 1;
             var pageHtml = await Common.HttpClient.GetStringAsync($"https://replay.pokemonshowdown.com/search?user={regexUser}&page={page}");
 
-            while (!pageHtml.Contains("Can't search any further back"))
+            while (!pageHtml.Contains("<li>No results found</li>") && !pageHtml.Contains("<li>Can't search any further back</li>"))
             {
                 yield return pageHtml;
                 page++;

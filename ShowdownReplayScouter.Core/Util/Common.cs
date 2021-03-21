@@ -5,24 +5,21 @@ namespace ShowdownReplayScouter.Core.Util
 {
     public static class Common
     {
-        private static HttpClient httpClient;
+        private static HttpClient _httpClient;
         public static HttpClient HttpClient
         {
             get
             {
-                if (httpClient == null)
+                if (_httpClient == null)
                 {
-                    httpClient = new HttpClient();
+                    _httpClient = new HttpClient();
                 }
-                return httpClient;
+                return _httpClient;
             }
-            set
-            {
-                httpClient = value;
-            }
+            set => _httpClient = value;
         }
 
-        public static int LEVENSHTEIN_DISTANCE_ACCEPTABLE { get; set; } = 3;
+        public static int LevenshteinDistanceAcceptable { get; set; } = 3;
 
         public static IEnumerable<string> FormPokemonList { get; set; } = new List<string>
         {

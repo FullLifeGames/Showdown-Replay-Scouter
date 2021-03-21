@@ -314,7 +314,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                             setPlayer = true;
                         }
                     }
-                    else if (distance <= Common.LEVENSHTEIN_DISTANCE_ACCEPTABLE)
+                    else if (distance <= Common.LevenshteinDistanceAcceptable)
                     {
                         if (playerName != "")
                         {
