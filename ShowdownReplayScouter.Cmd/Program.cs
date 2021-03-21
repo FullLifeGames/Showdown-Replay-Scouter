@@ -28,26 +28,16 @@ namespace ShowdownReplayScouter.Cmd
                 .WithParsed<Options>(o =>
                 {
                     var replayScouter = new ShowdownReplayScouter.Core.ReplayScouter.ShowdownReplayScouter();
-                    var result = replayScouter.ScoutReplays(new ShowdownReplayScouter.Core.Data.ScoutingRequest()
+                    var scoutingRequest = new ShowdownReplayScouter.Core.Data.ScoutingRequest()
                     {
                         User = o.User,
                         Tier = o.Tier,
                         Links = o.Links,
                         Opponent = o.Opponent
-                    });
-                    
-                    var output = o.User ?? "";
-                    output += o.Tier != null ? $" ({o.Tier})" : "";
-                    output += ":\r\n\r\n";
+                    };
+                    var result = replayScouter.ScoutReplays(scoutingRequest);
 
-                    foreach(var team in result.Teams)
-                    {
-                        output += $"{team}:\r\n";
-                        output += string.Join("\r\n", team.Links);
-                        output += "\r\n\r\n";
-                        output += TeamPrinter.Print(team);
-                        output += "\r\n\r\n\r\n";
-                    }
+                    var output = OutputPrinter.Print(scoutingRequest, result.Teams);
 
                     var f = new FileInfo(o.File);
                     if (f.Exists)

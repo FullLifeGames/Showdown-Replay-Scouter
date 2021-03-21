@@ -25,7 +25,7 @@ namespace ShowdownReplayScouter.Tests
                 Tier = "gen7ou"
             });
 
-            Assert.IsTrue(result.Teams.Count() > 0);
+            Assert.IsTrue(result.Teams.Any());
         }
 
         [Test]
@@ -40,7 +40,7 @@ namespace ShowdownReplayScouter.Tests
                 }
             });
 
-            Assert.IsTrue(result.Teams.Count() > 0 && result.Teams.First().Pokemon.Count == 6);
+            Assert.IsTrue(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
         }
 
         [Test]
@@ -55,7 +55,7 @@ namespace ShowdownReplayScouter.Tests
                 }
             });
 
-            Assert.IsTrue(result.Teams.Count() > 0 && result.Teams.First().Pokemon.Count == 6);
+            Assert.IsTrue(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
         }
 
         [Test]
@@ -70,7 +70,7 @@ namespace ShowdownReplayScouter.Tests
                 }
             });
 
-            Assert.IsTrue(result.Teams.Count() > 0 && result.Teams.First().Pokemon.Count == 6);
+            Assert.IsTrue(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
         }
     }
 }

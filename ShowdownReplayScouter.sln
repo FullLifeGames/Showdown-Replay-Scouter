@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShowdownReplayScouter.Tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShowdownReplayScouter.Cmd", "ShowdownReplayScouter.Cmd\ShowdownReplayScouter.Cmd.csproj", "{37F2F549-E4A1-4DE1-A36D-097DF4F9C2E6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShowdownReplayScouter.Forms", "ShowdownReplayScouter.Forms\ShowdownReplayScouter.Forms.csproj", "{57CF4405-6761-4BF5-A223-60A614ADF02F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{37F2F549-E4A1-4DE1-A36D-097DF4F9C2E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37F2F549-E4A1-4DE1-A36D-097DF4F9C2E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{37F2F549-E4A1-4DE1-A36D-097DF4F9C2E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57CF4405-6761-4BF5-A223-60A614ADF02F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57CF4405-6761-4BF5-A223-60A614ADF02F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57CF4405-6761-4BF5-A223-60A614ADF02F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57CF4405-6761-4BF5-A223-60A614ADF02F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

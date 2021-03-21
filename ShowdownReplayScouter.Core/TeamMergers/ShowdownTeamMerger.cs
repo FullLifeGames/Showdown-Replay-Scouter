@@ -22,7 +22,7 @@ namespace ShowdownReplayScouter.Core.TeamMergers
                 returnList.Add(team);
             }
 
-            foreach(var returnEntry in returnList)
+            foreach (var returnEntry in returnList)
             {
                 returnEntry.Pokemon = returnEntry.Pokemon
                     .OrderBy((pokemon) => pokemon.Name)

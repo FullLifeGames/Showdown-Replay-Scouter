@@ -36,7 +36,7 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
             }
 
             var teamCollection = new ConcurrentBag<Team>();
-            if (scoutingRequest.Links != null && scoutingRequest.Links.Count() > 0)
+            if (scoutingRequest.Links != null && scoutingRequest.Links.Any())
             {
                 foreach (var link in scoutingRequest.Links)
                 {
