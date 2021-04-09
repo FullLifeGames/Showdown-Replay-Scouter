@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ShowdownReplayScouter.Cmd": {
+      "commandName": "Project",
+      "commandLineArgs": "--user \"fulllifegames\" --tier \"gen7ou\" --file \"D:\\Programming\\Showdown-Replay-Scouter\\test.txt\""
+    }
+  }
+}
