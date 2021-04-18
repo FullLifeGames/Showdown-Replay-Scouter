@@ -49,9 +49,18 @@ namespace ShowdownReplayScouter.Core.Util
 
         private static int GetHighestNumber(IEnumerable<Uri> uris)
         {
-            return uris.Select((uri) =>
-                    int.Parse(uri.AbsoluteUri[(uri.AbsoluteUri.LastIndexOf("-") + 1)..]))
-                        .Max();
+            var numberList = new List<int>();
+            foreach (var uri in uris)
+            {
+                var currentUri = uri.AbsoluteUri[(uri.AbsoluteUri.LastIndexOf("/") + 1)..];
+                currentUri = currentUri[(currentUri.IndexOf("-") + 1)..];
+                if (currentUri.Contains("-"))
+                {
+                    currentUri = currentUri[..currentUri.IndexOf("-")];
+                }
+                numberList.Add(int.Parse(currentUri));
+            }
+            return numberList.Max();
         }
     }
 }
