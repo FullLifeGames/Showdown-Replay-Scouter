@@ -13,13 +13,15 @@ namespace ShowdownReplayScouter.Core.Data
         {
             return new Team()
             {
+                Links = Links.Select((link) => link).ToList(),
                 Pokemon = Pokemon.Select((pokemon) => pokemon.Clone()).ToList()
             };
         }
 
         public override string ToString()
         {
-            var pokemonNames = Pokemon.Select((pokemon) => (pokemon.Lead ? "(Lead) " : "") + ((pokemon.FormName != null) ? pokemon.FormName : pokemon.Name));
+            var pokemonNames = Pokemon.Select((pokemon) => (pokemon.Lead ? "(Lead) " : "") + ((pokemon.FormName != null) ? pokemon.FormName : pokemon.Name))
+                .OrderBy((pokemonName) => pokemonName);
             return string.Join(", ", pokemonNames);
         }
     }

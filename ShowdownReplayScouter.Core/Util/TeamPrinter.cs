@@ -18,7 +18,7 @@ namespace ShowdownReplayScouter.Core.Util
             {
                 pokemonRepresentation += ((pokemon.FormName != null) ? pokemon.FormName : pokemon.Name) + ((pokemon.Item != null) ? " @ " + pokemon.Item : "") + "\r\n";
                 if (pokemon.Ability != null) pokemonRepresentation += "Ability: " + pokemon.Ability + "\r\n";
-                foreach (string move in pokemon.Moves)
+                foreach (string move in pokemon.Moves.OrderBy((move) => move))
                 {
                     pokemonRepresentation += "- " + move + "\r\n";
                 }
