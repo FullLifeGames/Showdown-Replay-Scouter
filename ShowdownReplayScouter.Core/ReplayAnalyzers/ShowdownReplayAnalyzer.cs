@@ -287,7 +287,11 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
         {
             var setPlayer = false;
             var playerinf = line.Split('|');
-            var regexedPlayerInf = RegexUtil.Regex(playerinf[3].ToLower());
+            var regexedPlayerInf = "";
+            if (playerinf.Length > 3)
+            {
+                regexedPlayerInf = RegexUtil.Regex(playerinf[3].ToLower());
+            }
             if (rawUser != null)
             {
                 string user = RegexUtil.Regex(rawUser.ToLower());

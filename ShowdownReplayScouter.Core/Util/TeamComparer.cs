@@ -53,12 +53,17 @@ namespace ShowdownReplayScouter.Core.Util
             foreach (var uri in uris)
             {
                 var currentUri = uri.AbsoluteUri[(uri.AbsoluteUri.LastIndexOf("/") + 1)..];
-                currentUri = currentUri[(currentUri.IndexOf("-") + 1)..];
-                if (currentUri.Contains("-"))
+                var number = -1;
+                while (currentUri.Contains("-"))
                 {
-                    currentUri = currentUri[..currentUri.IndexOf("-")];
+                    var testNumber = currentUri[(currentUri.LastIndexOf("-") + 1)..];
+                    currentUri = currentUri[..currentUri.LastIndexOf("-")];
+                    if (int.TryParse(testNumber, out number))
+                    {
+                        break;
+                    }
                 }
-                numberList.Add(int.Parse(currentUri));
+                numberList.Add(number);
             }
             return numberList.Max();
         }
