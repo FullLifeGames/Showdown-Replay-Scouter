@@ -287,19 +287,20 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
         {
             var setPlayer = false;
             var playerinf = line.Split('|');
+            var regexedPlayerInf = RegexUtil.Regex(playerinf[3].ToLower());
             if (rawUser != null)
             {
-                string user = rawUser.Split(' ')[0];
+                string user = RegexUtil.Regex(rawUser.ToLower());
                 if (playerinf.Length > 3)
                 {
-                    int distance = LevenshteinDistance.Compute(RegexUtil.Regex(playerinf[3]).Replace(" ", ""), user.Replace(" ", ""));
-                    if (RegexUtil.Regex(playerinf[3]).Replace(" ", "").Contains(user.Replace(" ", "")))
+                    int distance = LevenshteinDistance.Compute(regexedPlayerInf, user);
+                    if (regexedPlayerInf.Contains(user))
                     {
                         if (playerName != "")
                         {
-                            if (playerName.Contains(user.Replace(" ", "")))
+                            if (playerName.Contains(user))
                             {
-                                if (LevenshteinDistance.Compute(playerName, user.Replace(" ", "")) > distance)
+                                if (LevenshteinDistance.Compute(playerName, user) > distance)
                                 {
                                     setPlayer = true;
                                 }
@@ -318,7 +319,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     {
                         if (playerName != "")
                         {
-                            if (LevenshteinDistance.Compute(playerName, user.Replace(" ", "")) > distance && !playerName.Contains(user.Replace(" ", "")))
+                            if (LevenshteinDistance.Compute(playerName, user) > distance && !playerName.Contains(user))
                             {
                                 setPlayer = true;
                             }
@@ -337,7 +338,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             if (setPlayer)
             {
                 playerValue = playerinf[2];
-                playerName = RegexUtil.Regex(playerinf[3]).Replace(" ", "");
+                playerName = regexedPlayerInf;
             }
         }
 
