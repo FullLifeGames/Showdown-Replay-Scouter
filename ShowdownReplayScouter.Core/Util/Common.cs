@@ -19,6 +19,8 @@ namespace ShowdownReplayScouter.Core.Util
             set => _httpClient = value;
         }
 
+        public static int NumberOfTasks { get; set; } = 10;
+
         public static int LevenshteinDistanceAcceptable { get; set; } = 3;
 
         public static IEnumerable<string> FormPokemonList { get; set; } = new List<string>
