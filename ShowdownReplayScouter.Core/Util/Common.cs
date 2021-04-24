@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 
 namespace ShowdownReplayScouter.Core.Util
@@ -19,7 +20,7 @@ namespace ShowdownReplayScouter.Core.Util
             set => _httpClient = value;
         }
 
-        public static int NumberOfTasks { get; set; } = 10;
+        public static int NumberOfTasks { get; set; } = Environment.ProcessorCount * 2;
 
         public static int LevenshteinDistanceAcceptable { get; set; } = 3;
 

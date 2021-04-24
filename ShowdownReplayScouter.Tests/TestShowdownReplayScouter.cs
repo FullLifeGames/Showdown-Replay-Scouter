@@ -29,18 +29,6 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
-        public void Scout_Storm_Zone_Gen8Ou_Replays()
-        {
-            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
-            {
-                User = "Storm Zone",
-                Tier = "gen8ou"
-            });
-
-            Assert.IsTrue(result.Teams.Any());
-        }
-
-        [Test]
         public void Scout_FullLifeGames_Single_Gen7Ou_Form_Replay()
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
