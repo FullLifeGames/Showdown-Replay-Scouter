@@ -41,12 +41,18 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 regexOpponent = RegexUtil.Regex(opponent);
             }
 
+            var analyzedTier = tier;
+            if (analyzedTier != null)
+            {
+                analyzedTier = analyzedTier.ToLower();
+            }
+
             foreach (string line in html.Split('\n'))
             {
                 if (line.Contains("<small>"))
                 {
                     string tmpTier = line[(line.IndexOf("<small>") + 7)..line.IndexOf("<br")];
-                    if (tier == null || tier == RegexUtil.Regex(tmpTier))
+                    if (analyzedTier == null || analyzedTier == RegexUtil.Regex(tmpTier))
                     {
                         var validatedOpponent = true;
                         if (opponent != null)
