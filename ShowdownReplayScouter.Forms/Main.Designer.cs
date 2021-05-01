@@ -41,6 +41,7 @@ namespace ShowdownReplayScouter.Forms
             this.UsernameLabel = new System.Windows.Forms.Label();
             this.UsernameTextBox = new System.Windows.Forms.TextBox();
             this.OutputWindow = new System.Windows.Forms.TextBox();
+            this.ParallelCheckbox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -65,6 +66,7 @@ namespace ShowdownReplayScouter.Forms
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.ParallelCheckbox);
             this.splitContainer1.Panel1.Controls.Add(this.LinksLabel);
             this.splitContainer1.Panel1.Controls.Add(this.LinksTextBox);
             this.splitContainer1.Panel1.Controls.Add(this.OpponentLabel);
@@ -97,7 +99,7 @@ namespace ShowdownReplayScouter.Forms
             this.LinksTextBox.Multiline = true;
             this.LinksTextBox.Name = "LinksTextBox";
             this.LinksTextBox.PlaceholderText = "e.g. \"https://replay.pokemonshowdown.com/gen8ou-1089874504\"";
-            this.LinksTextBox.Size = new System.Drawing.Size(232, 156);
+            this.LinksTextBox.Size = new System.Drawing.Size(232, 146);
             this.LinksTextBox.TabIndex = 3;
             this.LinksTextBox.TextChanged += new System.EventHandler(this.LinksTextBox_TextChanged);
             // 
@@ -164,6 +166,19 @@ namespace ShowdownReplayScouter.Forms
             this.OutputWindow.Size = new System.Drawing.Size(508, 420);
             this.OutputWindow.TabIndex = 0;
             // 
+            // ParallelCheckbox
+            // 
+            this.ParallelCheckbox.AutoSize = true;
+            this.ParallelCheckbox.Checked = true;
+            this.ParallelCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ParallelCheckbox.Location = new System.Drawing.Point(13, 360);
+            this.ParallelCheckbox.Name = "ParallelCheckbox";
+            this.ParallelCheckbox.Size = new System.Drawing.Size(64, 19);
+            this.ParallelCheckbox.TabIndex = 9;
+            this.ParallelCheckbox.Text = "Parallel";
+            this.ParallelCheckbox.UseVisualStyleBackColor = true;
+            this.ParallelCheckbox.CheckedChanged += new System.EventHandler(this.ParallelismCheckbox_CheckedChanged);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -198,6 +213,7 @@ namespace ShowdownReplayScouter.Forms
         private System.Windows.Forms.TextBox OpponentTextBox;
         private System.Windows.Forms.Label LinksLabel;
         private System.Windows.Forms.TextBox LinksTextBox;
+        private System.Windows.Forms.CheckBox ParallelCheckbox;
     }
 }
 

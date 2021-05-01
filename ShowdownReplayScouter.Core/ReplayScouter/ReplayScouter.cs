@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Linq;
 using ShowdownReplayScouter.Core.Util;
+using System;
 
 namespace ShowdownReplayScouter.Core.ReplayScouter
 {
@@ -36,28 +37,50 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
                 return null;
             }
 
+            var parallel = Common.Parallel;
+
             var teamCollection = new ConcurrentBag<Team>();
             var runningTasks = new ConcurrentBag<Task>();
             var running = new bool[] { true };
 
-            InitCollectionTask(runningTasks, running);
+            if (parallel)
+            {
+                InitCollectionTask(runningTasks, running);
+            }
 
             if (scoutingRequest.Links != null && scoutingRequest.Links.Any())
             {
                 foreach (var replay in scoutingRequest.Links)
                 {
-                    AddAnalyzingTask(scoutingRequest, teamCollection, runningTasks, replay);
+                    if (parallel)
+                    {
+                        AddAnalyzingTask(scoutingRequest, teamCollection, runningTasks, replay);
+                    } 
+                    else
+                    {
+                        AnalyzeReplay(scoutingRequest, teamCollection, replay);
+                    }
                 }
             }
             else if (scoutingRequest.User != null)
             {
                 await foreach (var replay in ReplayCollector.CollectReplaysAsync(scoutingRequest.User, scoutingRequest.Tier, scoutingRequest.Opponent))
                 {
-                    AddAnalyzingTask(scoutingRequest, teamCollection, runningTasks, replay);
+                    if (parallel)
+                    {
+                        AddAnalyzingTask(scoutingRequest, teamCollection, runningTasks, replay);
+                    }
+                    else
+                    {
+                        AnalyzeReplay(scoutingRequest, teamCollection, replay);
+                    }
                 }
             }
 
-            WaitForCompletionAndStopCollectionTask(runningTasks, running);
+            if (parallel)
+            {
+                WaitForCompletionAndStopCollectionTask(runningTasks, running);
+            }
 
             return new ScoutingResult()
             {
@@ -83,15 +106,20 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
             });
         }
 
-        private void AddAnalyzingTask(ScoutingRequest scoutingRequest, ConcurrentBag<Team> teamCollection, ConcurrentBag<Task> runningTasks, System.Uri replay)
+        private void AddAnalyzingTask(ScoutingRequest scoutingRequest, ConcurrentBag<Team> teamCollection, ConcurrentBag<Task> runningTasks, Uri replay)
         {
             runningTasks.Add(new Task(() =>
             {
-                foreach (var team in ReplayAnalyzer.AnalyzeReplayAsync(replay, scoutingRequest.User).Result)
-                {
-                    teamCollection.Add(team);
-                }
+                AnalyzeReplay(scoutingRequest, teamCollection, replay);
             }));
+        }
+
+        private void AnalyzeReplay(ScoutingRequest scoutingRequest, ConcurrentBag<Team> teamCollection, Uri replay)
+        {
+            foreach (var team in ReplayAnalyzer.AnalyzeReplayAsync(replay, scoutingRequest.User).Result)
+            {
+                teamCollection.Add(team);
+            }
         }
 
         private static void WaitForCompletionAndStopCollectionTask(ConcurrentBag<Task> runningTasks, bool[] running)

@@ -18,6 +18,8 @@ namespace ShowdownReplayScouter.Cmd
             public string Opponent { get; set; }
             [Option('l', "links", Required = false, Default = null, HelpText = "The links you want to analyze.")]
             public IEnumerable<Uri> Links { get; set; }
+            [Option('p', "parallel", Required = false, Default = false, HelpText = "Specifies if the application should run on multiple threads.")]
+            public bool Parallel { get; set; }
             [Option('f', "file", Required = true, HelpText = "The file you want to write to.")]
             public string File { get; set; }
         }
@@ -27,6 +29,7 @@ namespace ShowdownReplayScouter.Cmd
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed<Options>(o =>
                 {
+                    Common.Parallel = o.Parallel;
                     var replayScouter = new ShowdownReplayScouter.Core.ReplayScouter.ShowdownReplayScouter();
                     var scoutingRequest = new ShowdownReplayScouter.Core.Data.ScoutingRequest()
                     {

@@ -20,6 +20,8 @@ namespace ShowdownReplayScouter.Core.Util
             set => _httpClient = value;
         }
 
+        public static bool Parallel { get; set; } = false;
+
         public static int NumberOfTasks { get; set; } = Environment.ProcessorCount * 2;
 
         public static int LevenshteinDistanceAcceptable { get; set; } = 3;
