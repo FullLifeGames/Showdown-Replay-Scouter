@@ -5,6 +5,8 @@ using ShowdownReplayScouter.Core.TeamMergers;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Linq;
+using ShowdownReplayScouter.Core.Util;
+using System;
 
 namespace ShowdownReplayScouter.Core.ReplayScouter
 {
@@ -35,14 +37,28 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
                 return null;
             }
 
+            var parallel = Common.Parallel;
+
             var teamCollection = new ConcurrentBag<Team>();
+            var runningTasks = new ConcurrentBag<Task>();
+            var running = new bool[] { true };
+
+            if (parallel)
+            {
+                InitCollectionTask(runningTasks, running);
+            }
+
             if (scoutingRequest.Links != null && scoutingRequest.Links.Any())
             {
-                foreach (var link in scoutingRequest.Links)
+                foreach (var replay in scoutingRequest.Links)
                 {
-                    foreach (var team in await ReplayAnalyzer.AnalyzeReplayAsync(link, scoutingRequest.User))
+                    if (parallel)
                     {
-                        teamCollection.Add(team);
+                        AddAnalyzingTask(scoutingRequest, teamCollection, runningTasks, replay);
+                    } 
+                    else
+                    {
+                        AnalyzeReplay(scoutingRequest, teamCollection, replay);
                     }
                 }
             }
@@ -50,16 +66,66 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
             {
                 await foreach (var replay in ReplayCollector.CollectReplaysAsync(scoutingRequest.User, scoutingRequest.Tier, scoutingRequest.Opponent))
                 {
-                    foreach (var team in await ReplayAnalyzer.AnalyzeReplayAsync(replay, scoutingRequest.User))
+                    if (parallel)
                     {
-                        teamCollection.Add(team);
+                        AddAnalyzingTask(scoutingRequest, teamCollection, runningTasks, replay);
+                    }
+                    else
+                    {
+                        AnalyzeReplay(scoutingRequest, teamCollection, replay);
                     }
                 }
             }
+
+            if (parallel)
+            {
+                WaitForCompletionAndStopCollectionTask(runningTasks, running);
+            }
+
             return new ScoutingResult()
             {
                 Teams = TeamMerger.MergeTeams(teamCollection)
             };
+        }
+
+        private static void InitCollectionTask(ConcurrentBag<Task> runningTasks, bool[] running)
+        {
+            Task.Run(() =>
+            {
+                while (running[0])
+                {
+                    var runningTasksCount = runningTasks.Where((task) => task.Status == TaskStatus.Running).Count();
+                    if (runningTasksCount < Common.NumberOfTasks)
+                    {
+                        foreach (var runTask in runningTasks.Where((task) => task.Status == TaskStatus.Created).Take(Common.NumberOfTasks - runningTasksCount))
+                        {
+                            runTask.Start();
+                        }
+                    }
+                }
+            });
+        }
+
+        private void AddAnalyzingTask(ScoutingRequest scoutingRequest, ConcurrentBag<Team> teamCollection, ConcurrentBag<Task> runningTasks, Uri replay)
+        {
+            runningTasks.Add(new Task(() =>
+            {
+                AnalyzeReplay(scoutingRequest, teamCollection, replay);
+            }));
+        }
+
+        private void AnalyzeReplay(ScoutingRequest scoutingRequest, ConcurrentBag<Team> teamCollection, Uri replay)
+        {
+            foreach (var team in ReplayAnalyzer.AnalyzeReplayAsync(replay, scoutingRequest.User).Result)
+            {
+                teamCollection.Add(team);
+            }
+        }
+
+        private static void WaitForCompletionAndStopCollectionTask(ConcurrentBag<Task> runningTasks, bool[] running)
+        {
+            while (runningTasks.Any((task) => !task.IsCompleted));
+            running[0] = false;
         }
     }
 }

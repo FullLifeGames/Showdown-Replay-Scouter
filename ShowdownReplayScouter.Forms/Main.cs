@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ShowdownReplayScouter.Forms
@@ -16,6 +15,7 @@ namespace ShowdownReplayScouter.Forms
         public Main()
         {
             _replayScouter = new ShowdownReplayScouter.Core.ReplayScouter.ShowdownReplayScouter();
+            ShowdownReplayScouter.Core.Util.Common.Parallel = true;
 
             InitializeComponent();
         }
@@ -42,6 +42,7 @@ namespace ShowdownReplayScouter.Forms
             TierTextBox.ReadOnly = true;
             OpponentTextBox.ReadOnly = true;
             LinksTextBox.ReadOnly = true;
+            ParallelCheckbox.Enabled = false;
             ScoutReplayButton.Enabled = false;
 
             var scoutingRequest = new ShowdownReplayScouter.Core.Data.ScoutingRequest()
@@ -64,6 +65,7 @@ namespace ShowdownReplayScouter.Forms
                 TierTextBox.ReadOnly = false;
                 OpponentTextBox.ReadOnly = false;
                 LinksTextBox.ReadOnly = false;
+                ParallelCheckbox.Enabled = true;
                 ScoutReplayButton.Enabled = true;
             });
         }
@@ -90,6 +92,11 @@ namespace ShowdownReplayScouter.Forms
         private void LinksTextBox_TextChanged(object sender, EventArgs e)
         {
             Button_Update();
+        }
+
+        private void ParallelismCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            Common.Parallel = ParallelCheckbox.Checked;
         }
     }
 }
