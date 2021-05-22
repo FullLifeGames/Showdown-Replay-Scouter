@@ -13,12 +13,12 @@ namespace ShowdownReplayScouter.Core.Util
 
         public static string Print(Team team)
         {
-            string pokemonRepresentation = "";
-            foreach (var pokemon in team.Pokemon)
+            var pokemonRepresentation = "";
+            foreach (var pokemon in team.Pokemon.OrderBy((pokemon) => pokemon.ToString()))
             {
                 pokemonRepresentation += ((pokemon.FormName != null) ? pokemon.FormName : pokemon.Name) + ((pokemon.Item != null) ? " @ " + pokemon.Item : "") + "\r\n";
                 if (pokemon.Ability != null) pokemonRepresentation += "Ability: " + pokemon.Ability + "\r\n";
-                foreach (string move in pokemon.Moves.OrderBy((move) => move))
+                foreach (var move in pokemon.Moves.OrderBy((move) => move))
                 {
                     pokemonRepresentation += "- " + move + "\r\n";
                 }

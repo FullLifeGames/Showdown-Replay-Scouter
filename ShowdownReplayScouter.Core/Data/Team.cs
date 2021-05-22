@@ -18,11 +18,16 @@ namespace ShowdownReplayScouter.Core.Data
             };
         }
 
+        public IEnumerable<string> OrderedPokemonNames()
+        {
+            return Pokemon
+                .Select((pokemon) => pokemon.ToString())
+                .OrderBy((pokemonName) => pokemonName);
+        }
+
         public override string ToString()
         {
-            var pokemonNames = Pokemon.Select((pokemon) => (pokemon.Lead ? "(Lead) " : "") + ((pokemon.FormName != null) ? pokemon.FormName : pokemon.Name))
-                .OrderBy((pokemonName) => pokemonName);
-            return string.Join(", ", pokemonNames);
+            return string.Join(", ", OrderedPokemonNames());
         }
     }
 }

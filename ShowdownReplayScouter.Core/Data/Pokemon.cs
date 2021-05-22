@@ -25,6 +25,11 @@ namespace ShowdownReplayScouter.Core.Data
         public bool Lead { get; set; } = false;
         public ICollection<string> Moves { get; set; } = new List<string>();
 
+        public override string ToString()
+        {
+            return (Lead ? "(Lead) " : "") + (FormName ?? Name);
+        }
+
         public Pokemon Clone()
         {
             return new Pokemon
