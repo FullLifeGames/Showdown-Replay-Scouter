@@ -25,8 +25,8 @@ namespace ShowdownReplayScouter.Core.TeamMergers
             foreach (var returnEntry in returnList)
             {
                 returnEntry.Pokemon = returnEntry.Pokemon
-                    .OrderBy((pokemon) => pokemon.Name)
-                    .OrderBy((pokemon) => pokemon.Lead).ToList();
+                    .OrderBy((pokemon) => pokemon.ToString())
+                    .ToList();
             }
 
             returnList.Sort(new TeamComparer());
