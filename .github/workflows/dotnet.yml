@@ -32,6 +32,11 @@ jobs:
     if: github.ref == 'refs/heads/master'
     
     steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
     - name: Create Package
       run:  dotnet pack "ShowdownReplayScouter.Core/ShowdownReplayScouter.Core.csproj" --include-symbols -c Release
     - name: Push Package
