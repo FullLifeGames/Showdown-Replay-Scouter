@@ -33,6 +33,6 @@ jobs:
     
     steps:
     - name: Create Package
-      run:  dotnet pack ShowdownReplayScouter.Core --include-symbols -c Release
+      run:  dotnet pack "ShowdownReplayScouter.Core/ShowdownReplayScouter.Core.csproj" --include-symbols -c Release
     - name: Push Package
-      run:  dotnet nuget push "ShowdownReplayScouter.Core\bin\Release\*.nupkg" --api-key ${{ secrets.NUGET_KEY }} --skip-duplicate
+      run:  dotnet nuget push "ShowdownReplayScouter.Core/bin/Release/*.nupkg" --api-key ${{ secrets.NUGET_KEY }} --skip-duplicate
