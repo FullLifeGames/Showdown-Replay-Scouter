@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <Description>A Pokémon Showdown Replay Scouter.</Description>
+	<Authors>FullLifeGames</Authors>
+    <Copyright>FullLifeGames</Copyright>
+    <PackageProjectUrl>https://github.com/FullLifeGames/Showdown-Replay-Scouter</PackageProjectUrl>
+    <PackageLicenseExpression>GNU General Public License v3.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/FullLifeGames/Showdown-Replay-Scouter</RepositoryUrl>
+    <PackageTags>Pokémon Showdown Replay Scouter</PackageTags>
+    <RepositoryType>GitHub</RepositoryType>
   </PropertyGroup>
 
 </Project>
