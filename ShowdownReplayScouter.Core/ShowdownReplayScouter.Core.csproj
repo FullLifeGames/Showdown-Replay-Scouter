@@ -6,7 +6,7 @@
 	<Authors>FullLifeGames</Authors>
     <Copyright>FullLifeGames</Copyright>
     <PackageProjectUrl>https://github.com/FullLifeGames/Showdown-Replay-Scouter</PackageProjectUrl>
-    <PackageLicenseExpression>GPL</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/FullLifeGames/Showdown-Replay-Scouter</RepositoryUrl>
     <PackageTags>Pokémon Showdown Replay Scouter</PackageTags>
     <RepositoryType>GitHub</RepositoryType>
