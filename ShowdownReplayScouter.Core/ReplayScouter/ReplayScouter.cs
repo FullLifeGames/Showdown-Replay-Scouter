@@ -38,22 +38,21 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
 
             var teamCollection = new ConcurrentBag<Team>();
 
-            if (scoutingRequest.Links != null && scoutingRequest.Links.Any())
+            if (scoutingRequest.Links?.Any() == true)
             {
-                await Parallel.ForEachAsync(scoutingRequest.Links, async (replay, ct) =>
-                {
-                    await AnalyzeReplayAsync(scoutingRequest, teamCollection, replay);
-                });
+                await Parallel.ForEachAsync(scoutingRequest.Links, async (replay, _)
+                    => await AnalyzeReplayAsync(scoutingRequest, teamCollection, replay)
+                        .ConfigureAwait(false))
+                    .ConfigureAwait(false);
             }
             else if (scoutingRequest.User != null)
             {
                 await Parallel.ForEachAsync(
                     ReplayCollector.CollectReplaysAsync(scoutingRequest.User, scoutingRequest.Tier, scoutingRequest.Opponent),
-                    async (replay, ct) =>
-                    {
-                        await AnalyzeReplayAsync(scoutingRequest, teamCollection, replay);
-                    }
-                );
+                    async (replay, _) =>
+                        await AnalyzeReplayAsync(scoutingRequest, teamCollection, replay)
+                        .ConfigureAwait(false)
+                ).ConfigureAwait(false);
             }
 
             return new ScoutingResult()
@@ -64,12 +63,11 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
 
         private async Task AnalyzeReplayAsync(ScoutingRequest scoutingRequest, ConcurrentBag<Team> teamCollection, Uri replay)
         {
-            var teams = await ReplayAnalyzer.AnalyzeReplayAsync(replay, scoutingRequest.User);
+            var teams = await ReplayAnalyzer.AnalyzeReplayAsync(replay, scoutingRequest.User).ConfigureAwait(false);
             foreach (var team in teams)
             {
                 teamCollection.Add(team);
             }
         }
-
     }
 }

@@ -17,18 +17,18 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             }
         }
 
-        private async IAsyncEnumerable<string> RetrieveHtml(string user)
+        private static async IAsyncEnumerable<string> RetrieveHtml(string user)
         {
             var regexUser = RegexUtil.Regex(user);
 
             var page = 1;
-            var pageHtml = await Common.HttpClient.GetStringAsync($"https://replay.pokemonshowdown.com/search?user={regexUser}&page={page}");
+            var pageHtml = await Common.HttpClient.GetStringAsync($"https://replay.pokemonshowdown.com/search?user={regexUser}&page={page}").ConfigureAwait(false);
 
             while (!pageHtml.Contains("<li>No results found</li>") && !pageHtml.Contains("<li>Can't search any further back</li>"))
             {
                 yield return pageHtml;
                 page++;
-                pageHtml = await Common.HttpClient.GetStringAsync($"https://replay.pokemonshowdown.com/search?user={regexUser}&page={page}");
+                pageHtml = await Common.HttpClient.GetStringAsync($"https://replay.pokemonshowdown.com/search?user={regexUser}&page={page}").ConfigureAwait(false);
             }
         }
 
@@ -47,11 +47,11 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 analyzedTier = analyzedTier.ToLower();
             }
 
-            foreach (string line in html.Split('\n'))
+            foreach (var line in html.Split('\n'))
             {
                 if (line.Contains("<small>"))
                 {
-                    string tmpTier = line[(line.IndexOf("<small>") + 7)..line.IndexOf("<br")];
+                    var tmpTier = line[(line.IndexOf("<small>") + 7)..line.IndexOf("<br")];
                     if (analyzedTier == null || analyzedTier == RegexUtil.Regex(tmpTier))
                     {
                         var validatedOpponent = true;
@@ -59,16 +59,16 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                         {
                             validatedOpponent = false;
                             var countPlayers = 0;
-                            var temp = line.Substring(line.IndexOf("<strong>") + 8);
-                            var playerone = temp.Substring(0, temp.IndexOf("</"));
+                            var temp = line[(line.IndexOf("<strong>") + 8)..];
+                            var playerone = temp[..temp.IndexOf("</")];
                             var regexPlayerOne = RegexUtil.Regex(playerone);
                             if (regexPlayerOne == regexUser || regexPlayerOne == regexOpponent)
                             {
                                 countPlayers++;
                             }
 
-                            temp = temp.Substring(temp.IndexOf("<strong>") + 8);
-                            var playertwo = temp.Substring(0, temp.IndexOf("</"));
+                            temp = temp[(temp.IndexOf("<strong>") + 8)..];
+                            var playertwo = temp[..temp.IndexOf("</")];
                             var regexPlayerTwo = RegexUtil.Regex(playertwo);
                             if (regexPlayerTwo == regexUser || regexPlayerTwo == regexOpponent)
                             {
@@ -82,8 +82,8 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                         }
                         if (validatedOpponent)
                         {
-                            var tempBattle = line.Substring(line.IndexOf("\"") + 1);
-                            tempBattle = tempBattle.Substring(0, tempBattle.IndexOf("\""));
+                            var tempBattle = line[(line.IndexOf("\"") + 1)..];
+                            tempBattle = tempBattle[..tempBattle.IndexOf("\"")];
                             tempBattle = "http://replay.pokemonshowdown.com" + tempBattle;
                             yield return new Uri(tempBattle);
                         }

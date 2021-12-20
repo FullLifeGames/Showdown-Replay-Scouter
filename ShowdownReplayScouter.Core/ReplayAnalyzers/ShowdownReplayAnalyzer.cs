@@ -32,33 +32,37 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
 
         public async Task<IEnumerable<Team>> AnalyzeReplayAsync(string replay)
         {
-            return await AnalyzeReplayAsync(new Uri(replay));
+            return await AnalyzeReplayAsync(new Uri(replay)).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<Team>> AnalyzeReplayAsync(Uri replay)
         {
             return new List<Team> {
-                await GetTeamFromUrl(replay)
+                await GetTeamFromUrl(replay, playerValue: "p1").ConfigureAwait(false),
+                await GetTeamFromUrl(replay, playerValue: "p2").ConfigureAwait(false),
             };
         }
 
         public async Task<IEnumerable<Team>> AnalyzeReplayAsync(string replay, string user)
         {
-            return await AnalyzeReplayAsync(new Uri(replay), user);
+            return await AnalyzeReplayAsync(new Uri(replay), user).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<Team>> AnalyzeReplayAsync(Uri replay, string user)
         {
+            if (user == null)
+            {
+                return await AnalyzeReplayAsync(replay).ConfigureAwait(false);
+            }
             return new List<Team> {
-                await GetTeamFromUrl(replay, user)
+                await GetTeamFromUrl(replay, user).ConfigureAwait(false)
             };
         }
 
-        private static async Task<Team> GetTeamFromUrl(Uri link, string user = null)
+        private static async Task<Team> GetTeamFromUrl(Uri link, string user = null, string playerValue = "")
         {
-            var replay = await Common.HttpClient.GetStringAsync(link);
+            var replay = await Common.HttpClient.GetStringAsync(link).ConfigureAwait(false);
 
-            var playerValue = "";
             var playerName = "";
 
             var team = new Team()
@@ -69,13 +73,13 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 }
             };
 
-            foreach (string line in replay.Split('\n'))
+            foreach (var line in replay.Split('\n'))
             {
                 if (line.Contains("|player"))
                 {
                     DeterminePlayer(user, ref playerValue, ref playerName, line);
                 }
-                else if (playerValue == "")
+                else if (playerValue?.Length == 0)
                 {
                     continue;
                 }
@@ -90,7 +94,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                         });
                     }
                 }
-                else if ((line.Contains("|switch") || line.Contains("|drag")))
+                else if (line.Contains("|switch") || line.Contains("|drag"))
                 {
                     if (line.Contains(playerValue))
                     {
@@ -121,7 +125,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                                 team.Pokemon.Add(pokemon);
                             }
                         }
-                        if (pokeinf[2].Contains(":"))
+                        if (pokeinf[2].Contains(':'))
                         {
                             var nick = pokeinf[2].Split(':')[1].Trim();
                             if (!pokemon.AltNames.Any((altName) => altName == nick))
@@ -133,14 +137,14 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 }
                 else if (line.Contains("|move|") && !line.Contains("|-sidestart"))
                 {
-                    string[] moveinf = line.Split('|');
-                    if (moveinf[2].Contains(":"))
+                    var moveinf = line.Split('|');
+                    if (moveinf[2].Contains(':'))
                     {
-                        string playerString = moveinf[2].Substring(0, moveinf[2].IndexOf(":"));
+                        var playerString = moveinf[2][..moveinf[2].IndexOf(":")];
                         if (playerString.Contains(playerValue))
                         {
-                            string mon = moveinf[2].Split(':')[1].Trim();
-                            string move = moveinf[3];
+                            var mon = moveinf[2].Split(':')[1].Trim();
+                            var move = moveinf[3];
                             var pokemon = AddMonIfNotExists(team.Pokemon, mon);
                             if (line.Contains("[from]Magic Bounce"))
                             {
@@ -158,11 +162,11 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 }
                 else if (line.Contains("|detailschange"))
                 {
-                    string[] detailinf = line.Split('|');
+                    var detailinf = line.Split('|');
                     if (detailinf[2].Contains(playerValue))
                     {
-                        string mon = detailinf[2].Split(':')[1].Trim();
-                        string newmon = detailinf[3].Split(',')[0];
+                        var mon = detailinf[2].Split(':')[1].Trim();
+                        var newmon = detailinf[3].Split(',')[0];
                         var pokemon = AddMonIfNotExists(team.Pokemon, mon);
                         if (pokemon.FormName != newmon)
                         {
@@ -172,15 +176,15 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 }
                 else if (line.Contains("[from] item:") && !(line.Contains("-damage") && line.Contains("Rocky Helmet")))
                 {
-                    string[] iteminf = line.Split('|');
-                    if (iteminf[2].Contains(":"))
+                    var iteminf = line.Split('|');
+                    if (iteminf[2].Contains(':'))
                     {
-                        string playerString = iteminf[2].Substring(0, iteminf[2].IndexOf(":"));
+                        var playerString = iteminf[2][..iteminf[2].IndexOf(":")];
 
                         if (playerString.Contains(playerValue))
                         {
-                            string mon = iteminf[2].Split(':')[1].Trim();
-                            string item = "";
+                            var mon = iteminf[2].Split(':')[1].Trim();
+                            var item = "";
                             if (iteminf[4].Contains("item"))
                             {
                                 item = iteminf[4].Split(':')[1].Trim();
@@ -196,26 +200,26 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 }
                 else if (line.Contains("-damage") && line.Contains("Rocky Helmet"))
                 {
-                    string[] iteminf = line.Split('|');
+                    var iteminf = line.Split('|');
                     if (iteminf.Length > 5 && iteminf[5].Contains(playerValue))
                     {
-                        string mon = iteminf[5].Split(':')[1].Trim();
-                        string item = iteminf[4].Split(':')[1].Trim();
+                        var mon = iteminf[5].Split(':')[1].Trim();
+                        var item = iteminf[4].Split(':')[1].Trim();
                         var pokemon = AddMonIfNotExists(team.Pokemon, mon);
                         ItemUpdate(pokemon, item);
                     }
                 }
                 else if (line.Contains("-enditem"))
                 {
-                    string[] iteminf = line.Split('|');
-                    if (iteminf[2].Contains(":"))
+                    var iteminf = line.Split('|');
+                    if (iteminf[2].Contains(':'))
                     {
-                        string playerString = iteminf[2].Substring(0, iteminf[2].IndexOf(":"));
+                        var playerString = iteminf[2][..iteminf[2].IndexOf(":")];
 
                         if (playerString.Contains(playerValue))
                         {
-                            string mon = iteminf[2].Split(':')[1].Trim();
-                            string item = iteminf[3].Trim();
+                            var mon = iteminf[2].Split(':')[1].Trim();
+                            var item = iteminf[3].Trim();
                             var pokemon = AddMonIfNotExists(team.Pokemon, mon);
                             ItemUpdate(pokemon, item);
                         }
@@ -223,9 +227,9 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 }
                 else if ((line.Contains("-ability|") || line.Contains(" ability:")) && line.Contains("-damage"))
                 {
-                    string[] abilityinf = line.Split('|');
-                    string ability = "";
-                    string mon = "";
+                    var abilityinf = line.Split('|');
+                    var ability = "";
+                    var mon = "";
                     ability = abilityinf[4].Split(':')[1].Trim();
                     if (abilityinf.Length > 5)
                     {
@@ -239,16 +243,16 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 }
                 else if (line.Contains("ability:") && !line.Contains("ability: Imposter"))
                 {
-                    string[] abilityinf = line.Split('|');
-                    string ability = "";
-                    string mon = "";
-                    foreach (string abinf in abilityinf)
+                    var abilityinf = line.Split('|');
+                    var ability = "";
+                    var mon = "";
+                    foreach (var abinf in abilityinf)
                     {
                         if (abinf.Contains("ability:"))
                         {
                             ability = abinf.Split(':')[1].Trim();
                         }
-                        else if (abinf.Contains(":") && abinf.Split(':')[0].Contains(playerValue))
+                        else if (abinf.Contains(':') && abinf.Split(':')[0].Contains(playerValue))
                         {
                             if (!abinf.Contains("[of]") && !ContainsLineAnOfAbility(line))
                             {
@@ -268,11 +272,11 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 }
                 else if (line.Contains("-ability"))
                 {
-                    string[] abilityinf = line.Split('|');
-                    if (abilityinf[2].Contains(":") && abilityinf[2].Split(':')[0].Contains(playerValue))
+                    var abilityinf = line.Split('|');
+                    if (abilityinf[2].Contains(':') && abilityinf[2].Split(':')[0].Contains(playerValue))
                     {
-                        string ability = abilityinf[3].Trim();
-                        string mon = abilityinf[2].Split(':')[1].Trim();
+                        var ability = abilityinf[3].Trim();
+                        var mon = abilityinf[2].Split(':')[1].Trim();
 
                         var pokemon = AddMonIfNotExists(team.Pokemon, mon);
                         AbilityUpdate(pokemon, ability);
@@ -292,12 +296,13 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             {
                 regexedPlayerInf = RegexUtil.Regex(playerinf[3].ToLower());
             }
+
             if (rawUser != null)
             {
-                string user = RegexUtil.Regex(rawUser.ToLower());
+                var user = RegexUtil.Regex(rawUser.ToLower());
                 if (playerinf.Length > 3)
                 {
-                    int distance = LevenshteinDistance.Compute(regexedPlayerInf, user);
+                    var distance = LevenshteinDistance.Compute(regexedPlayerInf, user);
                     if (regexedPlayerInf.Contains(user))
                     {
                         if (playerName != "")
@@ -335,20 +340,22 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     }
                 }
             }
-            else
-            {
-                setPlayer = true;
-            }
+
             if (setPlayer)
             {
                 playerValue = playerinf[2];
+                playerName = regexedPlayerInf;
+            }
+
+            if (playerValue == playerinf[2] && playerName?.Length == 0)
+            {
                 playerName = regexedPlayerInf;
             }
         }
 
         private static bool ContainsLineAnOfAbility(string line)
         {
-            foreach (string ofAbility in Common.OfAbilities)
+            foreach (var ofAbility in Common.OfAbilities)
             {
                 if (line.Contains($"ability: {ofAbility}"))
                 {
@@ -360,7 +367,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
 
         private static Pokemon AddMonIfNotExists(ICollection<Pokemon> pokemonList, string pokemonCandidate)
         {
-            var pokemon = pokemonList.FirstOrDefault((pokemon) => pokemon.Name == pokemonCandidate 
+            var pokemon = pokemonList.FirstOrDefault((pokemon) => pokemon.Name == pokemonCandidate
                 || pokemon.FormName == pokemonCandidate
                 || pokemon.AltNames.Any((altName) => altName == pokemonCandidate));
             if (pokemon == null)
@@ -414,7 +421,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
 
         private static void ItemUpdate(Pokemon pokemon, string item)
         {
-            if (pokemon.Item == null || pokemon.Item == "")
+            if (pokemon.Item == null || pokemon.Item?.Length == 0)
             {
                 pokemon.Item = item;
             }

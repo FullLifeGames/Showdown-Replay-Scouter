@@ -72,5 +72,21 @@ namespace ShowdownReplayScouter.Tests
 
             Assert.IsTrue(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
         }
+
+        [Test]
+        public void Scout_No_User_Set_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Links = new List<Uri>()
+                {
+                    new Uri("https://replay.pokemonshowdown.com/smogtours-gen8ou-551237"),
+                    new Uri("https://replay.pokemonshowdown.com/smogtours-gen8ou-551243"),
+                    new Uri("https://replay.pokemonshowdown.com/smogtours-gen8ou-551299"),
+                }
+            });
+
+            Assert.IsTrue(result.Teams.Count() == 4 && result.Teams.First().Pokemon.Count == 6);
+        }
     }
 }

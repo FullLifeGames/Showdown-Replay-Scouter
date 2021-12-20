@@ -54,7 +54,7 @@ namespace ShowdownReplayScouter.Core.Util
             {
                 var currentUri = uri.AbsoluteUri[(uri.AbsoluteUri.LastIndexOf("/") + 1)..];
                 var number = -1;
-                while (currentUri.Contains("-"))
+                while (currentUri.Contains('-'))
                 {
                     var testNumber = currentUri[(currentUri.LastIndexOf("-") + 1)..];
                     currentUri = currentUri[..currentUri.LastIndexOf("-")];
