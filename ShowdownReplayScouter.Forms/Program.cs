@@ -3,13 +3,13 @@ using System.Windows.Forms;
 
 namespace ShowdownReplayScouter.Forms
 {
-    static class Program
+    public static class Program
     {
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        public static void Main()
         {
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();

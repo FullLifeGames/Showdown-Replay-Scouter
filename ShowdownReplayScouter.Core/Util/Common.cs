@@ -11,11 +11,7 @@ namespace ShowdownReplayScouter.Core.Util
         {
             get
             {
-                if (_httpClient == null)
-                {
-                    _httpClient = new HttpClient();
-                }
-                return _httpClient;
+                return _httpClient ??= new HttpClient();
             }
             set => _httpClient = value;
         }
@@ -39,12 +35,11 @@ namespace ShowdownReplayScouter.Core.Util
             "Galar"
         };
 
-        public static IEnumerable<string> OfAbilities = new List<string>
+        public static IEnumerable<string> OfAbilities { get; set; } = new List<string>
         {
             "Frisk", "Poison Touch",
             "Electric Surge", "Psychic Surge", "Grassy Surge", "Misty Surge",
             "Drought", "Sand Stream", "Drizzle", "Snow Warning"
         };
-
     }
 }

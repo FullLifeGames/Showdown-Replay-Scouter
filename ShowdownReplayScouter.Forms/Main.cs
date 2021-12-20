@@ -14,7 +14,7 @@ namespace ShowdownReplayScouter.Forms
 
         public Main()
         {
-            _replayScouter = new ShowdownReplayScouter.Core.ReplayScouter.ShowdownReplayScouter();
+            _replayScouter = new Core.ReplayScouter.ShowdownReplayScouter();
 
             InitializeComponent();
         }
@@ -30,7 +30,7 @@ namespace ShowdownReplayScouter.Forms
                     linkUris = linksText.Split('\n')
                         .Select((link) => new Uri(link.Trim()));
                 }
-            } 
+            }
             catch
             {
                 MessageBox.Show("Links can only contain Uris");
@@ -43,9 +43,9 @@ namespace ShowdownReplayScouter.Forms
             LinksTextBox.ReadOnly = true;
             ScoutReplayButton.Enabled = false;
 
-            var scoutingRequest = new ShowdownReplayScouter.Core.Data.ScoutingRequest()
+            var scoutingRequest = new Core.Data.ScoutingRequest()
             {
-                User = UsernameTextBox.Text.Trim(),
+                User = UsernameTextBox.Text.Trim() != "" ? UsernameTextBox.Text.Trim() : null,
                 Tier = TierTextBox.Text.Trim() != "" ? TierTextBox.Text.Trim() : null,
                 Opponent = OpponentTextBox.Text.Trim() != "" ? OpponentTextBox.Text.Trim() : null,
                 Links = linkUris
@@ -71,9 +71,7 @@ namespace ShowdownReplayScouter.Forms
         {
             ScoutReplayButton.Enabled =
                 UsernameTextBox.Text.Trim().Length > 0
-                && 
-                    (TierTextBox.Text.Trim().Length > 0
-                    || LinksTextBox.Text.Trim().Length > 0);
+                || LinksTextBox.Text.Trim().Length > 0;
         }
 
         private void UsernameTextBox_TextChanged(object sender, EventArgs e)

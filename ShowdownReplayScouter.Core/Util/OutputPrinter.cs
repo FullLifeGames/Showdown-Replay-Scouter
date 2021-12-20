@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ShowdownReplayScouter.Core.Util
 {
-    public class OutputPrinter
+    public static class OutputPrinter
     {
         public static string Print(ScoutingRequest scoutingRequest, IEnumerable<Team> teams)
         {

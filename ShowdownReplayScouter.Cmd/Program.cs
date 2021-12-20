@@ -6,7 +6,7 @@ using System.IO;
 
 namespace ShowdownReplayScouter.Cmd
 {
-    public class Program
+    public static class Program
     {
         public class Options
         {
