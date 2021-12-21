@@ -40,10 +40,18 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
 
             if (scoutingRequest.Links?.Any() == true)
             {
-                await Parallel.ForEachAsync(scoutingRequest.Links, async (replay, _)
-                    => await AnalyzeReplayAsync(scoutingRequest, teamCollection, replay)
-                        .ConfigureAwait(false))
-                    .ConfigureAwait(false);
+                await Parallel.ForEachAsync(scoutingRequest.Links, async (replay, _) =>
+                    {
+                        try
+                        {
+                            await AnalyzeReplayAsync(scoutingRequest, teamCollection, replay).ConfigureAwait(false);
+                        }
+                        catch (Exception)
+                        {
+                            Console.WriteLine($"Error on {replay}");
+                        }
+                    }
+                ).ConfigureAwait(false);
             }
             else if (scoutingRequest.User != null)
             {
