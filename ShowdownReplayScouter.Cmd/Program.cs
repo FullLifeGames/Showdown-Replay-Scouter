@@ -3,6 +3,7 @@ using ShowdownReplayScouter.Core.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace ShowdownReplayScouter.Cmd
 {
@@ -27,6 +28,12 @@ namespace ShowdownReplayScouter.Cmd
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed<Options>(o =>
                 {
+                    if (!o.Links.Any() && string.IsNullOrWhiteSpace(o.User))
+                    {
+                        Console.WriteLine("Either a user or replays have to be provided!");
+                        return;
+                    }
+
                     var replayScouter = new ShowdownReplayScouter.Core.ReplayScouter.ShowdownReplayScouter();
                     var scoutingRequest = new ShowdownReplayScouter.Core.Data.ScoutingRequest()
                     {
