@@ -5,9 +5,9 @@ namespace ShowdownReplayScouter.Core.Data
 {
     public class ScoutingRequest
     {
-        public string User { get; set; }
-        public string Tier { get; set; }
-        public string Opponent { get; set; }
+        public IEnumerable<string> Users { get; set; }
+        public IEnumerable<string> Tiers { get; set; }
+        public IEnumerable<string> Opponents { get; set; }
         public IEnumerable<Uri> Links { get; set; }
     }
 }

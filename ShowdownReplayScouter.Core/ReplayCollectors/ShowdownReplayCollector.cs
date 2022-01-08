@@ -1,18 +1,22 @@
 ﻿using ShowdownReplayScouter.Core.Util;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ShowdownReplayScouter.Core.ReplayCollectors
 {
     public class ShowdownReplayCollector : IReplayCollector
     {
-        public async IAsyncEnumerable<Uri> CollectReplaysAsync(string user, string tier = null, string opponent = null)
+        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(IEnumerable<string> users, IEnumerable<string> tiers = null, IEnumerable<string> opponents = null)
         {
-            await foreach (var showdownReplay in RetrieveHtml(user))
+            foreach (var user in users)
             {
-                foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, user, tier, opponent))
+                await foreach (var showdownReplay in RetrieveHtml(user))
                 {
-                    yield return showdownReplayUrl;
+                    foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, user, tiers, opponents))
+                    {
+                        yield return new CollectedReplay(showdownReplayUrl, user);
+                    }
                 }
             }
         }
@@ -32,19 +36,19 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             }
         }
 
-        private IEnumerable<Uri> CollectShowdownReplayUrl(string html, string user, string tier = null, string opponent = null)
+        private IEnumerable<Uri> CollectShowdownReplayUrl(string html, string user, IEnumerable<string> tiers = null, IEnumerable<string> opponents = null)
         {
             var regexUser = RegexUtil.Regex(user);
-            string regexOpponent = null;
-            if (opponent != null)
+            IEnumerable<string> regexOpponents = null;
+            if (opponents != null)
             {
-                regexOpponent = RegexUtil.Regex(opponent);
+                regexOpponents = opponents.Select((opponent) => RegexUtil.Regex(opponent));
             }
 
-            var analyzedTier = tier;
-            if (analyzedTier != null)
+            var analyzedTiers = tiers;
+            if (analyzedTiers != null)
             {
-                analyzedTier = analyzedTier.ToLower();
+                analyzedTiers = analyzedTiers.Select((tier) => tier.ToLower());
             }
 
             foreach (var line in html.Split('\n'))
@@ -52,17 +56,17 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 if (line.Contains("<small>"))
                 {
                     var tmpTier = line[(line.IndexOf("<small>") + 7)..line.IndexOf("<br")];
-                    if (analyzedTier == null || analyzedTier == RegexUtil.Regex(tmpTier))
+                    if (analyzedTiers?.Any((tier) => tier == RegexUtil.Regex(tmpTier)) == true)
                     {
                         var validatedOpponent = true;
-                        if (opponent != null)
+                        if (opponents?.Any() == true)
                         {
                             validatedOpponent = false;
                             var countPlayers = 0;
                             var temp = line[(line.IndexOf("<strong>") + 8)..];
                             var playerone = temp[..temp.IndexOf("</")];
                             var regexPlayerOne = RegexUtil.Regex(playerone);
-                            if (regexPlayerOne == regexUser || regexPlayerOne == regexOpponent)
+                            if (regexPlayerOne == regexUser || regexOpponents.Any((opponent) => opponent == regexPlayerOne))
                             {
                                 countPlayers++;
                             }
@@ -70,7 +74,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                             temp = temp[(temp.IndexOf("<strong>") + 8)..];
                             var playertwo = temp[..temp.IndexOf("</")];
                             var regexPlayerTwo = RegexUtil.Regex(playertwo);
-                            if (regexPlayerTwo == regexUser || regexPlayerTwo == regexOpponent)
+                            if (regexPlayerTwo == regexUser || regexOpponents.Any((opponent) => opponent == regexPlayerTwo))
                             {
                                 countPlayers++;
                             }

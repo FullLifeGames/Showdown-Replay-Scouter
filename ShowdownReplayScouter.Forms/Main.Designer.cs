@@ -130,7 +130,7 @@ namespace ShowdownReplayScouter.Forms
             this.OpponentTextBox.Location = new System.Drawing.Point(15, 211);
             this.OpponentTextBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.OpponentTextBox.Name = "OpponentTextBox";
-            this.OpponentTextBox.PlaceholderText = "e.g. \"fulllifegames\"";
+            this.OpponentTextBox.PlaceholderText = "e.g. \"fulllifegames, Senor L\"";
             this.OpponentTextBox.Size = new System.Drawing.Size(265, 27);
             this.OpponentTextBox.TabIndex = 2;
             // 
@@ -148,7 +148,7 @@ namespace ShowdownReplayScouter.Forms
             this.TierTextBox.Location = new System.Drawing.Point(15, 141);
             this.TierTextBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.TierTextBox.Name = "TierTextBox";
-            this.TierTextBox.PlaceholderText = "e.g. \"gen8ou\"";
+            this.TierTextBox.PlaceholderText = "e.g. \"gen8ou, gen7ou\"";
             this.TierTextBox.Size = new System.Drawing.Size(265, 27);
             this.TierTextBox.TabIndex = 1;
             this.TierTextBox.TextChanged += new System.EventHandler(this.TierTextBox_TextChanged);
@@ -167,7 +167,7 @@ namespace ShowdownReplayScouter.Forms
             this.UsernameTextBox.Location = new System.Drawing.Point(15, 73);
             this.UsernameTextBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.UsernameTextBox.Name = "UsernameTextBox";
-            this.UsernameTextBox.PlaceholderText = "e.g. \"fulllifegames\"";
+            this.UsernameTextBox.PlaceholderText = "e.g. \"fulllifegames, Senor L\"";
             this.UsernameTextBox.Size = new System.Drawing.Size(265, 27);
             this.UsernameTextBox.TabIndex = 0;
             this.UsernameTextBox.TextChanged += new System.EventHandler(this.UsernameTextBox_TextChanged);

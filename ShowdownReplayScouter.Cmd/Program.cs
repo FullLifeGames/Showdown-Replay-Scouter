@@ -11,12 +11,12 @@ namespace ShowdownReplayScouter.Cmd
     {
         public class Options
         {
-            [Option('u', "user", Required = false, HelpText = "The user you want to interpret the replays from.")]
-            public string User { get; set; }
-            [Option('t', "tier", Required = false, HelpText = "The tier you want to look at.")]
-            public string Tier { get; set; }
-            [Option('o', "opponent", Required = false, HelpText = "The opponent your user should have fought.")]
-            public string Opponent { get; set; }
+            [Option('u', "users", Required = false, Default = null, HelpText = "The users you want to interpret the replays from.")]
+            public IEnumerable<string> Users { get; set; }
+            [Option('t', "tiers", Required = false, Default = null, HelpText = "The tiers you want to look at.")]
+            public IEnumerable<string> Tiers { get; set; }
+            [Option('o', "opponents", Required = false, Default = null, HelpText = "The opponents your users should have fought.")]
+            public IEnumerable<string> Opponents { get; set; }
             [Option('l', "links", Required = false, Default = null, HelpText = "The links you want to analyze.")]
             public IEnumerable<Uri> Links { get; set; }
             [Option('f', "file", Required = true, HelpText = "The file you want to write to.")]
@@ -26,21 +26,21 @@ namespace ShowdownReplayScouter.Cmd
         public static void Main(string[] args)
         {
             Parser.Default.ParseArguments<Options>(args)
-                .WithParsed<Options>(o =>
+                .WithParsed(o =>
                 {
-                    if (!o.Links.Any() && string.IsNullOrWhiteSpace(o.User))
+                    if (o.Links?.Any() == false && o.Users?.Any() == false)
                     {
                         Console.WriteLine("Either a user or replays have to be provided!");
                         return;
                     }
 
-                    var replayScouter = new ShowdownReplayScouter.Core.ReplayScouter.ShowdownReplayScouter();
-                    var scoutingRequest = new ShowdownReplayScouter.Core.Data.ScoutingRequest()
+                    var replayScouter = new Core.ReplayScouter.ShowdownReplayScouter();
+                    var scoutingRequest = new Core.Data.ScoutingRequest()
                     {
-                        User = o.User,
-                        Tier = o.Tier,
+                        Users = o.Users,
+                        Tiers = o.Tiers,
                         Links = o.Links,
-                        Opponent = o.Opponent
+                        Opponents = o.Opponents
                     };
                     var result = replayScouter.ScoutReplays(scoutingRequest);
 
@@ -52,7 +52,8 @@ namespace ShowdownReplayScouter.Cmd
                         f.Delete();
                     }
                     File.WriteAllText(o.File, output);
-                });
+                }
+            );
         }
     }
 }

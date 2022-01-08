@@ -7,8 +7,12 @@ namespace ShowdownReplayScouter.Core.Util
     {
         public static string Print(ScoutingRequest scoutingRequest, IEnumerable<Team> teams)
         {
-            var output = scoutingRequest.User ?? "";
-            output += scoutingRequest.Tier != null ? $" ({scoutingRequest.Tier})" : "";
+            var output = "";
+            if (scoutingRequest.Users != null)
+            {
+                output += string.Join(", ", scoutingRequest.Users);
+            }
+            output += scoutingRequest.Tiers != null ? $" ({string.Join(", ", scoutingRequest.Tiers)})" : "";
             output += ":\r\n\r\n";
 
             foreach (var team in teams)

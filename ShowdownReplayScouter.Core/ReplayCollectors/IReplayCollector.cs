@@ -1,10 +1,10 @@
-﻿using System;
+﻿using ShowdownReplayScouter.Core.Util;
 using System.Collections.Generic;
 
 namespace ShowdownReplayScouter.Core.ReplayCollectors
 {
     public interface IReplayCollector
     {
-        public IAsyncEnumerable<Uri> CollectReplaysAsync(string user, string tier = null, string opponent = null);
+        public IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(IEnumerable<string> users, IEnumerable<string> tiers = null, IEnumerable<string> opponents = null);
     }
 }

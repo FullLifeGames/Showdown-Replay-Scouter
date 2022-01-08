@@ -45,9 +45,9 @@ namespace ShowdownReplayScouter.Forms
 
             var scoutingRequest = new Core.Data.ScoutingRequest()
             {
-                User = UsernameTextBox.Text.Trim() != "" ? UsernameTextBox.Text.Trim() : null,
-                Tier = TierTextBox.Text.Trim() != "" ? TierTextBox.Text.Trim() : null,
-                Opponent = OpponentTextBox.Text.Trim() != "" ? OpponentTextBox.Text.Trim() : null,
+                Users = UsernameTextBox.Text.Trim() != "" ? UsernameTextBox.Text.Trim().Split(',').Select((user) => user.Trim()) : null,
+                Tiers = TierTextBox.Text.Trim() != "" ? TierTextBox.Text.Trim().Split(',').Select((tier) => tier.Trim()) : null,
+                Opponents = OpponentTextBox.Text.Trim() != "" ? OpponentTextBox.Text.Trim().Split(',').Select((opponent) => opponent.Trim()) : null,
                 Links = linkUris
             };
 

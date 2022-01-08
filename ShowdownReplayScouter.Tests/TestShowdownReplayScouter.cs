@@ -21,11 +21,39 @@ namespace ShowdownReplayScouter.Tests
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
             {
-                User = "fulllifegames",
-                Tier = "gen7ou"
+                Users = new List<string> { "fulllifegames" },
+                Tiers = new List<string> { "gen7ou" }
             });
 
             Assert.IsTrue(result.Teams.Any());
+        }
+
+        [Test]
+        public void Scout_Multiple_Gen7Ou_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Users = new List<string> { "fulllifegames", "Senor L" },
+                Tiers = new List<string> { "gen7ou" }
+            });
+
+            Assert.IsTrue(result.Teams.Any());
+        }
+
+        [Test]
+        public void Scout_FullLifeGames_MultipleTiers_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Users = new List<string> { "fulllifegames" },
+                Tiers = new List<string> { "gen7ou", "gen8ou" }
+            });
+
+            Assert.IsTrue(
+                result.Teams.Any((team) => team.Links.Any((link) => link.ToString().Contains("gen7ou")))
+                &&
+                result.Teams.Any((team) => team.Links.Any((link) => link.ToString().Contains("gen8ou")))
+            );
         }
 
         [Test]
@@ -33,7 +61,7 @@ namespace ShowdownReplayScouter.Tests
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
             {
-                User = "fulllifegames",
+                Users = new List<string> { "fulllifegames" },
                 Links = new List<Uri>()
                 {
                     new Uri("https://replay.pokemonshowdown.com/future-gen7ou-2227")
@@ -48,7 +76,7 @@ namespace ShowdownReplayScouter.Tests
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
             {
-                User = "fulllifegames",
+                Users = new List<string> { "fulllifegames" },
                 Links = new List<Uri>()
                 {
                     new Uri("http://replay.pokemonshowdown.com/smogtours-gen7ou-450650")
@@ -63,7 +91,7 @@ namespace ShowdownReplayScouter.Tests
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
             {
-                User = "fulllifegames",
+                Users = new List<string> { "fulllifegames" },
                 Links = new List<Uri>()
                 {
                     new Uri("https://replay.pokemonshowdown.com/gen7pokebankubers-499462699")

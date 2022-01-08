@@ -2,6 +2,7 @@
 using ShowdownReplayScouter.Core.ReplayAnalyzers;
 using ShowdownReplayScouter.Core.ReplayCollectors;
 using ShowdownReplayScouter.Core.TeamMergers;
+using ShowdownReplayScouter.Core.Util;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Linq;
@@ -42,23 +43,40 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
             {
                 await Parallel.ForEachAsync(scoutingRequest.Links, async (replay, _) =>
                     {
-                        try
+                        if (scoutingRequest.Users?.Any() != true)
                         {
-                            await AnalyzeReplayAsync(scoutingRequest, teamCollection, replay).ConfigureAwait(false);
+                            try
+                            {
+                                await AnalyzeReplayAsync(new CollectedReplay(replay, null), teamCollection).ConfigureAwait(false);
+                            }
+                            catch (Exception)
+                            {
+                                Console.WriteLine($"Error on {replay}");
+                            }
                         }
-                        catch (Exception)
+                        else
                         {
-                            Console.WriteLine($"Error on {replay}");
+                            foreach (var user in scoutingRequest.Users)
+                            {
+                                try
+                                {
+                                    await AnalyzeReplayAsync(new CollectedReplay(replay, user), teamCollection).ConfigureAwait(false);
+                                }
+                                catch (Exception)
+                                {
+                                    Console.WriteLine($"Error on {replay}");
+                                }
+                            }
                         }
                     }
                 ).ConfigureAwait(false);
             }
-            else if (scoutingRequest.User != null)
+            else if (scoutingRequest.Users?.Any() == true)
             {
                 await Parallel.ForEachAsync(
-                    ReplayCollector.CollectReplaysAsync(scoutingRequest.User, scoutingRequest.Tier, scoutingRequest.Opponent),
-                    async (replay, _) =>
-                        await AnalyzeReplayAsync(scoutingRequest, teamCollection, replay)
+                    ReplayCollector.CollectReplaysAsync(scoutingRequest.Users, scoutingRequest.Tiers, scoutingRequest.Opponents),
+                    async (collectedReplay, _) =>
+                        await AnalyzeReplayAsync(collectedReplay, teamCollection)
                         .ConfigureAwait(false)
                 ).ConfigureAwait(false);
             }
@@ -69,9 +87,9 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
             };
         }
 
-        private async Task AnalyzeReplayAsync(ScoutingRequest scoutingRequest, ConcurrentBag<Team> teamCollection, Uri replay)
+        private async Task AnalyzeReplayAsync(CollectedReplay collectedReplay, ConcurrentBag<Team> teamCollection)
         {
-            var teams = await ReplayAnalyzer.AnalyzeReplayAsync(replay, scoutingRequest.User).ConfigureAwait(false);
+            var teams = await ReplayAnalyzer.AnalyzeReplayAsync(collectedReplay.Replay, collectedReplay.User).ConfigureAwait(false);
             foreach (var team in teams)
             {
                 teamCollection.Add(team);
