@@ -131,5 +131,37 @@ namespace ShowdownReplayScouter.Tests
 
             Assert.IsTrue(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
         }
+
+        [Test]
+        public void Scout_Static_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Users = new List<string> { "Trashuny3500" },
+                Links = new List<Uri>()
+                {
+                    new Uri("https://replay.pokemonshowdown.com/smogtours-gen8nationaldex-599393"),
+                }
+            });
+
+            Assert.IsTrue(result.Teams.Any()
+                && result.Teams.First().Pokemon.Count == 6
+                && result.Teams.First().Pokemon.First((pokemon) => pokemon.Name == "Ferrothorn").Ability != "Static"
+            );
+
+            result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Users = new List<string> { "Mollymiltoast" },
+                Links = new List<Uri>()
+                {
+                    new Uri("https://replay.pokemonshowdown.com/smogtours-gen8nationaldex-599393"),
+                }
+            });
+
+            Assert.IsTrue(result.Teams.Any()
+                && result.Teams.First().Pokemon.Count == 6
+                && result.Teams.First().Pokemon.First((pokemon) => pokemon.Name == "Zapdos").Ability == "Static"
+            );
+        }
     }
 }

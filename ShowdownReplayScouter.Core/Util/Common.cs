@@ -38,7 +38,8 @@ namespace ShowdownReplayScouter.Core.Util
         {
             "Frisk", "Poison Touch",
             "Electric Surge", "Psychic Surge", "Grassy Surge", "Misty Surge",
-            "Drought", "Sand Stream", "Drizzle", "Snow Warning"
+            "Drought", "Sand Stream", "Drizzle", "Snow Warning",
+            "Static", "Flame Body", "Cute Charm", "Poison Point", "Effect Sport"
         };
     }
 }
