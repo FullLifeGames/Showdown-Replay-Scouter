@@ -58,7 +58,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             };
         }
 
-        private static async Task<Team> GetTeamFromUrl(Uri link, string user = null, string playerValue = "")
+        private async Task<Team> GetTeamFromUrl(Uri link, string user = null, string playerValue = "")
         {
             var replay = await Common.HttpClient.GetStringAsync(link).ConfigureAwait(false);
 
@@ -151,10 +151,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                             }
                             else
                             {
-                                if (!pokemon.Moves.Contains(move))
-                                {
-                                    pokemon.Moves.Add(move);
-                                }
+                                MoveUpdate(pokemon, move);
                             }
                         }
                     }
@@ -430,6 +427,69 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 {
                     pokemon.Item += " | " + item;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Injectable List of Moves which are not added (e.g. "Struggle")
+        /// </summary>
+        public IEnumerable<string> IllegalMoves = new List<string>
+        {
+            "Struggle"
+        };
+
+        /// <summary>
+        /// Moves that trigger a specific item so be set (e.g. Z-Moves)
+        /// The specific moves are not accounted.
+        /// </summary>
+        public IDictionary<string, string> ItemTransformingMoves = new Dictionary<string, string>
+        {
+            {"Breakneck Blitz", "Normalium Z"},
+            {"All-Out Pummeling", "Fightinium Z"},
+            {"Supersonic Skystrike", "Flyinium Z"},
+            {"Acid Downpour", "Poisonium Z"},
+            {"Tectonic Rage", "Groundium Z"},
+            {"Continental Crush", "Rockium Z"},
+            {"Savage Spin-Out", "Buginium Z"},
+            {"Never-Ending Nightmare", "Ghostium Z"},
+            {"Corkscrew Crash", "Steelium Z"},
+            {"Inferno Overdrive", "Firium Z"},
+            {"Hydro Vortex", "Waterium Z"},
+            {"Bloom Doom", "Grassium Z"},
+            {"Gigavolt Havoc", "Electrium Z"},
+            {"Shattered Psyche", "Psychium Z"},
+            {"Subzero Slammer", "Icium Z"},
+            {"Devastating Drake", "Dragonium Z"},
+            {"Black Hole Eclipse", "Darkinium Z"},
+            {"Twinkle Tackle", "Fairium Z" },
+            {"Catastropika", "Pikanium Z"},
+            {"Sinister Arrow Raid", "Decidium Z"},
+            {"Malicious Moonsault", "Incinium Z"},
+            {"Oceanic Operetta", "Primarium Z"},
+            {"Guardian of Alola", "Tapunium Z"},
+            {"Soul-Stealing 7-Star Strike", "Marshadium Z"},
+            {"Stoked Sparksurfer", "Aloraichium Z"},
+            {"Pulverizing Pancake", "Snorlium Z"},
+            {"Extreme Evoboost", "Eevium Z"},
+            {"Genesis Supernova", "Mewnium Z"},
+            {"10,000,000 Volt Thunderbolt", "Pikashunium Z"},
+            {"Clangorous Soulblaze", "Kommonium Z"},
+            {"Splintered Stormshards", "Lycanium Z"},
+            {"Searing Sunraze Smash", "Solganium Z"},
+            {"Menacing Moonraze Maelstrom", "Lunalium Z"},
+            {"Light That Burns the Sky", "Ultranecrozium Z"},
+            {"Let's Snuggle Forever", "Mimikium Z"},
+        };
+
+        private void MoveUpdate(Pokemon pokemon, string move)
+        {
+            if (ItemTransformingMoves.ContainsKey(move))
+            {
+                ItemUpdate(pokemon, ItemTransformingMoves[move]);
+            }
+            else if (!pokemon.Moves.Contains(move) && !IllegalMoves.Contains(move))
+            {
+                pokemon.Moves.Add(move);
             }
         }
     }

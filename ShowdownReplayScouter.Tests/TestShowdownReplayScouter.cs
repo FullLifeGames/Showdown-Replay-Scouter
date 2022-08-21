@@ -163,5 +163,51 @@ namespace ShowdownReplayScouter.Tests
                 && result.Teams.First().Pokemon.First((pokemon) => pokemon.Name == "Zapdos").Ability == "Static"
             );
         }
+
+        [Test]
+        public void Scout_No_Struggle_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Users = new List<string> { "false" },
+                Tiers = new List<string> { "gen1ou" }
+            });
+
+            Assert.IsTrue(
+                result.Teams.Any() && !result.Teams.Any((team) =>
+                    team.Pokemon.Any((pokemon) =>
+                        pokemon.Moves.Any((move) =>
+                            move == "Struggle"
+                        )
+                    )
+                )
+            );
+        }
+
+        [Test]
+        public void Scout_Correct_ZMoves_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Users = new List<string> { "dflo" },
+                Tiers = new List<string> { "gen7ou" }
+            });
+
+            Assert.IsTrue(
+                result.Teams.Any() &&
+                !result.Teams.Any((team) =>
+                    team.Pokemon.Any((pokemon) =>
+                        pokemon.Moves.Any((move) =>
+                            move == "Bloom Doom"
+                        )
+                    )
+                )
+                && result.Teams.Any((team) =>
+                    team.Pokemon.Any((pokemon) =>
+                        pokemon.Item == "Grassium Z"
+                    )
+                )
+            );
+        }
     }
 }
