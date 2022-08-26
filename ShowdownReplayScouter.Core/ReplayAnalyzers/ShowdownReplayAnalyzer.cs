@@ -60,7 +60,12 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
 
         private async Task<Team> GetTeamFromUrl(Uri link, string user = null, string playerValue = "")
         {
-            var replay = await Common.HttpClient.GetStringAsync(link).ConfigureAwait(false);
+            var logLink = link.ToString();
+            if (!logLink.Contains(".log"))
+            {
+                logLink += ".log";
+            }
+            var replay = await Common.HttpClient.GetStringAsync(logLink).ConfigureAwait(false);
 
             var playerName = "";
 

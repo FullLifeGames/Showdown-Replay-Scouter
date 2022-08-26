@@ -10,7 +10,11 @@
     <RepositoryUrl>https://github.com/FullLifeGames/Showdown-Replay-Scouter</RepositoryUrl>
     <PackageTags>Pokémon Showdown Replay Scouter</PackageTags>
     <RepositoryType>GitHub</RepositoryType>
-    <PackageVersion>1.2.2</PackageVersion>
+    <PackageVersion>1.3.0</PackageVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
 
 </Project>
