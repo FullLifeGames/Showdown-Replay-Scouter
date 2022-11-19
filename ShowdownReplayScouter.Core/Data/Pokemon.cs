@@ -22,6 +22,7 @@ namespace ShowdownReplayScouter.Core.Data
 
         public string Ability { get; set; }
         public string Item { get; set; }
+        public string TeraType { get; set; }
         public bool Lead { get; set; } = false;
         public ICollection<string> Moves { get; set; } = new List<string>();
 

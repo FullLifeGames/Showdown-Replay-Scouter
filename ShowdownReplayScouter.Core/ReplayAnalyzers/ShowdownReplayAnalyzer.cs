@@ -283,6 +283,18 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                         AbilityUpdate(pokemon, ability);
                     }
                 }
+                else if (line.Contains("-terastallize"))
+                {
+                    var terainf = line.Split('|');
+                    if (terainf[2].Contains(':') && terainf[2].Split(':')[0].Contains(playerValue))
+                    {
+                        var teraType = terainf[3].Trim();
+                        var mon = terainf[2].Split(':')[1].Trim();
+
+                        var pokemon = AddMonIfNotExists(team.Pokemon, mon);
+                        TeraUpdate(pokemon, teraType);
+                    }
+                }
             }
 
             return team;
@@ -417,6 +429,21 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             else
             {
                 pokemon.Ability = ability;
+            }
+        }
+
+        private static void TeraUpdate(Pokemon pokemon, string teraType)
+        {
+            if (pokemon.TeraType != null)
+            {
+                if (!pokemon.TeraType.Contains(teraType))
+                {
+                    pokemon.TeraType += " | " + teraType;
+                }
+            }
+            else
+            {
+                pokemon.TeraType = teraType;
             }
         }
 

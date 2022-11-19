@@ -209,5 +209,24 @@ namespace ShowdownReplayScouter.Tests
                 )
             );
         }
+
+        [Test]
+        public void Scout_Terastallize()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Users = new List<string> { "hyane" },
+                Links = new List<Uri> { new Uri("https://replay.pokemonshowdown.com/gen9ou-1715256459-wskzpoa3vb4nkhvw6p98krvberlafjppw") }
+            });
+
+            Assert.IsTrue(
+                result.Teams.Any() &&
+                result.Teams.Any((team) =>
+                    team.Pokemon.Any((pokemon) =>
+                        pokemon.TeraType == "Fighting"
+                    )
+                )
+            );
+        }
     }
 }
