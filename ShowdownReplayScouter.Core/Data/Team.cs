@@ -25,6 +25,11 @@ namespace ShowdownReplayScouter.Core.Data
                 .OrderBy((pokemonName) => pokemonName);
         }
 
+        public bool IsValid()
+        {
+            return Links.Count > 0 && Pokemon.Count > 0;
+        }
+
         public override string ToString()
         {
             return string.Join(", ", OrderedPokemonNames());

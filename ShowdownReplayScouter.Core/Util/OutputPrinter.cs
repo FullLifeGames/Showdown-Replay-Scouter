@@ -17,11 +17,14 @@ namespace ShowdownReplayScouter.Core.Util
 
             foreach (var team in teams)
             {
-                output += $"{team}:\r\n";
-                output += string.Join("\r\n", team.Links);
-                output += "\r\n\r\n";
-                output += TeamPrinter.Print(team);
-                output += "\r\n\r\n\r\n";
+                if (team.IsValid())
+                {
+                    output += $"{team}:\r\n";
+                    output += string.Join("\r\n", team.Links);
+                    output += "\r\n\r\n";
+                    output += TeamPrinter.Print(team);
+                    output += "\r\n\r\n\r\n";
+                }
             }
 
             return output;
