@@ -40,7 +40,8 @@ namespace ShowdownReplayScouter.Core.Data
                 Item = this.Item,
                 Ability = this.Ability,
                 Lead = this.Lead,
-                Moves = this.Moves.Select(item => (string)item.Clone()).ToList()
+                Moves = this.Moves.Select(item => (string)item.Clone()).ToList(),
+                TeraType = this.TeraType
             };
         }
     }

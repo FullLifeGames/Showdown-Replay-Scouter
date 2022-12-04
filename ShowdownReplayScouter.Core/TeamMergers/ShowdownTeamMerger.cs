@@ -80,6 +80,14 @@ namespace ShowdownReplayScouter.Core.TeamMergers
                     {
                         foundPokemon.Lead = pokemon.Lead;
                     }
+                    if (foundPokemon.TeraType == null && pokemon.TeraType != null)
+                    {
+                        foundPokemon.TeraType = pokemon.TeraType;
+                    }
+                    else if (foundPokemon.TeraType != null && pokemon.TeraType != null)
+                    {
+                        foundPokemon.TeraType += " | " + pokemon.TeraType;
+                    }
                     foreach (var move in pokemon.Moves)
                     {
                         if (!foundPokemon.Moves.Contains(move))
