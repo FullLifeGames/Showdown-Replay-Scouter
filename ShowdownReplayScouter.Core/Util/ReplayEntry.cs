@@ -2,11 +2,10 @@
 {
     public class ReplayEntry
     {
-        public int uploadtime { get; set; }
-        public string id { get; set; }
-        public string format { get; set; }
-        public string p1 { get; set; }
-        public string p2 { get; set; }
+        public int Uploadtime { get; set; }
+        public string Id { get; set; } = null!;
+        public string Format { get; set; } = null!;
+        public string P1 { get; set; } = null!;
+        public string P2 { get; set; } = null!;
     }
-
 }

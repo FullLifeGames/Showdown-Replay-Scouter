@@ -1,4 +1,5 @@
-﻿using ShowdownReplayScouter.Core.ReplayScouter;
+﻿using NeoSmart.Caching.Sqlite;
+using ShowdownReplayScouter.Core.ReplayScouter;
 using ShowdownReplayScouter.Core.Util;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,15 @@ namespace ShowdownReplayScouter.Forms
 
         public Main()
         {
-            _replayScouter = new Core.ReplayScouter.ShowdownReplayScouter();
+            _replayScouter = new Core.ReplayScouter.ShowdownReplayScouter(
+                new SqliteCache(
+                    new SqliteCacheOptions()
+                    {
+                        MemoryOnly = false,
+                        CachePath = "ShowdownReplayScouter.db",
+                    }
+                )
+            );
 
             InitializeComponent();
         }

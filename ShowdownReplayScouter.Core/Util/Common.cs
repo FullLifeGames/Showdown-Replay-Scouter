@@ -5,7 +5,7 @@ namespace ShowdownReplayScouter.Core.Util
 {
     public static class Common
     {
-        private static HttpClient _httpClient;
+        private static HttpClient? _httpClient;
         public static HttpClient HttpClient
         {
             get

@@ -10,8 +10,7 @@ namespace ShowdownReplayScouter.Core.TeamMergers
         public IEnumerable<Team> MergeTeams(IEnumerable<Team> teams)
         {
             var returnList = new List<Team>();
-            var definitions = teams.Select((team) => team.ToString()).Distinct();
-            foreach (var definition in definitions)
+            foreach (var definition in teams.Select((team) => team.ToString()).Distinct())
             {
                 var definitionTeams = teams.Where((team) => team.ToString() == definition);
                 var team = new Team();
@@ -34,7 +33,7 @@ namespace ShowdownReplayScouter.Core.TeamMergers
             return returnList;
         }
 
-        public Team MergeTeams(Team team1, Team team2)
+        public Team? MergeTeams(Team? team1, Team? team2)
         {
             if (team1 == null && team2 == null)
             {
@@ -42,11 +41,11 @@ namespace ShowdownReplayScouter.Core.TeamMergers
             }
             else if (team1 == null)
             {
-                return team2.Clone();
+                return team2!.Clone();
             }
             else if (team2 == null)
             {
-                return team1.Clone();
+                return team1!.Clone();
             }
 
             var team = team1.Clone();

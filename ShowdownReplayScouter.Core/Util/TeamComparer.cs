@@ -7,10 +7,10 @@ namespace ShowdownReplayScouter.Core.Util
 {
     public class TeamComparer : IComparer<Team>
     {
-        public int Compare(Team x, Team y)
+        public int Compare(Team? x, Team? y)
         {
-            var smogTourX = x.Links.Any((uri) => uri.AbsoluteUri.Contains("smogtour"));
-            var smogTourY = y.Links.Any((uri) => uri.AbsoluteUri.Contains("smogtour"));
+            var smogTourX = x?.Links.Any((uri) => uri.AbsoluteUri.Contains("smogtour")) == true;
+            var smogTourY = y?.Links.Any((uri) => uri.AbsoluteUri.Contains("smogtour")) == true;
             if (smogTourX && !smogTourY)
             {
                 return -1;
@@ -21,8 +21,8 @@ namespace ShowdownReplayScouter.Core.Util
             }
             if (smogTourX && smogTourY)
             {
-                var xMax = GetHighestNumber(x.Links.Where((uri) => uri.AbsoluteUri.Contains("smogtour")));
-                var yMax = GetHighestNumber(y.Links.Where((uri) => uri.AbsoluteUri.Contains("smogtour")));
+                var xMax = GetHighestNumber(x!.Links.Where((uri) => uri.AbsoluteUri.Contains("smogtour")));
+                var yMax = GetHighestNumber(y!.Links.Where((uri) => uri.AbsoluteUri.Contains("smogtour")));
                 if (xMax > yMax)
                 {
                     return -1;
@@ -34,8 +34,8 @@ namespace ShowdownReplayScouter.Core.Util
             }
             else
             {
-                var xMax = GetHighestNumber(x.Links);
-                var yMax = GetHighestNumber(y.Links);
+                var xMax = GetHighestNumber(x?.Links);
+                var yMax = GetHighestNumber(y?.Links);
                 if (xMax > yMax)
                 {
                     return -1;
@@ -47,8 +47,13 @@ namespace ShowdownReplayScouter.Core.Util
             }
         }
 
-        private static int GetHighestNumber(IEnumerable<Uri> uris)
+        private static int GetHighestNumber(IEnumerable<Uri>? uris)
         {
+            if (uris == null)
+            {
+                return -1;
+            }
+
             var numberList = new List<int>();
             foreach (var uri in uris)
             {

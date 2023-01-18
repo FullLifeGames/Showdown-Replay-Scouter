@@ -2,5 +2,5 @@
 
 namespace ShowdownReplayScouter.Core.Util
 {
-    public record CollectedReplay(Uri Replay, string User);
+    public record CollectedReplay(Uri Replay, string? User);
 }

@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using NeoSmart.Caching.Sqlite;
 using ShowdownReplayScouter.Core.Util;
 using System;
 using System.Collections.Generic;
@@ -34,7 +35,15 @@ namespace ShowdownReplayScouter.Cmd
                         return;
                     }
 
-                    var replayScouter = new Core.ReplayScouter.ShowdownReplayScouter();
+                    var replayScouter = new Core.ReplayScouter.ShowdownReplayScouter(
+                        new SqliteCache(
+                            new SqliteCacheOptions()
+                            {
+                                MemoryOnly = false,
+                                CachePath = "ShowdownReplayScouter.db",
+                            }
+                        )
+                    );
                     var scoutingRequest = new Core.Data.ScoutingRequest()
                     {
                         Users = o.Users,

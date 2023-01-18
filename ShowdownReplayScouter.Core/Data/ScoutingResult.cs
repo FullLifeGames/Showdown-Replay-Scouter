@@ -4,6 +4,6 @@ namespace ShowdownReplayScouter.Core.Data
 {
     public class ScoutingResult
     {
-        public IEnumerable<Team> Teams;
+        public IEnumerable<Team> Teams = null!;
     }
 }

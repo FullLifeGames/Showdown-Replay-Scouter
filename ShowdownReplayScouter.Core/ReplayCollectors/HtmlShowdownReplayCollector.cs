@@ -8,7 +8,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
     [Obsolete("Legacy implementation of the replay collection", true)]
     public class HtmlShowdownReplayCollector : IReplayCollector
     {
-        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(IEnumerable<string> users, IEnumerable<string> tiers = null, IEnumerable<string> opponents = null)
+        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(IEnumerable<string> users, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null)
         {
             foreach (var user in users)
             {
@@ -37,13 +37,17 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             }
         }
 
-        private IEnumerable<Uri> CollectShowdownReplayUrl(string html, string user, IEnumerable<string> tiers = null, IEnumerable<string> opponents = null)
+        private IEnumerable<Uri> CollectShowdownReplayUrl(string html, string user, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null)
         {
             var regexUser = RegexUtil.Regex(user);
-            IEnumerable<string> regexOpponents = null;
+            IEnumerable<string>? regexOpponents = null;
             if (opponents != null)
             {
                 regexOpponents = opponents.Select((opponent) => RegexUtil.Regex(opponent));
+            }
+            if (regexOpponents == null)
+            {
+                regexOpponents = new List<string>();
             }
 
             var analyzedTiers = tiers;

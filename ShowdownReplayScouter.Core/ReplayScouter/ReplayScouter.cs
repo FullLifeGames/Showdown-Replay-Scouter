@@ -25,12 +25,12 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
             get;
         }
 
-        public ScoutingResult ScoutReplays(ScoutingRequest scoutingRequest)
+        public ScoutingResult? ScoutReplays(ScoutingRequest scoutingRequest)
         {
             return ScoutReplaysAsync(scoutingRequest).Result;
         }
 
-        public async Task<ScoutingResult> ScoutReplaysAsync(ScoutingRequest scoutingRequest)
+        public async Task<ScoutingResult?> ScoutReplaysAsync(ScoutingRequest scoutingRequest)
         {
             if (scoutingRequest == null)
             {
