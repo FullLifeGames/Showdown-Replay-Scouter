@@ -10,7 +10,7 @@ namespace ShowdownReplayScouter.Core.Util
         {
             get
             {
-                return _httpClient ??= new HttpClient();
+                return _httpClient ??= new HttpClient(new HttpRetryMessageHandler(new HttpClientHandler()));
             }
             set => _httpClient = value;
         }
