@@ -70,19 +70,17 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
 
         private async Task<Team> GetTeamFromUrl(Uri link, string? user = null, string playerValue = "")
         {
-            var logLink = link.ToString();
-            if (!logLink.Contains(".log"))
+            var jsonLink = link.ToString();
+            if (!jsonLink.Contains(".json"))
             {
-                logLink += ".log";
+                jsonLink += ".json";
             }
 
-            var cachedTeam = await GetFromCache(user, playerValue, logLink).ConfigureAwait(false);
+            var cachedTeam = await GetFromCache(user, playerValue, jsonLink).ConfigureAwait(false);
             if (cachedTeam != null)
             {
                 return cachedTeam;
             }
-
-            var replay = await Common.HttpClient.GetStringAsync(logLink).ConfigureAwait(false);
 
             var playerInfo = new PlayerInfo
             {
@@ -98,7 +96,27 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 }
             };
 
-            foreach (var line in replay.Split('\n'))
+            var replayJson = await Common.HttpClient.GetStringAsync(jsonLink).ConfigureAwait(false);
+            var replayLog = "";
+            if (replayJson != null)
+            {
+                var replayObject = JsonConvert.DeserializeObject<Replay>(replayJson);
+                if (replayObject != null)
+                {
+                    replayLog = replayObject.Log;
+                    team.Format = replayObject.Format;
+                    if (playerValue == "p1")
+                    {
+                        playerInfo.PlayerName = replayObject.P1;
+                    }
+                    if (playerValue == "p2")
+                    {
+                        playerInfo.PlayerName = replayObject.P2;
+                    }
+                }
+            }
+
+            foreach (var line in replayLog.Split('\n'))
             {
                 if (line.Contains("|player"))
                 {
@@ -318,7 +336,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 }
             }
 
-            await SetCache(user, playerInfo.PlayerValue, logLink, team).ConfigureAwait(false);
+            await SetCache(playerInfo, jsonLink, team).ConfigureAwait(false);
 
             return team;
         }
@@ -339,13 +357,36 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             return cachedTeam;
         }
 
-        private async Task SetCache(string? user, string playerValue, string logLink, Team team)
+        private readonly object replayLock = new();
+        private async Task SetCache(PlayerInfo playerInfo, string logLink, Team team)
         {
             if (_cache != null)
             {
                 var serializedTeam = JsonConvert.SerializeObject(team);
-                await _cache.SetStringAsync($"{logLink}+{user}", serializedTeam).ConfigureAwait(false);
-                await _cache.SetStringAsync($"{logLink}+{playerValue}", serializedTeam).ConfigureAwait(false);
+                await _cache.SetStringAsync($"{logLink}+{playerInfo.PlayerName}", serializedTeam).ConfigureAwait(false);
+                await _cache.SetStringAsync($"{logLink}+{playerInfo.PlayerValue}", serializedTeam).ConfigureAwait(false);
+                // Lock since otherwise this can become a race condition
+                lock (replayLock)
+                {
+                    var currentCachedLinkList = new List<CachedLink>();
+                    var currentReplays = _cache.GetString($"replays-{playerInfo.PlayerName}");
+                    var uriLogLink = new Uri(logLink);
+                    if (currentReplays != null)
+                    {
+                        currentCachedLinkList =
+                            JsonConvert.DeserializeObject<List<CachedLink>>(currentReplays)
+                            ?? currentCachedLinkList;
+                    }
+                    if (!currentCachedLinkList.Any((cachedLink) => cachedLink.ReplayLog == uriLogLink))
+                    {
+                        currentCachedLinkList.Add(new CachedLink()
+                        {
+                            ReplayLog = uriLogLink,
+                            Format = team.Format
+                        });
+                    }
+                    _cache.SetString($"replays-{playerInfo.PlayerName}", JsonConvert.SerializeObject(currentCachedLinkList));
+                }
             }
         }
 

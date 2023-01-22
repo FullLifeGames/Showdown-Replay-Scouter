@@ -8,13 +8,15 @@ namespace ShowdownReplayScouter.Core.Data
     {
         public ICollection<Uri> Links { get; set; } = new List<Uri>();
         public ICollection<Pokemon> Pokemon { get; set; } = new List<Pokemon>();
+        public string? Format { get; set; }
 
         public Team Clone()
         {
             return new Team()
             {
                 Links = Links.Select((link) => link).ToList(),
-                Pokemon = Pokemon.Select((pokemon) => pokemon.Clone()).ToList()
+                Pokemon = Pokemon.Select((pokemon) => pokemon.Clone()).ToList(),
+                Format = Format
             };
         }
 

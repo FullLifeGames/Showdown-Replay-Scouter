@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using ShowdownReplayScouter.Core.Data;
 using ShowdownReplayScouter.Core.Util;
 using System;
 using System.Collections.Generic;
@@ -22,12 +23,38 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
         {
             foreach (var user in users)
             {
+                var publicReplayUrls = new List<Uri>();
                 await foreach (var showdownReplay in RetrieveReplays(user))
                 {
                     foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, user, tiers, opponents))
                     {
+                        publicReplayUrls.Add(showdownReplayUrl);
                         yield return new CollectedReplay(showdownReplayUrl, user);
                     }
+                }
+
+                // Retrieve from cache
+                if (_cache == null)
+                {
+                    continue;
+                }
+                var cachedString = _cache.GetString($"replays-{user}");
+                if (cachedString == null)
+                {
+                    continue;
+                }
+                var cachedLinks = JsonConvert.DeserializeObject<IEnumerable<CachedLink>>(cachedString);
+                if (cachedLinks == null)
+                {
+                    continue;
+                }
+                foreach (var cachedLink in cachedLinks.Where(
+                    (cachedLink) =>
+                        !publicReplayUrls.Contains(cachedLink.ReplayLog)
+                        && (tiers?.Contains(RegexUtil.Regex(cachedLink.Format)) != false)
+                ))
+                {
+                    yield return new CollectedReplay(cachedLink.ReplayLog, user);
                 }
             }
         }
@@ -87,7 +114,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             return cachedPages;
         }
 
-        private IEnumerable<Uri> CollectShowdownReplayUrl(string json, string user, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null)
+        private static IEnumerable<Uri> CollectShowdownReplayUrl(string json, string user, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null)
         {
             var regexUser = RegexUtil.Regex(user);
             IEnumerable<string>? regexOpponents = null;
@@ -95,10 +122,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             {
                 regexOpponents = opponents.Select((opponent) => RegexUtil.Regex(opponent));
             }
-            if (regexOpponents == null)
-            {
-                regexOpponents = new List<string>();
-            }
+            regexOpponents ??= new List<string>();
 
             var analyzedTiers = tiers;
             if (analyzedTiers != null)
@@ -106,13 +130,8 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 analyzedTiers = analyzedTiers.Select((tier) => tier.ToLower());
             }
 
-            var replayEntries = JsonConvert.DeserializeObject<List<ReplayEntry>>(json);
-            if (replayEntries == null)
-            {
-                replayEntries = new List<ReplayEntry>();
-            }
-
-            foreach (var replayEntry in replayEntries)
+            foreach (var replayEntry in
+                JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? new List<ReplayEntry>())
             {
                 var format = replayEntry.Format;
                 if (analyzedTiers?.Any((tier) => tier == RegexUtil.Regex(format)) == true)
