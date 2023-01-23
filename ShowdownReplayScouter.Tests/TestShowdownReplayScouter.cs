@@ -36,9 +36,21 @@ namespace ShowdownReplayScouter.Tests
                 Users = new List<string> { "fulllifegames", "Senor L" },
                 Tiers = new List<string> { "gen7ou" }
             });
-
+        
             Assert.IsTrue(result.Teams.Any());
         }
+
+        [Test]
+        public void Scout_Gen7Ou_Broken_Link_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Users = new List<string> { "fulllifegames" },
+                Links = new List<Uri> { new Uri("https://replay.pokemonshowdown.com/gen7ou-826668378") }
+            });
+            Assert.IsTrue(result.Teams.Any());
+        }
+
 
         [Test]
         public void Scout_FullLifeGames_MultipleTiers_Replays()
