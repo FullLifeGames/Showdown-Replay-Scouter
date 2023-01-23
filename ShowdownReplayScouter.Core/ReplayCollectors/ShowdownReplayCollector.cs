@@ -38,7 +38,14 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 {
                     continue;
                 }
-                var cachedString = _cache.GetString($"replays-{user}");
+                string? cachedString = null;
+                try
+                {
+                    cachedString = _cache.GetString($"replays-{user}");
+                }
+                catch (NullReferenceException)
+                {
+                }
                 if (cachedString == null)
                 {
                     continue;
@@ -101,10 +108,24 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             IEnumerable<string>? cachedPages = null;
             if (_cache != null)
             {
-                var cachedPageUrl = await _cache.GetStringAsync(pageUrl).ConfigureAwait(false);
+                string? cachedPageUrl = null;
+                try
+                {
+                    cachedPageUrl = await _cache.GetStringAsync(pageUrl).ConfigureAwait(false);
+                }
+                catch (NullReferenceException)
+                {
+                }
                 if (json == cachedPageUrl)
                 {
-                    var cachedStrings = await _cache.GetStringAsync(fullUrl).ConfigureAwait(false);
+                    string? cachedStrings = null;
+                    try
+                    {
+                        cachedStrings = await _cache.GetStringAsync(fullUrl).ConfigureAwait(false);
+                    }
+                    catch (NullReferenceException)
+                    {
+                    }
                     if (cachedStrings != null)
                     {
                         cachedPages = JsonConvert.DeserializeObject<IEnumerable<string>>(cachedStrings);

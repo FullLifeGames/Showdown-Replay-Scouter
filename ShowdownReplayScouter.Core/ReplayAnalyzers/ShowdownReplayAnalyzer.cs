@@ -346,8 +346,15 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             Team? cachedTeam = null;
             if (_cache != null)
             {
-                var result = await _cache.GetStringAsync($"{logLink}+{user}").ConfigureAwait(false);
-                result ??= await _cache.GetStringAsync($"{logLink}+{playerValue}").ConfigureAwait(false);
+                string? result = null;
+                try
+                {
+                    result = await _cache.GetStringAsync($"{logLink}+{user}").ConfigureAwait(false);
+                    result ??= await _cache.GetStringAsync($"{logLink}+{playerValue}").ConfigureAwait(false);
+                }
+                catch (NullReferenceException)
+                {
+                }
                 if (result != null)
                 {
                     cachedTeam = JsonConvert.DeserializeObject<Team>(result);
@@ -369,7 +376,14 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 lock (replayLock)
                 {
                     var currentCachedLinkList = new List<CachedLink>();
-                    var currentReplays = _cache.GetString($"replays-{playerInfo.PlayerName}");
+                    string? currentReplays = null;
+                    try
+                    {
+                        currentReplays = _cache.GetString($"replays-{playerInfo.PlayerName}");
+                    }
+                    catch (NullReferenceException)
+                    {
+                    }
                     var uriLogLink = new Uri(logLink);
                     if (currentReplays != null)
                     {
