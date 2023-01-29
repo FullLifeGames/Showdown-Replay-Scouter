@@ -23,14 +23,11 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
         {
             foreach (var user in users)
             {
-                Console.WriteLine(user);
                 var publicReplayUrls = new List<Uri>();
                 await foreach (var showdownReplay in RetrieveReplays(user))
                 {
-                    Console.WriteLine(showdownReplay);
                     foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, user, tiers, opponents))
                     {
-                        Console.WriteLine(showdownReplayUrl);
                         publicReplayUrls.Add(showdownReplayUrl);
                         yield return new CollectedReplay(showdownReplayUrl, user);
                     }
@@ -147,9 +144,6 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 regexOpponents = opponents.Select((opponent) => RegexUtil.Regex(opponent));
             }
             regexOpponents ??= new List<string>();
-
-            Console.WriteLine(tiers);
-            Console.WriteLine(opponents);
 
             var analyzedTiers = tiers;
             if (analyzedTiers != null)
