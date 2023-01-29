@@ -23,11 +23,14 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
         {
             foreach (var user in users)
             {
+                Console.WriteLine(user);
                 var publicReplayUrls = new List<Uri>();
                 await foreach (var showdownReplay in RetrieveReplays(user))
                 {
+                    Console.WriteLine(showdownReplay);
                     foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, user, tiers, opponents))
                     {
+                        Console.WriteLine(showdownReplayUrl);
                         publicReplayUrls.Add(showdownReplayUrl);
                         yield return new CollectedReplay(showdownReplayUrl, user);
                     }
@@ -145,6 +148,9 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             }
             regexOpponents ??= new List<string>();
 
+            Console.WriteLine(tiers);
+            Console.WriteLine(opponents);
+
             var analyzedTiers = tiers;
             if (analyzedTiers != null)
             {
@@ -155,7 +161,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? new List<ReplayEntry>())
             {
                 var format = replayEntry.Format;
-                if (analyzedTiers == null || analyzedTiers.Any((tier) => tier == RegexUtil.Regex(format)))
+                if (analyzedTiers?.Any() != true || analyzedTiers.Any((tier) => tier == RegexUtil.Regex(format)))
                 {
                     var validatedOpponent = true;
                     if (opponents?.Any() == true)

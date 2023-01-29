@@ -134,7 +134,8 @@ namespace ShowdownReplayScouter.Tests
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
             {
-                Users = new List<string> { "relous" }
+                Users = new List<string> { "relous" },
+                Tiers = new List<string>()
             });
 
             Assert.IsTrue(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
