@@ -155,7 +155,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? new List<ReplayEntry>())
             {
                 var format = replayEntry.Format;
-                if (analyzedTiers?.Any((tier) => tier == RegexUtil.Regex(format)) == true)
+                if (analyzedTiers == null || analyzedTiers.Any((tier) => tier == RegexUtil.Regex(format)))
                 {
                     var validatedOpponent = true;
                     if (opponents?.Any() == true)

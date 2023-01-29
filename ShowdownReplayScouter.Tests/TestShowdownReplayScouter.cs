@@ -130,6 +130,17 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
+        public void Scout_Broken_User_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Users = new List<string> { "relous" }
+            });
+
+            Assert.IsTrue(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
+        }
+
+        [Test]
         public void Scout_Broken_Link_Replays()
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
