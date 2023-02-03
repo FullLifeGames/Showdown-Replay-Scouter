@@ -5,8 +5,12 @@ namespace ShowdownReplayScouter.Core.Util
     public static class RegexUtil
     {
         private static readonly Regex _regex = new("[^a-zA-Z0-9]");
-        public static string Regex(string toFilter)
+        public static string Regex(string? toFilter)
         {
+            if (toFilter is null)
+            {
+                return "";
+            }
             toFilter = _regex.Replace(toFilter, "");
             return toFilter.ToLower();
         }

@@ -36,7 +36,7 @@ namespace ShowdownReplayScouter.Tests
                 Users = new List<string> { "fulllifegames", "Senor L" },
                 Tiers = new List<string> { "gen7ou" }
             });
-        
+
             Assert.IsTrue(result.Teams.Any());
         }
 
@@ -50,7 +50,6 @@ namespace ShowdownReplayScouter.Tests
             });
             Assert.IsTrue(result.Teams.Any());
         }
-
 
         [Test]
         public void Scout_FullLifeGames_MultipleTiers_Replays()
