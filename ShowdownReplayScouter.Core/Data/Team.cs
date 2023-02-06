@@ -4,17 +4,24 @@ using System.Linq;
 
 namespace ShowdownReplayScouter.Core.Data
 {
+    [Serializable]
     public class Team
     {
-        public ICollection<Uri> Links { get; set; } = new List<Uri>();
-        public ICollection<Pokemon> Pokemon { get; set; } = new List<Pokemon>();
+        public ICollection<Replay> Replays { get; set; }
+        public ICollection<Pokemon> Pokemon { get; set; }
         public string? Format { get; set; }
+
+        public Team()
+        {
+            Replays = new List<Replay>();
+            Pokemon = new List<Pokemon>();
+        }
 
         public Team Clone()
         {
             return new Team()
             {
-                Links = Links.Select((link) => link).ToList(),
+                Replays = Replays.Select((replay) => replay.Clone()).ToList(),
                 Pokemon = Pokemon.Select((pokemon) => pokemon.Clone()).ToList(),
                 Format = Format
             };
@@ -29,7 +36,7 @@ namespace ShowdownReplayScouter.Core.Data
 
         public bool IsValid()
         {
-            return Links.Count > 0 && Pokemon.Count > 0;
+            return Replays.Count > 0 && Pokemon.Count > 0;
         }
 
         public override string ToString()

@@ -61,9 +61,9 @@ namespace ShowdownReplayScouter.Tests
             });
 
             Assert.IsTrue(
-                result.Teams.Any((team) => team.Links.Any((link) => link.ToString().Contains("gen7ou")))
+                result.Teams.Any((team) => team.Replays.Any((replay) => replay.Link.ToString().Contains("gen7ou")))
                 &&
-                result.Teams.Any((team) => team.Links.Any((link) => link.ToString().Contains("gen8ou")))
+                result.Teams.Any((team) => team.Replays.Any((replay) => replay.Link.ToString().Contains("gen8ou")))
             );
         }
 

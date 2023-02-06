@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31105.61
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShowdownReplayScouter.Core", "ShowdownReplayScouter.Core\ShowdownReplayScouter.Core.csproj", "{0D3E46BA-EABB-4FE3-91FE-ECDBC57F4489}"
 EndProject
@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShowdownReplayScouter.Tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShowdownReplayScouter.Cmd", "ShowdownReplayScouter.Cmd\ShowdownReplayScouter.Cmd.csproj", "{37F2F549-E4A1-4DE1-A36D-097DF4F9C2E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShowdownReplayScouter.Forms", "ShowdownReplayScouter.Forms\ShowdownReplayScouter.Forms.csproj", "{57CF4405-6761-4BF5-A223-60A614ADF02F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShowdownReplayScouter.Forms", "ShowdownReplayScouter.Forms\ShowdownReplayScouter.Forms.csproj", "{57CF4405-6761-4BF5-A223-60A614ADF02F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShowdownReplayScouter.Api", "ShowdownReplayScouter.Api\ShowdownReplayScouter.Api.csproj", "{39463FCD-52B8-4178-A9DB-5BDB1C08E3E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{57CF4405-6761-4BF5-A223-60A614ADF02F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57CF4405-6761-4BF5-A223-60A614ADF02F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57CF4405-6761-4BF5-A223-60A614ADF02F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39463FCD-52B8-4178-A9DB-5BDB1C08E3E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39463FCD-52B8-4178-A9DB-5BDB1C08E3E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39463FCD-52B8-4178-A9DB-5BDB1C08E3E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39463FCD-52B8-4178-A9DB-5BDB1C08E3E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

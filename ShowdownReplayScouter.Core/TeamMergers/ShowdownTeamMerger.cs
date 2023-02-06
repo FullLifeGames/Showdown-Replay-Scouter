@@ -53,7 +53,7 @@ namespace ShowdownReplayScouter.Core.TeamMergers
             foreach (var pokemon in team2.Pokemon)
             {
                 var foundPokemon = team.Pokemon.FirstOrDefault((pokemonEntry) => pokemonEntry.Name == pokemon.Name);
-                if (foundPokemon == null)
+                if (foundPokemon is null)
                 {
                     team.Pokemon.Add(pokemon);
                 }
@@ -104,11 +104,11 @@ namespace ShowdownReplayScouter.Core.TeamMergers
                 }
             }
 
-            foreach (var link in team2.Links)
+            foreach (var otherReplay in team2.Replays)
             {
-                if (!team.Links.Contains(link))
+                if (!team.Replays.Any((replay) => replay.Link == otherReplay.Link))
                 {
-                    team.Links.Add(link);
+                    team.Replays.Add(otherReplay);
                 }
             }
 

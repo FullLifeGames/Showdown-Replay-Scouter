@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ShowdownReplayScouter.Core.Data
 {
+    [Serializable]
     public class Pokemon
     {
         private string? _name;

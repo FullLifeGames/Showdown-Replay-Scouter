@@ -88,21 +88,18 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 PlayerValue = playerValue
             };
 
-            var team = new Team()
-            {
-                Links = new List<Uri>
-                {
-                    link
-                }
-            };
+            var team = new Team();
 
             var replayJson = await Common.HttpClient.GetStringAsync(jsonLink).ConfigureAwait(false);
             var replayLog = "";
-            if (replayJson != null && replayJson != "Could not connect")
+            Replay? replayObject = null;
+            if (replayJson is not null && replayJson != "Could not connect")
             {
-                var replayObject = JsonConvert.DeserializeObject<Replay>(replayJson);
-                if (replayObject != null)
+                replayObject = JsonConvert.DeserializeObject<Replay>(replayJson);
+                if (replayObject is not null)
                 {
+                    team.Replays.Add(replayObject);
+                    replayObject.Link = link;
                     replayLog = replayObject.Log;
                     team.Format = replayObject.Format;
                     if (playerValue == "p1")
@@ -332,6 +329,14 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
 
                         var pokemon = AddMonIfNotExists(team.Pokemon, mon);
                         TeraUpdate(pokemon, teraType);
+                    }
+                }
+                else if (line.Contains("|win|"))
+                {
+                    var terainf = line.Split('|');
+                    if (replayObject is not null && terainf.Length > 2)
+                    {
+                        replayObject.Winner = terainf[2];
                     }
                 }
             }

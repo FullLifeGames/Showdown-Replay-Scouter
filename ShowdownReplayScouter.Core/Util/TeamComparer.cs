@@ -1,5 +1,4 @@
 ﻿using ShowdownReplayScouter.Core.Data;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,8 +8,8 @@ namespace ShowdownReplayScouter.Core.Util
     {
         public int Compare(Team? x, Team? y)
         {
-            var smogTourX = x?.Links.Any((uri) => uri.AbsoluteUri.Contains("smogtour")) == true;
-            var smogTourY = y?.Links.Any((uri) => uri.AbsoluteUri.Contains("smogtour")) == true;
+            var smogTourX = x?.Replays.Any((uri) => uri.Link.AbsoluteUri.Contains("smogtour")) == true;
+            var smogTourY = y?.Replays.Any((uri) => uri.Link.AbsoluteUri.Contains("smogtour")) == true;
             if (smogTourX && !smogTourY)
             {
                 return -1;
@@ -21,8 +20,8 @@ namespace ShowdownReplayScouter.Core.Util
             }
             if (smogTourX && smogTourY)
             {
-                var xMax = GetHighestNumber(x!.Links.Where((uri) => uri.AbsoluteUri.Contains("smogtour")));
-                var yMax = GetHighestNumber(y!.Links.Where((uri) => uri.AbsoluteUri.Contains("smogtour")));
+                var xMax = GetHighestNumber(x!.Replays.Where((uri) => uri.Link.AbsoluteUri.Contains("smogtour")));
+                var yMax = GetHighestNumber(y!.Replays.Where((uri) => uri.Link.AbsoluteUri.Contains("smogtour")));
                 if (xMax > yMax)
                 {
                     return -1;
@@ -34,8 +33,8 @@ namespace ShowdownReplayScouter.Core.Util
             }
             else
             {
-                var xMax = GetHighestNumber(x?.Links);
-                var yMax = GetHighestNumber(y?.Links);
+                var xMax = GetHighestNumber(x?.Replays);
+                var yMax = GetHighestNumber(y?.Replays);
                 if (xMax > yMax)
                 {
                     return -1;
@@ -47,17 +46,17 @@ namespace ShowdownReplayScouter.Core.Util
             }
         }
 
-        private static int GetHighestNumber(IEnumerable<Uri>? uris)
+        private static int GetHighestNumber(IEnumerable<Replay>? replays)
         {
-            if (uris == null)
+            if (replays == null)
             {
                 return -1;
             }
 
             var numberList = new List<int>();
-            foreach (var uri in uris)
+            foreach (var replay in replays)
             {
-                var currentUri = uri.AbsoluteUri[(uri.AbsoluteUri.LastIndexOf("/") + 1)..];
+                var currentUri = replay.Link.AbsoluteUri[(replay.Link.AbsoluteUri.LastIndexOf("/") + 1)..];
                 var number = -1;
                 while (currentUri.Contains('-'))
                 {

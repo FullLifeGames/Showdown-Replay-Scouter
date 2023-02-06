@@ -1,5 +1,6 @@
 ﻿using ShowdownReplayScouter.Core.Data;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ShowdownReplayScouter.Core.Util
 {
@@ -20,7 +21,7 @@ namespace ShowdownReplayScouter.Core.Util
                 if (team.IsValid())
                 {
                     output += $"{team}:\r\n";
-                    output += string.Join("\r\n", team.Replays);
+                    output += string.Join("\r\n", team.Replays.Select((replay) => replay.Link));
                     output += "\r\n\r\n";
                     output += TeamPrinter.Print(team);
                     output += "\r\n\r\n\r\n";
