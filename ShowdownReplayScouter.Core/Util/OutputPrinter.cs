@@ -20,7 +20,7 @@ namespace ShowdownReplayScouter.Core.Util
                 if (team.IsValid())
                 {
                     output += $"{team}:\r\n";
-                    output += string.Join("\r\n", team.Links);
+                    output += string.Join("\r\n", team.Replays);
                     output += "\r\n\r\n";
                     output += TeamPrinter.Print(team);
                     output += "\r\n\r\n\r\n";
