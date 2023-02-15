@@ -11,14 +11,16 @@ namespace ShowdownReplayScouter.Api.Controllers
     {
         private readonly ReplayScouter _replayScouter;
 
-        public ScoutController()
+        public ScoutController(IWebHostEnvironment hostingEnv)
         {
             _replayScouter = new Core.ReplayScouter.ShowdownReplayScouter(
                 new SqliteCache(
                     new SqliteCacheOptions()
                     {
                         MemoryOnly = false,
-                        CachePath = "ShowdownReplayScouter.db",
+                        CachePath = hostingEnv.IsDevelopment() 
+                            ? "ShowdownReplayScouter.db"
+                            : "/home/apache/ShowdownReplayScouter.Cmd/ShowdownReplayScouter.db",
                     }
                 )
             );
