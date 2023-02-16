@@ -19,6 +19,7 @@ namespace ShowdownReplayScouter.Core.Data
         public int Private { get; set; }
         public string Password { get; set; } = null!;
         public string Winner { get; set; } = null!;
+        public bool WinForTeam { get; set; }
         public Uri Link { get; set; } = null!;
 
         public Replay Clone()
@@ -39,6 +40,7 @@ namespace ShowdownReplayScouter.Core.Data
                 Private = Private,
                 Password = Password,
                 Winner = Winner,
+                WinForTeam = WinForTeam,
                 Link = Link
             };
         }

@@ -337,6 +337,9 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     if (replayObject is not null && terainf.Length > 2)
                     {
                         replayObject.Winner = terainf[2];
+                        replayObject.WinForTeam =
+                            (replayObject.Winner == replayObject.P1 && playerInfo.PlayerValue == "p1")
+                            || (replayObject.Winner == replayObject.P2 && playerInfo.PlayerValue == "p2");
                     }
                 }
             }
