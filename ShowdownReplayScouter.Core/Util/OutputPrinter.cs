@@ -30,5 +30,33 @@ namespace ShowdownReplayScouter.Core.Util
 
             return output;
         }
+
+        public static OutputObject PrintObject(ScoutingRequest scoutingRequest, IEnumerable<Team> teams)
+        {
+            var outputObject = new OutputObject();
+            var header = "";
+            if (scoutingRequest.Users != null)
+            {
+                header += string.Join(", ", scoutingRequest.Users);
+            }
+            header += scoutingRequest.Tiers != null ? $" ({string.Join(", ", scoutingRequest.Tiers)})" : "";
+            header += ":";
+            outputObject.Header = header;
+
+            foreach (var team in teams)
+            {
+                var output = "";
+                if (team.IsValid())
+                {
+                    output += $"{team}:\r\n";
+                    output += string.Join("\r\n", team.Replays.Select((replay) => replay.Link));
+                    output += "\r\n\r\n";
+                    output += TeamPrinter.Print(team);
+                }
+                outputObject.Teams.Add(output);
+            }
+
+            return outputObject;
+        }
     }
 }
