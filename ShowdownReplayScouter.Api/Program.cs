@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using NSwag;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,18 +20,24 @@ app.UseCors(builder => builder
     .AllowAnyMethod()
     .AllowAnyHeader());
 
-// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-    app.UseOpenApi(); // serve OpenAPI/Swagger documents
-    app.UseSwaggerUi3(); // serve Swagger UI
-    app.UseReDoc(); // serve ReDoc UI
-//}
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+// Configure the HTTP request pipeline.
+//if (app.Environment.IsDevelopment())
+//{
+app.UseOpenApi(config =>
+{
+    if (!app.Environment.IsDevelopment())
+    {
+        config.PostProcess = (document, _) => document.Schemes = new[] { OpenApiSchema.Https };
+    }
+}); // serve OpenAPI/Swagger documents
+app.UseSwaggerUi3(); // serve Swagger UI
+app.UseReDoc(); // serve ReDoc UI
+//}
 
 app.UseAuthorization();
 
