@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using NeoSmart.Caching.Sqlite;
 using ShowdownReplayScouter.Api.Data;
-using ShowdownReplayScouter.Core.Data;
 using ShowdownReplayScouter.Core.ReplayScouter;
 using ShowdownReplayScouter.Core.Util;
 
@@ -31,7 +30,18 @@ namespace ShowdownReplayScouter.Api.Controllers
         [HttpGet(Name = "GetScoutingResult")]
         public async Task<ApiScoutingResult?> Get([FromQuery] ApiScoutingRequest scoutingRequest)
         {
-            var basicScoutingResult = await _replayScouter.ScoutReplaysAsync(scoutingRequest);
+            return await RequestHandler(scoutingRequest).ConfigureAwait(false);
+        }
+
+        [HttpPost(Name = "PostScoutingResult")]
+        public async Task<ApiScoutingResult?> Post([FromBody] ApiScoutingRequest scoutingRequest)
+        {
+            return await RequestHandler(scoutingRequest).ConfigureAwait(false);
+        }
+
+        private async Task<ApiScoutingResult?> RequestHandler(ApiScoutingRequest scoutingRequest)
+        {
+            var basicScoutingResult = await _replayScouter.ScoutReplaysAsync(scoutingRequest).ConfigureAwait(false);
             ApiScoutingResult? scoutingResult = null;
             if (basicScoutingResult is not null)
             {
