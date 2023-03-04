@@ -251,5 +251,18 @@ namespace ShowdownReplayScouter.Tests
                 )
             );
         }
+
+        [Test]
+        public void Scout_Only_Tier()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Tiers = new List<string> { "gen7ou" }
+            });
+
+            Assert.IsTrue(
+                result.Teams.Any()
+            );
+        }
     }
 }

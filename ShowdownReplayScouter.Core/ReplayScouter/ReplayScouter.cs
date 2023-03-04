@@ -71,7 +71,7 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
                     }
                 ).ConfigureAwait(false);
             }
-            else if (scoutingRequest.Users?.Any() == true)
+            else if (scoutingRequest.Users?.Any() == true || scoutingRequest.Tiers?.Any() == true)
             {
                 await Parallel.ForEachAsync(
                     ReplayCollector.CollectReplaysAsync(scoutingRequest.Users, scoutingRequest.Tiers, scoutingRequest.Opponents),

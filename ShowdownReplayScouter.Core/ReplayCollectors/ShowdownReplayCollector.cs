@@ -19,54 +19,72 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             _cache = cache;
         }
 
-        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(IEnumerable<string> users, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null)
+        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(IEnumerable<string>? users = null, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null)
         {
-            foreach (var user in users)
+            if (users is not null)
             {
-                var publicReplayUrls = new List<Uri>();
-                await foreach (var showdownReplay in RetrieveReplays(user))
+                foreach (var user in users)
                 {
-                    foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, user, tiers, opponents))
+                    var publicReplayUrls = new List<Uri>();
+                    await foreach (var showdownReplay in RetrieveReplaysForUser(user))
                     {
-                        publicReplayUrls.Add(showdownReplayUrl);
-                        yield return new CollectedReplay(showdownReplayUrl, user);
+                        foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, user, tiers, opponents))
+                        {
+                            publicReplayUrls.Add(showdownReplayUrl);
+                            yield return new CollectedReplay(showdownReplayUrl, user);
+                        }
+                    }
+
+                    // Retrieve from cache
+                    if (_cache == null)
+                    {
+                        continue;
+                    }
+                    string? cachedString = null;
+                    try
+                    {
+                        cachedString = _cache.GetString($"replays-{user}");
+                    }
+                    catch (NullReferenceException)
+                    {
+                    }
+                    if (cachedString == null)
+                    {
+                        continue;
+                    }
+                    var cachedLinks = JsonConvert.DeserializeObject<IEnumerable<CachedLink>>(cachedString);
+                    if (cachedLinks == null)
+                    {
+                        continue;
+                    }
+                    foreach (var cachedLink in cachedLinks.Where(
+                        (cachedLink) =>
+                            !publicReplayUrls.Contains(cachedLink.ReplayLog)
+                            && (tiers?.Contains(RegexUtil.Regex(cachedLink.Format)) != false)
+                    ))
+                    {
+                        yield return new CollectedReplay(cachedLink.ReplayLog, user);
                     }
                 }
-
-                // Retrieve from cache
-                if (_cache == null)
+                yield break;
+            }
+            else if (tiers is not null)
+            {
+                foreach (var tier in tiers)
                 {
-                    continue;
+                    await foreach (var showdownReplay in RetrieveReplaysForTier(tier))
+                    {
+                        foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, null, tiers, opponents))
+                        {
+                            yield return new CollectedReplay(showdownReplayUrl, null);
+                        }
+                    }
                 }
-                string? cachedString = null;
-                try
-                {
-                    cachedString = _cache.GetString($"replays-{user}");
-                }
-                catch (NullReferenceException)
-                {
-                }
-                if (cachedString == null)
-                {
-                    continue;
-                }
-                var cachedLinks = JsonConvert.DeserializeObject<IEnumerable<CachedLink>>(cachedString);
-                if (cachedLinks == null)
-                {
-                    continue;
-                }
-                foreach (var cachedLink in cachedLinks.Where(
-                    (cachedLink) =>
-                        !publicReplayUrls.Contains(cachedLink.ReplayLog)
-                        && (tiers?.Contains(RegexUtil.Regex(cachedLink.Format)) != false)
-                ))
-                {
-                    yield return new CollectedReplay(cachedLink.ReplayLog, user);
-                }
+                yield break;
             }
         }
 
-        private async IAsyncEnumerable<string> RetrieveReplays(string user)
+        private async IAsyncEnumerable<string> RetrieveReplaysForUser(string user)
         {
             var regexUser = RegexUtil.Regex(user);
 
@@ -103,6 +121,15 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             _cache?.SetString(fullUrl, cachingPagesString);
         }
 
+        private static async IAsyncEnumerable<string> RetrieveReplaysForTier(string tier)
+        {
+            var regexTier = RegexUtil.Regex(tier);
+
+            var fullUrl = $"https://replay.pokemonshowdown.com/search.json?format={regexTier}";
+            var pageUrl = $"{fullUrl}&page={1}";
+
+            yield return await Common.HttpClient.GetStringAsync(pageUrl).ConfigureAwait(false);
+        }
         private async Task<IEnumerable<string>?> GetCachedPages(string fullUrl, string pageUrl, string json)
         {
             IEnumerable<string>? cachedPages = null;
@@ -135,7 +162,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             return cachedPages;
         }
 
-        private static IEnumerable<Uri> CollectShowdownReplayUrl(string json, string user, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null)
+        private static IEnumerable<Uri> CollectShowdownReplayUrl(string json, string? user, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null)
         {
             var regexUser = RegexUtil.Regex(user);
             IEnumerable<string>? regexOpponents = null;
@@ -158,7 +185,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 if (analyzedTiers?.Any() != true || analyzedTiers.Any((tier) => tier == RegexUtil.Regex(format)))
                 {
                     var validatedOpponent = true;
-                    if (opponents?.Any() == true)
+                    if (opponents?.Any() == true && user is not null)
                     {
                         validatedOpponent = false;
                         var countPlayers = 0;
