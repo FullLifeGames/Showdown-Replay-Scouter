@@ -48,7 +48,7 @@ namespace ShowdownReplayScouter.Core.Util
 
         private static int GetHighestNumber(IEnumerable<Replay>? replays)
         {
-            if (replays == null)
+            if (replays?.Any() != true)
             {
                 return -1;
             }
