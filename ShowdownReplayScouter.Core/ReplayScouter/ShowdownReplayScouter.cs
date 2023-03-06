@@ -1,7 +1,10 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
+using ShowdownReplayScouter.Core.Data;
 using ShowdownReplayScouter.Core.ReplayAnalyzers;
 using ShowdownReplayScouter.Core.ReplayCollectors;
 using ShowdownReplayScouter.Core.TeamMergers;
+using ShowdownReplayScouter.Core.Util;
+using System.Threading.Tasks;
 
 namespace ShowdownReplayScouter.Core.ReplayScouter
 {
@@ -9,10 +12,10 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
     {
         public ShowdownReplayScouter() : this(null) { }
 
-        private readonly IDistributedCache? _cache;
+        private readonly CacheCollector _cache;
         public ShowdownReplayScouter(IDistributedCache? cache)
         {
-            _cache = cache;
+            _cache = new CacheCollector(cache);
         }
 
         public override IReplayAnalyzer ReplayAnalyzer => new ShowdownReplayAnalyzer(_cache);
@@ -20,5 +23,19 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
         public override IReplayCollector ReplayCollector => new ShowdownReplayCollector(_cache);
 
         public override ITeamMerger TeamMerger => new ShowdownTeamMerger();
+
+        public override ScoutingResult? ScoutReplays(ScoutingRequest scoutingRequest)
+        {
+            var result = base.ScoutReplays(scoutingRequest);
+            _cache.Store();
+            return result;
+        }
+
+        public async override Task<ScoutingResult?> ScoutReplaysAsync(ScoutingRequest scoutingRequest)
+        {
+            var result = await base.ScoutReplaysAsync(scoutingRequest);
+            _cache.Store();
+            return result;
+        }
     }
 }
