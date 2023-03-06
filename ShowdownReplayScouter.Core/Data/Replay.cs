@@ -18,7 +18,10 @@ namespace ShowdownReplayScouter.Core.Data
         public int Rating { get; set; }
         public int Private { get; set; }
         public string Password { get; set; } = null!;
-        public string Winner { get; set; } = null!;
+        /// <summary>
+        /// If a winner exists, it is present. If not or tie => null
+        /// </summary>
+        public string? Winner { get; set; }
         public bool WinForTeam { get; set; }
         public Uri Link { get; set; } = null!;
 

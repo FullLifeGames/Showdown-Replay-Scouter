@@ -264,5 +264,40 @@ namespace ShowdownReplayScouter.Tests
                 result.Teams.Any()
             );
         }
+
+        [Test]
+        public void Scout_Ties()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Links = new List<Uri> { new Uri("https://replay.pokemonshowdown.com/smogtours-gen2ou-672504") }
+            });
+
+            Assert.IsTrue(
+                result.Teams.Any()
+            );
+            Assert.IsTrue(
+                result.Teams.First().Replays.Any()
+            );
+            Assert.IsTrue(
+                result.Teams.First().Replays.First().Winner == null
+            );
+        }
+
+        [Test]
+        public void Scout_Different_Teams_If_Different_Leads()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Links = new List<Uri> { 
+                    new Uri("https://replay.pokemonshowdown.com/smogtours-gen2ou-674735"),
+                    new Uri("https://replay.pokemonshowdown.com/smogtours-gen2ou-674874")
+                }
+            });
+
+            Assert.IsTrue(
+                result.Teams.Count() == 4
+            );
+        }
     }
 }
