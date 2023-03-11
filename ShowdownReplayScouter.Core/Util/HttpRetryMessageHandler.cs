@@ -17,7 +17,10 @@ namespace ShowdownReplayScouter.Core.Util
             Policy
                 .Handle<HttpRequestException>()
                 .Or<TaskCanceledException>()
-                .OrResult<HttpResponseMessage>(x => !x.IsSuccessStatusCode)
+                .OrResult<HttpResponseMessage>(
+                    x => !x.IsSuccessStatusCode
+                        && x.StatusCode != System.Net.HttpStatusCode.NotFound
+                )
                 .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(3, retryAttempt)))
                 .ExecuteAsync(() => base.SendAsync(request, cancellationToken));
     }

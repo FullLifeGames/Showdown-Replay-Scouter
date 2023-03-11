@@ -130,7 +130,8 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     {
                         team.Pokemon.Add(new Pokemon()
                         {
-                            Name = pokeinf[3].Split(',')[0]
+                            Name = pokeinf[3].Split(',')[0],
+                            AltNames = { pokeinf[3].Split('-')[0] }
                         });
                     }
                 }

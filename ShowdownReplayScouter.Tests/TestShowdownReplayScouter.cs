@@ -299,5 +299,22 @@ namespace ShowdownReplayScouter.Tests
                 result.Teams.Count() == 4
             );
         }
+
+        [Test]
+        public void Scout_Identify_Correct_Form()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Links = new List<Uri> {
+                    new Uri("https://replay.pokemonshowdown.com/gen9pu-1817019814-mc4x59eeak3fukn0x8qwub7rg1na09upw")
+                }
+            });
+
+            Assert.IsTrue(
+                result.Teams.Count() == 2
+                && !result.Teams.Any((team) => team.Pokemon.Any((pokemon) => pokemon.Name == "Zorua"))
+                && result.Teams.Any((team) => team.Pokemon.Any((pokemon) => pokemon.Name == "Zorua-Hisui"))
+            );
+        }
     }
 }
