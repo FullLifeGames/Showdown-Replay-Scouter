@@ -91,6 +91,10 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             var team = new Team();
 
             var replayJson = await Common.HttpClient.GetStringAsync(jsonLink).ConfigureAwait(false);
+            if (replayJson == "Could not connect")
+            {
+                return team;
+            }
             var replayLog = "";
             Replay? replayObject = null;
             if (replayJson is not null && replayJson != "Could not connect")
