@@ -23,6 +23,7 @@ namespace ShowdownReplayScouter.Core.Data
         /// </summary>
         public string? Winner { get; set; }
         public bool WinForTeam { get; set; }
+        public PlayerInfo PlayerInfo { get; set; } = null!;
         public Uri Link { get; set; } = null!;
 
         public Replay Clone()
@@ -44,6 +45,7 @@ namespace ShowdownReplayScouter.Core.Data
                 Password = Password,
                 Winner = Winner,
                 WinForTeam = WinForTeam,
+                PlayerInfo = PlayerInfo,
                 Link = Link
             };
         }

@@ -114,6 +114,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     {
                         playerInfo.PlayerName = replayObject.P2;
                     }
+                    replayObject.PlayerInfo = playerInfo;
                 }
             }
 
