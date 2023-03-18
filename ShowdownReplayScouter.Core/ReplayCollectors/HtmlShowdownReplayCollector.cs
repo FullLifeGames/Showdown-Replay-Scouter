@@ -8,7 +8,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
     [Obsolete("Legacy implementation of the replay collection", true)]
     public class HtmlShowdownReplayCollector : IReplayCollector
     {
-        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(IEnumerable<string>? users = null, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null)
+        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(IEnumerable<string>? users = null, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null, IEnumerable<string>? searchQueries = null)
         {
             if (users is not null)
             {

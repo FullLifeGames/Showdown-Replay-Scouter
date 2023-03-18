@@ -71,10 +71,10 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
                     }
                 ).ConfigureAwait(false);
             }
-            else if (scoutingRequest.Users?.Any() == true || scoutingRequest.Tiers?.Any() == true)
+            else if (scoutingRequest.Users?.Any() == true || scoutingRequest.Tiers?.Any() == true || scoutingRequest.SearchQueries?.Any() == true)
             {
                 await Parallel.ForEachAsync(
-                    ReplayCollector.CollectReplaysAsync(scoutingRequest.Users, scoutingRequest.Tiers, scoutingRequest.Opponents),
+                    ReplayCollector.CollectReplaysAsync(scoutingRequest.Users, scoutingRequest.Tiers, scoutingRequest.Opponents, scoutingRequest.SearchQueries),
                     async (collectedReplay, _) =>
                         await AnalyzeReplayAsync(collectedReplay, teamCollection)
                         .ConfigureAwait(false)

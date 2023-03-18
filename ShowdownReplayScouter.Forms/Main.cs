@@ -49,6 +49,7 @@ namespace ShowdownReplayScouter.Forms
             UsernameTextBox.ReadOnly = true;
             TierTextBox.ReadOnly = true;
             OpponentTextBox.ReadOnly = true;
+            SearchQueryTextBox.ReadOnly = true;
             LinksTextBox.ReadOnly = true;
             ScoutReplayButton.Enabled = false;
 
@@ -57,6 +58,7 @@ namespace ShowdownReplayScouter.Forms
                 Users = UsernameTextBox.Text.Trim() != "" ? UsernameTextBox.Text.Trim().Split(',').Select((user) => user.Trim()) : null,
                 Tiers = TierTextBox.Text.Trim() != "" ? TierTextBox.Text.Trim().Split(',').Select((tier) => tier.Trim()) : null,
                 Opponents = OpponentTextBox.Text.Trim() != "" ? OpponentTextBox.Text.Trim().Split(',').Select((opponent) => opponent.Trim()) : null,
+                SearchQueries = SearchQueryTextBox.Text.Trim() != "" ? SearchQueryTextBox.Text.Trim().Split(',').Select((searchQuery) => searchQuery.Trim()) : null,
                 Links = linkUris
             };
 
@@ -64,13 +66,14 @@ namespace ShowdownReplayScouter.Forms
 
             var output = OutputPrinter.Print(scoutingRequest, result.Teams);
 
-            Invoke((MethodInvoker) delegate
+            Invoke((MethodInvoker)delegate
             {
                 OutputWindow.Text = output;
 
                 UsernameTextBox.ReadOnly = false;
                 TierTextBox.ReadOnly = false;
                 OpponentTextBox.ReadOnly = false;
+                SearchQueryTextBox.ReadOnly = false;
                 LinksTextBox.ReadOnly = false;
                 ScoutReplayButton.Enabled = true;
             });
@@ -80,7 +83,9 @@ namespace ShowdownReplayScouter.Forms
         {
             ScoutReplayButton.Enabled =
                 UsernameTextBox.Text.Trim().Length > 0
-                || LinksTextBox.Text.Trim().Length > 0;
+                || TierTextBox.Text.Trim().Length > 0
+                || LinksTextBox.Text.Trim().Length > 0
+                || SearchQueryTextBox.Text.Trim().Length > 0;
         }
 
         private void UsernameTextBox_TextChanged(object sender, EventArgs e)
@@ -94,6 +99,11 @@ namespace ShowdownReplayScouter.Forms
         }
 
         private void LinksTextBox_TextChanged(object sender, EventArgs e)
+        {
+            Button_Update();
+        }
+
+        private void SearchQueryTextBox_TextChanged(object sender, EventArgs e)
         {
             Button_Update();
         }

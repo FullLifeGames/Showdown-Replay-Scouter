@@ -9,5 +9,6 @@ namespace ShowdownReplayScouter.Core.Data
         public IEnumerable<string>? Tiers { get; set; }
         public IEnumerable<string>? Opponents { get; set; }
         public IEnumerable<Uri>? Links { get; set; }
+        public IEnumerable<string>? SearchQueries { get; set; }
     }
 }

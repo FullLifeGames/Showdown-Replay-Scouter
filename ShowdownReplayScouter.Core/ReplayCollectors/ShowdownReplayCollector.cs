@@ -19,7 +19,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             _cache = cache;
         }
 
-        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(IEnumerable<string>? users = null, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null)
+        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(IEnumerable<string>? users = null, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null, IEnumerable<string>? searchQueries = null)
         {
             if (users is not null)
             {
@@ -82,6 +82,20 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 }
                 yield break;
             }
+            else if (searchQueries is not null)
+            {
+                foreach (var searchQuery in searchQueries)
+                {
+                    await foreach (var showdownReplay in RetrieveReplaysForSearchQuery(searchQuery))
+                    {
+                        foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, null, tiers, opponents))
+                        {
+                            yield return new CollectedReplay(showdownReplayUrl, null);
+                        }
+                    }
+                }
+                yield break;
+            }
         }
 
         private async IAsyncEnumerable<string> RetrieveReplaysForUser(string user)
@@ -130,6 +144,16 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
             yield return await Common.HttpClient.GetStringAsync(pageUrl).ConfigureAwait(false);
         }
+
+        private static async IAsyncEnumerable<string> RetrieveReplaysForSearchQuery(string searchQuery)
+        {
+            var regexSearchQuery = RegexUtil.Regex(searchQuery);
+
+            var fullUrl = $"https://replay.pokemonshowdown.com/search.json?contains={regexSearchQuery}";
+
+            yield return await Common.HttpClient.GetStringAsync(fullUrl).ConfigureAwait(false);
+        }
+
         private async Task<IEnumerable<string>?> GetCachedPages(string fullUrl, string pageUrl, string json)
         {
             IEnumerable<string>? cachedPages = null;
