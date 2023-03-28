@@ -129,6 +129,20 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
+        public void Scout_Broken_Replay_Gen_9_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Links = new List<Uri>()
+                {
+                    new Uri("https://replay.pokemonshowdown.com/smogtours-gen9ou-681522"),
+                }
+            });
+
+            Assert.IsTrue(result.Teams.Count() == 2 && result.Teams.First().Pokemon.Count == 6);
+        }
+        
+        [Test]
         public void Scout_Broken_User_Replays()
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()

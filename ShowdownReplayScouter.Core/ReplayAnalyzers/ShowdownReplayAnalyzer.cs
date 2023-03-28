@@ -350,7 +350,10 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 }
             }
 
-            await SetCache(playerInfo, jsonLink, team).ConfigureAwait(false);
+            if (team.Pokemon.Count > 0)
+            {
+                await SetCache(playerInfo, jsonLink, team).ConfigureAwait(false);
+            }
 
             return team;
         }
