@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using NeoSmart.Caching.Sqlite;
 using NSwag;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddOpenApiDocument();
+builder.Services.AddSqliteCache(options => {
+    options.CachePath = builder.Environment.IsDevelopment()
+                            ? "ShowdownReplayScouter.db"
+                            : "/home/apache/ShowdownReplayScouter.Cmd/ShowdownReplayScouter.db";
+});
 
 var app = builder.Build();
 

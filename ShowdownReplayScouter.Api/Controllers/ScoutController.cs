@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using NeoSmart.Caching.Sqlite;
+using Microsoft.Extensions.Caching.Distributed;
 using ShowdownReplayScouter.Api.Data;
 using ShowdownReplayScouter.Core.ReplayScouter;
 using ShowdownReplayScouter.Core.Util;
@@ -12,19 +12,9 @@ namespace ShowdownReplayScouter.Api.Controllers
     {
         private readonly ReplayScouter _replayScouter;
 
-        public ScoutController(IWebHostEnvironment hostingEnv)
+        public ScoutController(IDistributedCache distributedCache)
         {
-            _replayScouter = new Core.ReplayScouter.ShowdownReplayScouter(
-                new SqliteCache(
-                    new SqliteCacheOptions()
-                    {
-                        MemoryOnly = false,
-                        CachePath = hostingEnv.IsDevelopment() 
-                            ? "ShowdownReplayScouter.db"
-                            : "/home/apache/ShowdownReplayScouter.Cmd/ShowdownReplayScouter.db",
-                    }
-                )
-            );
+            _replayScouter = new Core.ReplayScouter.ShowdownReplayScouter(distributedCache);
         }
 
         [HttpGet(Name = "GetScoutingResult")]
