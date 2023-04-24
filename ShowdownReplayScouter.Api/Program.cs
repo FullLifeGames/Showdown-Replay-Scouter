@@ -8,11 +8,23 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddOpenApiDocument();
-builder.Services.AddSqliteCache(options => {
-    options.CachePath = builder.Environment.IsDevelopment()
-                            ? "ShowdownReplayScouter.db"
-                            : "/home/apache/ShowdownReplayScouter.Cmd/ShowdownReplayScouter.db";
-});
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSqliteCache(options =>
+    {
+        options.CachePath = builder.Environment.IsDevelopment()
+                                ? "ShowdownReplayScouter.db"
+                                : "/home/apache/ShowdownReplayScouter.Cmd/ShowdownReplayScouter.db";
+    });
+}
+else
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = "localhost";
+        options.InstanceName = "ShowdownReplayScouter";
+    });
+}
 
 var app = builder.Build();
 
