@@ -330,5 +330,26 @@ namespace ShowdownReplayScouter.Tests
                 && result.Teams.Any((team) => team.Pokemon.Any((pokemon) => pokemon.Name == "Zorua-Hisui"))
             );
         }
+
+        [Test]
+        public void Scout_Correct_Zorua_Identification()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Links = new List<Uri> {
+                    new Uri("https://replay.pokemonshowdown.com/gen9lc-1859090126")
+                },
+                Users = new List<string> { "Leafium Z" }
+            });
+
+            Assert.IsTrue(
+                result.Teams.Count() == 1
+                && result.Teams.All((team) => team.Pokemon.Count == 6)
+                && result.Teams.Any((team) =>
+                team.Pokemon.Any((pokemon) =>
+                    pokemon.Name == "Zorua-Hisui"
+                    && pokemon.Ability == "Illusion"))
+            );
+        }
     }
 }
