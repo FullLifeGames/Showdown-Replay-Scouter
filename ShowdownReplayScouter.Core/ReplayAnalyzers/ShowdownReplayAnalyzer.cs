@@ -140,7 +140,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                         });
                     }
                 }
-                else if (line.Contains("|switch") || line.Contains("|drag"))
+                else if (line.Contains("|switch") || line.Contains("|drag") || line.Contains("|replace"))
                 {
                     if (line.Contains(playerInfo.PlayerValue!))
                     {
@@ -252,7 +252,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                         ItemUpdate(pokemon, item);
                     }
                 }
-                else if (line.Contains("-enditem"))
+                else if (line.Contains("|-enditem"))
                 {
                     var iteminf = line.Split('|');
                     if (iteminf[2].Contains(':'))
@@ -313,7 +313,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                         AbilityUpdate(pokemon, ability);
                     }
                 }
-                else if (line.Contains("-ability"))
+                else if (line.Contains("|-ability"))
                 {
                     var abilityinf = line.Split('|');
                     if (abilityinf[2].Contains(':') && abilityinf[2].Split(':')[0].Contains(playerInfo.PlayerValue!))
@@ -325,7 +325,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                         AbilityUpdate(pokemon, ability);
                     }
                 }
-                else if (line.Contains("-terastallize"))
+                else if (line.Contains("|-terastallize"))
                 {
                     var terainf = line.Split('|');
                     if (terainf[2].Contains(':') && terainf[2].Split(':')[0].Contains(playerInfo.PlayerValue!))
