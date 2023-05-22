@@ -1,10 +1,11 @@
-﻿using ShowdownReplayScouter.Core.Util;
+﻿using ShowdownReplayScouter.Core.Data;
+using ShowdownReplayScouter.Core.Util;
 using System.Collections.Generic;
 
 namespace ShowdownReplayScouter.Core.ReplayCollectors
 {
     public interface IReplayCollector
     {
-        public IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(IEnumerable<string>? users = null, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null);
+        public IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(ScoutingRequest scoutingRequest);
     }
 }

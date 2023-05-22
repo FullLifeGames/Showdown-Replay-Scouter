@@ -29,6 +29,21 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
+        public void Scout_FullLifeGames_MinDate_Gen7Ou_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Users = new List<string> { "fulllifegames" },
+                Tiers = new List<string> { "gen7ou" },
+                MaximumDate = new DateTime(2023, 5, 5),
+                MinimumDate = new DateTime(2019, 7, 5)
+            });
+
+            Assert.IsTrue(result.Teams.Any());
+            Assert.IsTrue(result.Teams.Count() == 1);
+        }
+
+        [Test]
         public void Scout_Multiple_Gen7Ou_Replays()
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
