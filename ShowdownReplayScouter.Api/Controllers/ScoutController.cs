@@ -12,9 +12,9 @@ namespace ShowdownReplayScouter.Api.Controllers
     {
         private readonly ReplayScouter _replayScouter;
 
-        public ScoutController(IDistributedCache distributedCache)
+        public ScoutController()
         {
-            _replayScouter = new Core.ReplayScouter.ShowdownReplayScouter(distributedCache);
+            _replayScouter = new Core.ReplayScouter.ShowdownReplayScouter();
         }
 
         [HttpGet(Name = "GetScoutingResult")]
