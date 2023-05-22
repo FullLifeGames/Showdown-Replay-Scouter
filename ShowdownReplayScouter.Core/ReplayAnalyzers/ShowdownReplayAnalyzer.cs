@@ -252,22 +252,6 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                         ItemUpdate(pokemon, item);
                     }
                 }
-                else if (line.Contains("|-end"))
-                {
-                    var abilityinf = line.Split('|');
-                    if (abilityinf[2].Contains(':'))
-                    {
-                        var playerString = abilityinf[2][..abilityinf[2].IndexOf(":")];
-
-                        if (playerString.Contains(playerInfo.PlayerValue!))
-                        {
-                            var mon = abilityinf[2].Split(':')[1].Trim();
-                            var ability = abilityinf[3].Trim();
-                            var pokemon = AddMonIfNotExists(team.Pokemon, mon);
-                            AbilityUpdate(pokemon, ability);
-                        }
-                    }
-                }
                 else if (line.Contains("|-enditem"))
                 {
                     var iteminf = line.Split('|');

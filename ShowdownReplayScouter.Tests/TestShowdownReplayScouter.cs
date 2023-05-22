@@ -345,10 +345,7 @@ namespace ShowdownReplayScouter.Tests
             Assert.IsTrue(
                 result.Teams.Count() == 1
                 && result.Teams.All((team) => team.Pokemon.Count == 6)
-                && result.Teams.Any((team) =>
-                team.Pokemon.Any((pokemon) =>
-                    pokemon.Name == "Zorua-Hisui"
-                    && pokemon.Ability == "Illusion"))
+                && result.Teams.Any((team) => team.Pokemon.Any((pokemon) => pokemon.Name == "Zorua-Hisui"))
             );
         }
     }
