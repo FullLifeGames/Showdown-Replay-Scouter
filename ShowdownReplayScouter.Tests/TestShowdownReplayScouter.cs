@@ -44,6 +44,20 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
+        public void Scout_Relous_MaxDate_Gen7Ou_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Users = new List<string> { "relous" },
+                Tiers = new List<string> { "gen7ou" },
+                MaximumDate = new DateTime(2020, 5, 5),
+                MinimumDate = new DateTime(2019, 7, 5)
+            });
+
+            Assert.IsTrue(result.Teams.Any());
+        }
+
+        [Test]
         public void Scout_Multiple_Gen7Ou_Replays()
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()

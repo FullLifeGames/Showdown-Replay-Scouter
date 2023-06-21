@@ -26,7 +26,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 foreach (var user in scoutingRequest.Users)
                 {
                     var publicReplayUrls = new List<Uri>();
-                    await foreach (var showdownReplay in RetrieveReplaysForUser(user))
+                    await foreach (var showdownReplay in RetrieveReplaysForUser(user, scoutingRequest))
                     {
                         foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, user, scoutingRequest))
                         {
@@ -84,7 +84,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             }
         }
 
-        private async IAsyncEnumerable<string> RetrieveReplaysForUser(string user)
+        private async IAsyncEnumerable<string> RetrieveReplaysForUser(string user, ScoutingRequest scoutingRequest)
         {
             var regexUser = RegexUtil.Regex(user);
 
@@ -109,7 +109,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
             var cachingPages = new List<string>();
 
-            while (!json.Contains("\"ERROR: page limit is 25\"") && !json.Contains("[]"))
+            while (!json.Contains("\"ERROR: page limit is 25\"") && !json.Contains("[]") && NeedToContinue(json, scoutingRequest))
             {
                 yield return json;
                 cachingPages.Add(json);
@@ -121,6 +121,43 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             _cache?.SetString(fullUrl, cachingPagesString);
         }
 
+        private static bool NeedToContinue(string json, ScoutingRequest scoutingRequest)
+        {
+            var replayEntries = JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? new List<ReplayEntry>();
+            return replayEntries.Any((replayEntry) => OverMinimum(replayEntry, scoutingRequest));
+        }
+
+        private static bool OverMinimum(ReplayEntry replayEntry, ScoutingRequest scoutingRequest)
+        {
+            if (scoutingRequest.MinimumDate is not null)
+            {
+                if (replayEntry.Uploadtime < ToUnixTime(scoutingRequest.MinimumDate.Value))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static bool IsInScope(ReplayEntry replayEntry, ScoutingRequest scoutingRequest)
+        {
+            if (scoutingRequest.MinimumDate is not null)
+            {
+                if (replayEntry.Uploadtime < ToUnixTime(scoutingRequest.MinimumDate.Value))
+                {
+                    return false;
+                }
+            }
+            if (scoutingRequest.MaximumDate is not null)
+            {
+                if (replayEntry.Uploadtime > ToUnixTime(scoutingRequest.MaximumDate.Value))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         private static async IAsyncEnumerable<string> RetrieveReplaysForTier(string tier)
         {
             var regexTier = RegexUtil.Regex(tier);
@@ -130,6 +167,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
             yield return await Common.HttpClient.GetStringAsync(pageUrl).ConfigureAwait(false);
         }
+
         private async Task<IEnumerable<string>?> GetCachedPages(string fullUrl, string pageUrl, string json)
         {
             IEnumerable<string>? cachedPages = null;
@@ -184,20 +222,11 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? new List<ReplayEntry>())
             {
                 var format = replayEntry.Format;
-                if (scoutingRequest.MinimumDate is not null)
+                if (!IsInScope(replayEntry, scoutingRequest))
                 {
-                    if (replayEntry.Uploadtime < ToUnixTime(scoutingRequest.MinimumDate.Value))
-                    {
-                        continue;
-                    }
+                    continue;
                 }
-                if (scoutingRequest.MaximumDate is not null)
-                {
-                    if (replayEntry.Uploadtime > ToUnixTime(scoutingRequest.MaximumDate.Value))
-                    {
-                        continue;
-                    }
-                }
+
                 if (analyzedTiers?.Any() != true || analyzedTiers.Any((tier) => tier == RegexUtil.Regex(format)))
                 {
                     var validatedOpponent = true;
