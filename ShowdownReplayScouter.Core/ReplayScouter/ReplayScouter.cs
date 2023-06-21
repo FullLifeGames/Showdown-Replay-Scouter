@@ -74,7 +74,7 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
             else if (scoutingRequest.Users?.Any() == true || scoutingRequest.Tiers?.Any() == true)
             {
                 await Parallel.ForEachAsync(
-                    ReplayCollector.CollectReplaysAsync(scoutingRequest.Users, scoutingRequest.Tiers, scoutingRequest.Opponents),
+                    ReplayCollector.CollectReplaysAsync(scoutingRequest),
                     async (collectedReplay, _) =>
                         await AnalyzeReplayAsync(collectedReplay, teamCollection)
                         .ConfigureAwait(false)

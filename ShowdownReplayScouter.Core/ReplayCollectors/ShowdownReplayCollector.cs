@@ -19,16 +19,16 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             _cache = cache;
         }
 
-        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(IEnumerable<string>? users = null, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null)
+        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(ScoutingRequest scoutingRequest)
         {
-            if (users is not null)
+            if (scoutingRequest.Users is not null)
             {
-                foreach (var user in users)
+                foreach (var user in scoutingRequest.Users)
                 {
                     var publicReplayUrls = new List<Uri>();
-                    await foreach (var showdownReplay in RetrieveReplaysForUser(user))
+                    await foreach (var showdownReplay in RetrieveReplaysForUser(user, scoutingRequest))
                     {
-                        foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, user, tiers, opponents))
+                        foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, user, scoutingRequest))
                         {
                             publicReplayUrls.Add(showdownReplayUrl);
                             yield return new CollectedReplay(showdownReplayUrl, user);
@@ -60,7 +60,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                     foreach (var cachedLink in cachedLinks.Where(
                         (cachedLink) =>
                             !publicReplayUrls.Contains(cachedLink.ReplayLog)
-                            && (tiers?.Contains(RegexUtil.Regex(cachedLink.Format)) != false)
+                            && (scoutingRequest.Tiers?.Contains(RegexUtil.Regex(cachedLink.Format)) != false)
                     ))
                     {
                         yield return new CollectedReplay(cachedLink.ReplayLog, user);
@@ -68,13 +68,13 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 }
                 yield break;
             }
-            else if (tiers is not null)
+            else if (scoutingRequest.Tiers is not null)
             {
-                foreach (var tier in tiers)
+                foreach (var tier in scoutingRequest.Tiers)
                 {
                     await foreach (var showdownReplay in RetrieveReplaysForTier(tier))
                     {
-                        foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, null, tiers, opponents))
+                        foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, null, scoutingRequest))
                         {
                             yield return new CollectedReplay(showdownReplayUrl, null);
                         }
@@ -84,7 +84,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             }
         }
 
-        private async IAsyncEnumerable<string> RetrieveReplaysForUser(string user)
+        private async IAsyncEnumerable<string> RetrieveReplaysForUser(string user, ScoutingRequest scoutingRequest)
         {
             var regexUser = RegexUtil.Regex(user);
 
@@ -109,7 +109,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
             var cachingPages = new List<string>();
 
-            while (!json.Contains("\"ERROR: page limit is 25\"") && !json.Contains("[]"))
+            while (!json.Contains("\"ERROR: page limit is 25\"") && !json.Contains("[]") && NeedToContinue(json, scoutingRequest))
             {
                 yield return json;
                 cachingPages.Add(json);
@@ -121,6 +121,43 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             _cache?.SetString(fullUrl, cachingPagesString);
         }
 
+        private static bool NeedToContinue(string json, ScoutingRequest scoutingRequest)
+        {
+            var replayEntries = JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? new List<ReplayEntry>();
+            return replayEntries.Any((replayEntry) => OverMinimum(replayEntry, scoutingRequest));
+        }
+
+        private static bool OverMinimum(ReplayEntry replayEntry, ScoutingRequest scoutingRequest)
+        {
+            if (scoutingRequest.MinimumDate is not null)
+            {
+                if (replayEntry.Uploadtime < ToUnixTime(scoutingRequest.MinimumDate.Value))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static bool IsInScope(ReplayEntry replayEntry, ScoutingRequest scoutingRequest)
+        {
+            if (scoutingRequest.MinimumDate is not null)
+            {
+                if (replayEntry.Uploadtime < ToUnixTime(scoutingRequest.MinimumDate.Value))
+                {
+                    return false;
+                }
+            }
+            if (scoutingRequest.MaximumDate is not null)
+            {
+                if (replayEntry.Uploadtime > ToUnixTime(scoutingRequest.MaximumDate.Value))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         private static async IAsyncEnumerable<string> RetrieveReplaysForTier(string tier)
         {
             var regexTier = RegexUtil.Regex(tier);
@@ -130,6 +167,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
             yield return await Common.HttpClient.GetStringAsync(pageUrl).ConfigureAwait(false);
         }
+
         private async Task<IEnumerable<string>?> GetCachedPages(string fullUrl, string pageUrl, string json)
         {
             IEnumerable<string>? cachedPages = null;
@@ -162,18 +200,20 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             return cachedPages;
         }
 
-        private static IEnumerable<Uri> CollectShowdownReplayUrl(string json, string? user, IEnumerable<string>? tiers = null, IEnumerable<string>? opponents = null)
+        private static IEnumerable<Uri> CollectShowdownReplayUrl(string json, string? user, ScoutingRequest scoutingRequest)
         {
+            var opponents = scoutingRequest.Opponents;
+
             var regexUser = RegexUtil.Regex(user);
             IEnumerable<string>? regexOpponents = null;
-            if (opponents != null)
+            if (opponents is not null)
             {
                 regexOpponents = opponents.Select((opponent) => RegexUtil.Regex(opponent));
             }
             regexOpponents ??= new List<string>();
 
-            var analyzedTiers = tiers;
-            if (analyzedTiers != null)
+            var analyzedTiers = scoutingRequest.Tiers;
+            if (analyzedTiers is not null)
             {
                 analyzedTiers = analyzedTiers.Select((tier) => tier.ToLower());
             }
@@ -182,6 +222,11 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? new List<ReplayEntry>())
             {
                 var format = replayEntry.Format;
+                if (!IsInScope(replayEntry, scoutingRequest))
+                {
+                    continue;
+                }
+
                 if (analyzedTiers?.Any() != true || analyzedTiers.Any((tier) => tier == RegexUtil.Regex(format)))
                 {
                     var validatedOpponent = true;
@@ -212,6 +257,13 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                     }
                 }
             }
+        }
+
+        // Convert datetime to UNIX time
+        public static long ToUnixTime(DateTime dateTime)
+        {
+            DateTimeOffset dto = new(dateTime.ToUniversalTime());
+            return dto.ToUnixTimeSeconds();
         }
     }
 }

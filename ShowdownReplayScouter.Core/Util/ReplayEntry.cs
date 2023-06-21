@@ -2,7 +2,7 @@
 {
     public class ReplayEntry
     {
-        public int Uploadtime { get; set; }
+        public long Uploadtime { get; set; }
         public string Id { get; set; } = null!;
         public string Format { get; set; } = null!;
         public string P1 { get; set; } = null!;
