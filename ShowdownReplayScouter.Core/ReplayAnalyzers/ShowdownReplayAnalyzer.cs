@@ -160,15 +160,28 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                             }
                             else
                             {
-                                pokemon = new Pokemon()
+                                var maybeReal = pokeinf[2].Split(':')[1].Trim();
+                                pokemon = team.Pokemon.FirstOrDefault((pokemon) =>
+                                    pokemon.Name == maybeReal
+                                    || pokemon.FormName == maybeReal
+                                    || pokemon.AltNames.Any((altName) => altName == maybeReal)
+                                );
+                                if (pokemon != null)
                                 {
-                                    Name = maybepoke
-                                };
-                                if (team.Pokemon.Count == 0)
-                                {
-                                    pokemon.Lead = true;
+                                    pokemon.FormName = maybepoke;
                                 }
-                                team.Pokemon.Add(pokemon);
+                                else
+                                {
+                                    pokemon = new Pokemon()
+                                    {
+                                        Name = maybepoke
+                                    };
+                                    if (team.Pokemon.Count == 0)
+                                    {
+                                        pokemon.Lead = true;
+                                    }
+                                    team.Pokemon.Add(pokemon);
+                                }
                             }
                         }
                         if (pokeinf[2].Contains(':'))

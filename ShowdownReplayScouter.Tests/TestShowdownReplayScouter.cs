@@ -44,6 +44,19 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
+        public void Scout_Urshifu_Form_Issue_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Users = new List<string> { "Unviabriel" },
+                Links = new List<Uri> { new Uri("https://replay.pokemonshowdown.com/gen9stabmons-1890825135") }
+            });
+
+            Assert.IsTrue(result.Teams.Any());
+            Assert.IsTrue(result.Teams.First().Pokemon.Count == 6);
+        }
+
+        [Test]
         public void Scout_Relous_MaxDate_Gen7Ou_Replays()
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
@@ -170,7 +183,7 @@ namespace ShowdownReplayScouter.Tests
 
             Assert.IsTrue(result.Teams.Count() == 2 && result.Teams.First().Pokemon.Count == 6);
         }
-        
+
         [Test]
         public void Scout_Broken_User_Replays()
         {
@@ -332,7 +345,7 @@ namespace ShowdownReplayScouter.Tests
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
             {
-                Links = new List<Uri> { 
+                Links = new List<Uri> {
                     new Uri("https://replay.pokemonshowdown.com/smogtours-gen2ou-674735"),
                     new Uri("https://replay.pokemonshowdown.com/smogtours-gen2ou-674874")
                 }
