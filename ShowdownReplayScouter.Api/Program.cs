@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using NSwag;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddOpenApiDocument();
+builder.Services.AddRateLimiter(_ => _
+    .AddFixedWindowLimiter(policyName: "fixed", options =>
+    {
+        options.PermitLimit = 10;
+        options.Window = TimeSpan.FromSeconds(5);
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 2;
+    }));
+builder.Services.AddResponseCaching();
 
 var app = builder.Build();
 
@@ -38,6 +49,8 @@ app.UseOpenApi(config =>
 app.UseSwaggerUi3(); // serve Swagger UI
 app.UseReDoc(); // serve ReDoc UI
 //}
+
+app.UseResponseCaching();
 
 app.UseAuthorization();
 

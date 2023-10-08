@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShowdownReplayScouter.Cmd",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShowdownReplayScouter.Forms", "ShowdownReplayScouter.Forms\ShowdownReplayScouter.Forms.csproj", "{57CF4405-6761-4BF5-A223-60A614ADF02F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShowdownReplayScouter.Api", "ShowdownReplayScouter.Api\ShowdownReplayScouter.Api.csproj", "{39463FCD-52B8-4178-A9DB-5BDB1C08E3E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShowdownReplayScouter.Api", "ShowdownReplayScouter.Api\ShowdownReplayScouter.Api.csproj", "{39463FCD-52B8-4178-A9DB-5BDB1C08E3E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

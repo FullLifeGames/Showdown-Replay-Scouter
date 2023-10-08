@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 using ShowdownReplayScouter.Api.Data;
 using ShowdownReplayScouter.Core.ReplayScouter;
 using ShowdownReplayScouter.Core.Util;
@@ -17,12 +16,14 @@ namespace ShowdownReplayScouter.Api.Controllers
             _replayScouter = new Core.ReplayScouter.ShowdownReplayScouter();
         }
 
+        [ResponseCache(VaryByQueryKeys = new[] { "*" }, Duration = 30)]
         [HttpGet(Name = "GetScoutingResult")]
         public async Task<ApiScoutingResult?> Get([FromQuery] ApiScoutingRequest scoutingRequest)
         {
             return await RequestHandler(scoutingRequest).ConfigureAwait(false);
         }
 
+        [ResponseCache(VaryByQueryKeys = new []{ "*" }, Duration = 30)]
         [HttpPost(Name = "PostScoutingResult")]
         public async Task<ApiScoutingResult?> Post([FromBody] ApiScoutingRequest scoutingRequest)
         {
