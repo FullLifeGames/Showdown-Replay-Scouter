@@ -22,7 +22,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
         public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(ScoutingRequest scoutingRequest)
         {
-            if (scoutingRequest.Users is not null && scoutingRequest.Tiers is not null)
+            if (scoutingRequest.Users is not null && scoutingRequest.Tiers is not null && scoutingRequest.Tiers.Any())
             {
                 foreach (var user in scoutingRequest.Users)
                 {
