@@ -9,13 +9,12 @@ using System.Threading.Tasks;
 
 namespace ShowdownReplayScouter.Core.ReplayCollectors
 {
-    [Obsolete("Deprecated with the new Showdown API")]
-    public class ShowdownReplayCollector : IReplayCollector
+    public class ApiShowdownReplayCollector : IReplayCollector
     {
-        public ShowdownReplayCollector() : this(null) { }
+        public ApiShowdownReplayCollector() : this(null) { }
 
         private readonly IDistributedCache? _cache;
-        public ShowdownReplayCollector(IDistributedCache? cache)
+        public ApiShowdownReplayCollector(IDistributedCache? cache)
         {
             _cache = cache;
         }
@@ -110,10 +109,10 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
             var page = 1;
 
-            var fullUrl = $"https://replay.pokemonshowdown.com/search.json?user={regexUser}&format={tier}";
+            var fullUrl = $"https://replay.pokemonshowdown.com/api/replays/search?user={regexUser}&format={tier}";
             var pageUrl = $"{fullUrl}&page={page}";
 
-            var json = await Common.HttpClient.GetStringAsync(pageUrl).ConfigureAwait(false);
+            var json = ParseReturnJson(await Common.HttpClient.GetStringAsync(pageUrl).ConfigureAwait(false));
 
             var cachedPages = await GetCachedPages(fullUrl, pageUrl, json).ConfigureAwait(false);
             if (cachedPages != null)
@@ -134,7 +133,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 yield return json;
                 cachingPages.Add(json);
                 page++;
-                json = await Common.HttpClient.GetStringAsync($"{fullUrl}&page={page}").ConfigureAwait(false);
+                json = ParseReturnJson(await Common.HttpClient.GetStringAsync($"{fullUrl}&page={page}").ConfigureAwait(false));
             }
 
             var cachingPagesString = JsonConvert.SerializeObject(cachingPages);
@@ -147,10 +146,10 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
             var page = 1;
 
-            var fullUrl = $"https://replay.pokemonshowdown.com/search.json?user={regexUser}";
+            var fullUrl = $"https://replay.pokemonshowdown.com/api/replays/search?user={regexUser}";
             var pageUrl = $"{fullUrl}&page={page}";
 
-            var json = await Common.HttpClient.GetStringAsync(pageUrl).ConfigureAwait(false);
+            var json = ParseReturnJson(await Common.HttpClient.GetStringAsync(pageUrl).ConfigureAwait(false));
 
             var cachedPages = await GetCachedPages(fullUrl, pageUrl, json).ConfigureAwait(false);
             if (cachedPages != null)
@@ -171,7 +170,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 yield return json;
                 cachingPages.Add(json);
                 page++;
-                json = await Common.HttpClient.GetStringAsync($"{fullUrl}&page={page}").ConfigureAwait(false);
+                json = ParseReturnJson(await Common.HttpClient.GetStringAsync($"{fullUrl}&page={page}").ConfigureAwait(false));
             }
 
             var cachingPagesString = JsonConvert.SerializeObject(cachingPages);
@@ -219,10 +218,19 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
         {
             var regexTier = RegexUtil.Regex(tier);
 
-            var fullUrl = $"https://replay.pokemonshowdown.com/search.json?format={regexTier}";
+            var fullUrl = $"https://replay.pokemonshowdown.com/api/replays/search?format={regexTier}";
             var pageUrl = $"{fullUrl}&page={1}";
 
-            yield return await Common.HttpClient.GetStringAsync(pageUrl).ConfigureAwait(false);
+            yield return ParseReturnJson(await Common.HttpClient.GetStringAsync(pageUrl).ConfigureAwait(false));
+        }
+
+        private static string ParseReturnJson(string json)
+        {
+            if (json.StartsWith("]"))
+            {
+                json = json.Remove(0, 1);
+            }
+            return json;
         }
 
         private async Task<IEnumerable<string>?> GetCachedPages(string fullUrl, string pageUrl, string json)

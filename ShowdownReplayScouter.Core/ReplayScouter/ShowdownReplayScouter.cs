@@ -20,7 +20,7 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
 
         public override IReplayAnalyzer ReplayAnalyzer => new ShowdownReplayAnalyzer(_cache);
 
-        public override IReplayCollector ReplayCollector => new ShowdownReplayCollector(_cache);
+        public override IReplayCollector ReplayCollector => new ApiShowdownReplayCollector(_cache);
 
         public override ITeamMerger TeamMerger => new ShowdownTeamMerger();
 
