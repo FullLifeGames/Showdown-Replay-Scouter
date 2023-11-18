@@ -16,7 +16,7 @@ namespace ShowdownReplayScouter.Core.TeamMergers
                 var team = new Team();
                 foreach (var definitionTeam in definitionTeams)
                 {
-                    team = MergeTeams(team, definitionTeam);
+                    team = MergeTeams(team, definitionTeam) ?? team;
                 }
                 returnList.Add(team);
             }
@@ -75,7 +75,7 @@ namespace ShowdownReplayScouter.Core.TeamMergers
                     {
                         foundPokemon.Ability = pokemon.Ability;
                     }
-                    if (foundPokemon.Lead == false && pokemon.Lead != false)
+                    if (!foundPokemon.Lead && pokemon.Lead)
                     {
                         foundPokemon.Lead = pokemon.Lead;
                     }

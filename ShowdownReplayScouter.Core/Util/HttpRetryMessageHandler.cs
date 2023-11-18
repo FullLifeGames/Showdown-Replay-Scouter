@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 namespace ShowdownReplayScouter.Core.Util
 {
     // From https://stackoverflow.com/a/35183487
-    public class HttpRetryMessageHandler : DelegatingHandler
+    public class HttpRetryMessageHandler(HttpClientHandler handler) : DelegatingHandler(handler)
     {
-        public HttpRetryMessageHandler(HttpClientHandler handler) : base(handler) { }
-
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken) =>

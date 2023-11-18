@@ -18,6 +18,7 @@ builder.Services.AddRateLimiter(_ => _
         options.QueueLimit = 2;
     }));
 builder.Services.AddResponseCaching();
+builder.Services.AddOutputCache();
 
 var app = builder.Build();
 

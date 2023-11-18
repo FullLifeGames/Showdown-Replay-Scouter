@@ -64,7 +64,7 @@ namespace ShowdownReplayScouter.Forms
 
             var output = OutputPrinter.Print(scoutingRequest, result.Teams);
 
-            Invoke((MethodInvoker) delegate
+            Invoke((MethodInvoker)delegate
             {
                 OutputWindow.Text = output;
 

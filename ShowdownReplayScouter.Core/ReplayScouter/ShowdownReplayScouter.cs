@@ -8,15 +8,11 @@ using System.Threading.Tasks;
 
 namespace ShowdownReplayScouter.Core.ReplayScouter
 {
-    public class ShowdownReplayScouter : ReplayScouter
+    public class ShowdownReplayScouter(IDistributedCache? cache) : ReplayScouter
     {
         public ShowdownReplayScouter() : this(null) { }
 
-        private readonly CacheCollector _cache;
-        public ShowdownReplayScouter(IDistributedCache? cache)
-        {
-            _cache = new CacheCollector(cache);
-        }
+        private readonly CacheCollector _cache = new(cache);
 
         public override IReplayAnalyzer ReplayAnalyzer => new ShowdownReplayAnalyzer(_cache);
 
