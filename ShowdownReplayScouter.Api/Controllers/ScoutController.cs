@@ -18,15 +18,13 @@ namespace ShowdownReplayScouter.Api.Controllers
         }
 
         [ResponseCache(VaryByQueryKeys = ["*"], Duration = 30)]
-        [OutputCache(Duration = 3600)]
         [HttpGet(Name = "GetScoutingResult")]
         public async Task<ApiScoutingResult?> Get([FromQuery] ApiScoutingRequest scoutingRequest)
         {
             return await RequestHandler(scoutingRequest).ConfigureAwait(false);
         }
 
-        [ResponseCache(VaryByQueryKeys = ["*"], Duration = 30)]
-        [OutputCache(Duration = 3600)]
+        [OutputCache(Duration = 60, PolicyName = "post")]
         [HttpPost(Name = "PostScoutingResult")]
         public async Task<ApiScoutingResult?> Post([FromBody] ApiScoutingRequest scoutingRequest)
         {
