@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ShowdownReplayScouter.Core.Data
 {
@@ -6,24 +9,25 @@ namespace ShowdownReplayScouter.Core.Data
     public class Replay
     {
         public string Id { get; set; } = null!;
-        public string P1 { get; set; } = null!;
-        public string P2 { get; set; } = null!;
+        public string? P1 { get; set; }
+        public string? P2 { get; set; }
         public string Format { get; set; } = null!;
         public string Log { internal get; set; } = null!;
         public int UploadTime { get; set; }
         public int Views { get; set; }
-        public string P1Id { get; set; } = null!;
-        public string P2Id { get; set; } = null!;
+        public string? P1Id { get; set; }
+        public string? P2Id { get; set; }
         public string FormatId { get; set; } = null!;
-        public int Rating { get; set; }
+        public int? Rating { get; set; }
         public int Private { get; set; }
-        public string Password { get; set; } = null!;
+        public string? Password { get; set; }
         /// <summary>
         /// If a winner exists, it is present. If not or tie => null
         /// </summary>
         public string? Winner { get; set; }
         public bool WinForTeam { get; set; }
-        public PlayerInfo PlayerInfo { get; set; } = null!;
+        public PlayerInfo? PlayerInfo { get; set; }
+        public IEnumerable<string> Players { get; set; } = null!;
         public Uri Link { get; set; } = null!;
 
         public Replay Clone()
@@ -46,6 +50,7 @@ namespace ShowdownReplayScouter.Core.Data
                 Winner = Winner,
                 WinForTeam = WinForTeam,
                 PlayerInfo = PlayerInfo,
+                Players = Players.ToList(),
                 Link = Link
             };
         }

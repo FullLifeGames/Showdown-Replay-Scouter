@@ -108,11 +108,25 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     team.Format = replayObject.Format;
                     if (playerValue == "p1")
                     {
-                        playerInfo.PlayerName = replayObject.P1;
+                        if (replayObject.P1 is not null)
+                        {
+                            playerInfo.PlayerName = replayObject.P1;
+                        }
+                        else
+                        {
+                            playerInfo.PlayerName = replayObject.Players.FirstOrDefault();
+                        }
                     }
                     if (playerValue == "p2")
                     {
-                        playerInfo.PlayerName = replayObject.P2;
+                        if (replayObject.P2 is not null)
+                        {
+                            playerInfo.PlayerName = replayObject.P2;
+                        }
+                        else
+                        {
+                            playerInfo.PlayerName = replayObject.Players.LastOrDefault();
+                        }
                     }
                     replayObject.PlayerInfo = playerInfo;
                 }
