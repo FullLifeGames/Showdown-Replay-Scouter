@@ -115,6 +115,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                         else
                         {
                             playerInfo.PlayerName = replayObject.Players.FirstOrDefault();
+                            replayObject.P1 = replayObject.Players.FirstOrDefault();
                         }
                     }
                     if (playerValue == "p2")
@@ -126,6 +127,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                         else
                         {
                             playerInfo.PlayerName = replayObject.Players.LastOrDefault();
+                            replayObject.P2 = replayObject.Players.LastOrDefault();
                         }
                     }
                     replayObject.PlayerInfo = playerInfo;

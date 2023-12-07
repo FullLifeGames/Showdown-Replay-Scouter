@@ -68,6 +68,24 @@ namespace ShowdownReplayScouter.Tests
             ClassicAssert.IsTrue(result.Teams.Any());
         }
 
+
+        [Test]
+        public void Scout_New_Format_Winner_Replay()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Links = new List<Uri> { new("https://replay.pokemonshowdown.com/smogtours-gen1ou-733374") }
+            });
+
+            ClassicAssert.IsTrue(result.Teams.Any());
+            ClassicAssert.IsTrue(
+                result.Teams.First().Replays.First().Winner == "Green on fire"
+            );
+            ClassicAssert.IsTrue(
+                result.Teams.Any((team) => team.Replays.First().WinForTeam)
+            );
+        }
+
         [Test]
         public void Scout_Relous_MaxDate_Gen7Ou_Replays()
         {
