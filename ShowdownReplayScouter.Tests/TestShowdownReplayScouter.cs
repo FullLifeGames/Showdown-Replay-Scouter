@@ -68,7 +68,6 @@ namespace ShowdownReplayScouter.Tests
             ClassicAssert.IsTrue(result.Teams.Any());
         }
 
-
         [Test]
         public void Scout_New_Format_Winner_Replay()
         {
@@ -84,6 +83,17 @@ namespace ShowdownReplayScouter.Tests
             ClassicAssert.IsTrue(
                 result.Teams.Any((team) => team.Replays.First().WinForTeam)
             );
+        }
+
+        [Test]
+        public void Scout_New_Format_Query_Replay()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Links = new List<Uri> { new("https://replay.pokemonshowdown.com/smogtours-gen9ou-735029?p2") }
+            });
+
+            ClassicAssert.IsTrue(result.Teams.Any());
         }
 
         [Test]

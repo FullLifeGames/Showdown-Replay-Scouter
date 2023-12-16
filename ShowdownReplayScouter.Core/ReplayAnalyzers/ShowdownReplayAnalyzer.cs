@@ -71,6 +71,11 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
         private async Task<Team> GetTeamFromUrl(Uri link, string? user = null, string playerValue = "")
         {
             var jsonLink = link.ToString();
+            // Remove additions like "?p2"
+            if (!string.IsNullOrWhiteSpace(link.Query))
+            {
+                jsonLink = jsonLink.Replace(link.Query, "");
+            }
             if (!jsonLink.Contains(".json"))
             {
                 jsonLink += ".json";

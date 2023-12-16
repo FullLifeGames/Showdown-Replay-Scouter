@@ -43,18 +43,7 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
             {
                 await Parallel.ForEachAsync(scoutingRequest.Links, async (replay, _) =>
                     {
-                        if (scoutingRequest.Users?.Any() != true)
-                        {
-                            try
-                            {
-                                await AnalyzeReplayAsync(new CollectedReplay(replay, null), teamCollection).ConfigureAwait(false);
-                            }
-                            catch (Exception)
-                            {
-                                Console.WriteLine($"Error on {replay}");
-                            }
-                        }
-                        else
+                        if (scoutingRequest.Users?.Any() == true)
                         {
                             foreach (var user in scoutingRequest.Users)
                             {
@@ -66,6 +55,17 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
                                 {
                                     Console.WriteLine($"Error on {replay}");
                                 }
+                            }
+                        }
+                        else
+                        {
+                            try
+                            {
+                                await AnalyzeReplayAsync(new CollectedReplay(replay, null), teamCollection).ConfigureAwait(false);
+                            }
+                            catch (Exception)
+                            {
+                                Console.WriteLine($"Error on {replay}");
                             }
                         }
                     }

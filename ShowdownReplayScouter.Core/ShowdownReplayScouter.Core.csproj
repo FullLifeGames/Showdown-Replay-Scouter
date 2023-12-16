@@ -10,7 +10,7 @@
     <RepositoryUrl>https://github.com/FullLifeGames/Showdown-Replay-Scouter</RepositoryUrl>
     <PackageTags>Pokémon Showdown Replay Scouter</PackageTags>
     <RepositoryType>GitHub</RepositoryType>
-    <PackageVersion>1.11.1</PackageVersion>
+    <PackageVersion>1.11.2</PackageVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
