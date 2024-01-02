@@ -86,6 +86,24 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
+        public void Scout_New_Format_Other_Winner_Replay()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Links = new List<Uri> { new("https://replay.pokemonshowdown.com/smogtours-gen1ou-734539") },
+                Users = new List<string> { "RaiZen1704" }
+            });
+
+            ClassicAssert.IsTrue(result.Teams.Any());
+            ClassicAssert.IsTrue(
+                result.Teams.First().Replays.First().Winner == "RaiZen1704"
+            );
+            ClassicAssert.IsTrue(
+                result.Teams.Any((team) => team.Replays.First().WinForTeam)
+            );
+        }
+
+        [Test]
         public void Scout_New_Format_Query_Replay()
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
