@@ -3,6 +3,7 @@ using NSwag;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using ShowdownReplayScouter.Api.Policy;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,7 @@ builder.Services.AddOpenApiDocument(settings =>
     settings.Title = "Showdown Replay Scouter";
     settings.Description = "This is the Showdown Replay Scouter API. <a href='https://github.com/FullLifeGames/Showdown-Replay-Scouter'>This is the code.</a>";
 });
+builder.Services.Configure<KestrelServerOptions>(x => x.AllowSynchronousIO = true);
 builder.Services.AddRateLimiter(_ => _
     .AddFixedWindowLimiter(policyName: "fixed", options =>
     {
@@ -52,7 +54,7 @@ app.UseOpenApi(config =>
         config.PostProcess = (document, _) => document.Schemes = new[] { OpenApiSchema.Https };
     }
 }); // serve OpenAPI/Swagger documents
-app.UseSwaggerUi3((config) => config.DocumentTitle = "Showdown Replay Scouter"); // serve Swagger UI
+app.UseSwaggerUi((config) => config.DocumentTitle = "Showdown Replay Scouter"); // serve Swagger UI
 app.UseReDoc(); // serve ReDoc UI
 //}
 

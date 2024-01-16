@@ -11,12 +11,12 @@ public static class CustomPost
             context.Request.EnableBuffering();
 
             using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
-            var body = reader.ReadToEndAsync();
+            var body = reader.ReadToEnd();
 
             // Reset the stream position to enable subsequent reads
             context.Request.Body.Position = 0;
 
-            return new KeyValuePair<string, string>("requestBody", body.Result);
+            return new KeyValuePair<string, string>("requestBody", body);
         }), true);
     }
 }
