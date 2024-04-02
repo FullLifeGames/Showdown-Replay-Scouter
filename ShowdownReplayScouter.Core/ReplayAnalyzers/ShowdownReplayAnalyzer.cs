@@ -166,6 +166,11 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     if (line.Contains(playerInfo.PlayerValue!))
                     {
                         var pokeinf = line.Split('|');
+                        if (pokeinf.Length < 4)
+                        {
+                            // Something broke in the replay, skipping
+                            continue;
+                        }
                         var maybepoke = pokeinf[3].Split(',')[0];
                         var pokemon = team.Pokemon.FirstOrDefault((pokemon) => pokemon.Name == maybepoke || pokemon.FormName == maybepoke);
                         if (pokemon == null)

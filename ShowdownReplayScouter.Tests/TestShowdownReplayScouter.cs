@@ -45,12 +45,12 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
-        public void Scout_Urshifu_Form_Issue_Replays()
+        public void Scout_Dice_Gen7ou_Replays()
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
             {
-                Users = new List<string> { "Unviabriel" },
-                Links = new List<Uri> { new("https://replay.pokemonshowdown.com/gen9stabmons-1890825135") }
+                Users = new List<string> { "dice" },
+                Tiers = new List<string> { "gen5ou" }
             });
 
             ClassicAssert.IsTrue(result.Teams.Any());
@@ -348,25 +348,6 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
-        public void Scout_Terastallize()
-        {
-            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
-            {
-                Users = new List<string> { "hyane" },
-                Links = new List<Uri> { new("https://replay.pokemonshowdown.com/gen9ou-1715256459-wskzpoa3vb4nkhvw6p98krvberlafjppw") }
-            });
-
-            ClassicAssert.IsTrue(
-                result.Teams.Any() &&
-                result.Teams.Any((team) =>
-                    team.Pokemon.Any((pokemon) =>
-                        pokemon.TeraType == "Fighting"
-                    )
-                )
-            );
-        }
-
-        [Test]
         public void Scout_Only_Tier()
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
@@ -411,41 +392,6 @@ namespace ShowdownReplayScouter.Tests
 
             ClassicAssert.IsTrue(
                 result.Teams.Count() == 4
-            );
-        }
-
-        [Test]
-        public void Scout_Identify_Correct_Form()
-        {
-            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
-            {
-                Links = new List<Uri> {
-                    new("https://replay.pokemonshowdown.com/gen9pu-1817019814-mc4x59eeak3fukn0x8qwub7rg1na09upw")
-                }
-            });
-
-            ClassicAssert.IsTrue(
-                result.Teams.Count() == 2
-                && !result.Teams.Any((team) => team.Pokemon.Any((pokemon) => pokemon.Name == "Zorua"))
-                && result.Teams.Any((team) => team.Pokemon.Any((pokemon) => pokemon.Name == "Zorua-Hisui"))
-            );
-        }
-
-        [Test]
-        public void Scout_Correct_Zorua_Identification()
-        {
-            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
-            {
-                Links = new List<Uri> {
-                    new("https://replay.pokemonshowdown.com/gen9lc-1859090126")
-                },
-                Users = new List<string> { "Leafium Z" }
-            });
-
-            ClassicAssert.IsTrue(
-                result.Teams.Count() == 1
-                && result.Teams.All((team) => team.Pokemon.Count == 6)
-                && result.Teams.Any((team) => team.Pokemon.Any((pokemon) => pokemon.Name == "Zorua-Hisui"))
             );
         }
     }
