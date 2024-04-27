@@ -1,0 +1,43 @@
+name: Trigger auto deployment for showdownreplayscouterapi-app-202
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ master ]
+    paths:
+    - 'ShowdownReplayScouter.Api/**'
+    - '.github/workflows/showdownreplayscouterapi-app-202-AutoDeployTrigger-281b4b31-8da0-4f51-85e3-45c69c4e6764.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.SHOWDOWNREPLAYSCOUTERAPIAPP202_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/ShowdownReplayScouter.Api 
+          registryUrl: showdownreplayscouterapi20240311200422.azurecr.io
+          registryUsername: ${{ secrets.SHOWDOWNREPLAYSCOUTERAPIAPP202_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.SHOWDOWNREPLAYSCOUTERAPIAPP202_REGISTRY_PASSWORD }}
+          containerAppName: showdownreplayscouterapi-app-202
+          resourceGroup: ShowdownReplayScouterApi20231120213849ResourceGroup
+          imageToBuild: showdownreplayscouterapi20240311200422.azurecr.io/showdownreplayscouterapi-app-202:${{ github.sha }}
+          
+            
+
+     
+
