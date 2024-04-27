@@ -26,6 +26,11 @@ builder.Services.AddRateLimiter(_ => _
     }));
 builder.Services.AddResponseCaching();
 builder.Services.AddOutputCache(x => x.AddPostPolicy());
+var insightsConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+if (insightsConnectionString is not null)
+{
+    builder.Services.AddApplicationInsightsTelemetry(insightsConnectionString);
+}
 
 var app = builder.Build();
 
