@@ -7,13 +7,6 @@ on:
     branches: [main]
     types: 
       - completed
-  # Automatically trigger it when detected changes in repo
-  push:
-    branches: 
-      [ master ]
-    paths:
-    - '**'
-    - '.github/workflows/showdownreplayscouterapi-app-202-AutoDeployTrigger-281b4b31-8da0-4f51-85e3-45c69c4e6764.yml'
 
   # Allow manual trigger 
   workflow_dispatch:
