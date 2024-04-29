@@ -2,6 +2,11 @@ name: Trigger auto deployment for showdownreplayscouterapi-app-202
 
 # When this action will be executed
 on:
+  workflow_run:
+    workflows: [".NET"]
+    branches: [main]
+    types: 
+      - completed
   # Automatically trigger it when detected changes in repo
   push:
     branches: 
