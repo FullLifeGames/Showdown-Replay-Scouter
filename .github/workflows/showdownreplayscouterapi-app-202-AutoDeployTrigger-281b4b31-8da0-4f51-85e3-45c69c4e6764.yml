@@ -4,7 +4,7 @@ name: Trigger auto deployment for showdownreplayscouterapi-app-202
 on:
   workflow_run:
     workflows: [".NET"]
-    branches: [main]
+    branches: [master]
     types: 
       - completed
 
