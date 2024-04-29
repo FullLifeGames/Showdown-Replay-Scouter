@@ -29,7 +29,10 @@ builder.Services.AddOutputCache(x => x.AddPostPolicy());
 var insightsConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
 if (insightsConnectionString is not null)
 {
-    builder.Services.AddApplicationInsightsTelemetry(insightsConnectionString);
+    builder.Services.AddApplicationInsightsTelemetry(options =>
+    {
+        options.ConnectionString = insightsConnectionString;
+    });
 }
 
 var app = builder.Build();
@@ -56,7 +59,7 @@ app.UseOpenApi(config =>
 {
     if (!app.Environment.IsDevelopment())
     {
-        config.PostProcess = (document, _) => document.Schemes = new[] { OpenApiSchema.Https };
+        config.PostProcess = (document, _) => document.Schemes = [OpenApiSchema.Https];
     }
 }); // serve OpenAPI/Swagger documents
 app.UseSwaggerUi((config) => config.DocumentTitle = "Showdown Replay Scouter"); // serve Swagger UI

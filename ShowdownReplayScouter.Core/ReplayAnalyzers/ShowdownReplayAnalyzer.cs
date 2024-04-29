@@ -139,6 +139,27 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 }
             }
 
+            try
+            {
+                AnalyzeLogic(user, playerInfo, team, replayLog, replayObject);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"Error on replay {jsonLink}, canceling analyzing after exception:");
+                Console.Error.WriteLine(e);
+                Console.Error.WriteLine(e.StackTrace);
+            }
+
+            if (team.Pokemon.Count > 0)
+            {
+                await SetCache(playerInfo, jsonLink, team).ConfigureAwait(false);
+            }
+
+            return team;
+        }
+
+        private void AnalyzeLogic(string? user, PlayerInfo playerInfo, Team team, string replayLog, Replay? replayObject)
+        {
             foreach (var line in replayLog.Split('\n'))
             {
                 if (line.Contains("|player"))
@@ -387,13 +408,6 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     }
                 }
             }
-
-            if (team.Pokemon.Count > 0)
-            {
-                await SetCache(playerInfo, jsonLink, team).ConfigureAwait(false);
-            }
-
-            return team;
         }
 
         private async Task<Team?> GetFromCache(string? user, string playerValue, string logLink)

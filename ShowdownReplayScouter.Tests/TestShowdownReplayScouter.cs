@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +25,7 @@ namespace ShowdownReplayScouter.Tests
                 Tiers = new List<string> { "gen7ou" }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any());
+            Assert.That(result.Teams.Any());
         }
 
         [Test]
@@ -40,8 +39,8 @@ namespace ShowdownReplayScouter.Tests
                 MinimumDate = new DateTime(2019, 7, 5)
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any());
-            ClassicAssert.IsTrue(result.Teams.Count() == 1);
+            Assert.That(result.Teams.Any());
+            Assert.That(result.Teams.Count() == 1);
         }
 
         [Test]
@@ -53,8 +52,21 @@ namespace ShowdownReplayScouter.Tests
                 Tiers = new List<string> { "gen5ou" }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any());
-            ClassicAssert.IsTrue(result.Teams.First().Pokemon.Count == 6);
+            Assert.That(result.Teams.Any());
+            Assert.That(result.Teams.First().Pokemon.Count == 6);
+        }
+
+        [Test]
+        public void Scout_Broken_Replay_Test()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Links = [
+                    new Uri("https://replay.pokemonshowdown.com/smogtours-gen7ou-278958"),
+                ]
+            });
+
+            Assert.That(result.Teams.Any());
         }
 
         [Test]
@@ -65,7 +77,7 @@ namespace ShowdownReplayScouter.Tests
                 Links = new List<Uri> { new("https://replay.pokemonshowdown.com/smogtours-gen9ou-733546") }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any());
+            Assert.That(result.Teams.Any());
         }
 
         [Test]
@@ -76,11 +88,11 @@ namespace ShowdownReplayScouter.Tests
                 Links = new List<Uri> { new("https://replay.pokemonshowdown.com/smogtours-gen1ou-733374") }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any());
-            ClassicAssert.IsTrue(
+            Assert.That(result.Teams.Any());
+            Assert.That(
                 result.Teams.First().Replays.First().Winner == "Green on fire"
             );
-            ClassicAssert.IsTrue(
+            Assert.That(
                 result.Teams.Any((team) => team.Replays.First().WinForTeam)
             );
         }
@@ -94,11 +106,11 @@ namespace ShowdownReplayScouter.Tests
                 Users = new List<string> { "RaiZen1704" }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any());
-            ClassicAssert.IsTrue(
+            Assert.That(result.Teams.Any());
+            Assert.That(
                 result.Teams.First().Replays.First().Winner == "RaiZen1704"
             );
-            ClassicAssert.IsTrue(
+            Assert.That(
                 result.Teams.Any((team) => team.Replays.First().WinForTeam)
             );
         }
@@ -111,7 +123,7 @@ namespace ShowdownReplayScouter.Tests
                 Links = new List<Uri> { new("https://replay.pokemonshowdown.com/smogtours-gen9ou-735029?p2") }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any());
+            Assert.That(result.Teams.Any());
         }
 
         [Test]
@@ -125,7 +137,7 @@ namespace ShowdownReplayScouter.Tests
                 MinimumDate = new DateTime(2019, 7, 5)
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any());
+            Assert.That(result.Teams.Any());
         }
 
         [Test]
@@ -137,7 +149,7 @@ namespace ShowdownReplayScouter.Tests
                 Tiers = new List<string> { "gen7ou" }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any());
+            Assert.That(result.Teams.Any());
         }
 
         [Test]
@@ -148,7 +160,7 @@ namespace ShowdownReplayScouter.Tests
                 Users = new List<string> { "fulllifegames" },
                 Links = new List<Uri> { new("https://replay.pokemonshowdown.com/gen7ou-826668378") }
             });
-            ClassicAssert.IsTrue(result.Teams.Any());
+            Assert.That(result.Teams.Any());
         }
 
         [Test]
@@ -160,7 +172,7 @@ namespace ShowdownReplayScouter.Tests
                 Tiers = new List<string> { "gen7ou", "gen8ou" }
             });
 
-            ClassicAssert.IsTrue(
+            Assert.That(
                 result.Teams.Any((team) => team.Replays.Any((replay) => replay.Link.ToString().Contains("gen7ou")))
                 &&
                 result.Teams.Any((team) => team.Replays.Any((replay) => replay.Link.ToString().Contains("gen8ou")))
@@ -179,7 +191,7 @@ namespace ShowdownReplayScouter.Tests
                 }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
+            Assert.That(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
         }
 
         [Test]
@@ -194,7 +206,7 @@ namespace ShowdownReplayScouter.Tests
                 }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
+            Assert.That(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
         }
 
         [Test]
@@ -209,7 +221,7 @@ namespace ShowdownReplayScouter.Tests
                 }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
+            Assert.That(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
         }
 
         [Test]
@@ -225,7 +237,7 @@ namespace ShowdownReplayScouter.Tests
                 }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Count() == 4 && result.Teams.First().Pokemon.Count == 6);
+            Assert.That(result.Teams.Count() == 4 && result.Teams.First().Pokemon.Count == 6);
         }
 
         [Test]
@@ -239,7 +251,7 @@ namespace ShowdownReplayScouter.Tests
                 }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Count() == 2 && result.Teams.First().Pokemon.Count == 6);
+            Assert.That(result.Teams.Count() == 2 && result.Teams.First().Pokemon.Count == 6);
         }
 
         [Test]
@@ -251,7 +263,7 @@ namespace ShowdownReplayScouter.Tests
                 Tiers = new List<string>()
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
+            Assert.That(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
         }
 
         [Test]
@@ -266,7 +278,7 @@ namespace ShowdownReplayScouter.Tests
                 }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
+            Assert.That(result.Teams.Any() && result.Teams.First().Pokemon.Count == 6);
         }
 
         [Test]
@@ -281,7 +293,7 @@ namespace ShowdownReplayScouter.Tests
                 }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any()
+            Assert.That(result.Teams.Any()
                 && result.Teams.First().Pokemon.Count == 6
                 && result.Teams.First().Pokemon.First((pokemon) => pokemon.Name == "Ferrothorn").Ability != "Static"
             );
@@ -295,7 +307,7 @@ namespace ShowdownReplayScouter.Tests
                 }
             });
 
-            ClassicAssert.IsTrue(result.Teams.Any()
+            Assert.That(result.Teams.Any()
                 && result.Teams.First().Pokemon.Count == 6
                 && result.Teams.First().Pokemon.First((pokemon) => pokemon.Name == "Zapdos").Ability == "Static"
             );
@@ -310,7 +322,7 @@ namespace ShowdownReplayScouter.Tests
                 Tiers = new List<string> { "gen1ou" }
             });
 
-            ClassicAssert.IsTrue(
+            Assert.That(
                 result.Teams.Any() && !result.Teams.Any((team) =>
                     team.Pokemon.Any((pokemon) =>
                         pokemon.Moves.Any((move) =>
@@ -330,7 +342,7 @@ namespace ShowdownReplayScouter.Tests
                 Tiers = new List<string> { "gen7ou" }
             });
 
-            ClassicAssert.IsTrue(
+            Assert.That(
                 result.Teams.Any() &&
                 !result.Teams.Any((team) =>
                     team.Pokemon.Any((pokemon) =>
@@ -355,7 +367,7 @@ namespace ShowdownReplayScouter.Tests
                 Tiers = new List<string> { "gen7ou" }
             });
 
-            ClassicAssert.IsTrue(
+            Assert.That(
                 result.Teams.Any()
             );
         }
@@ -368,13 +380,13 @@ namespace ShowdownReplayScouter.Tests
                 Links = new List<Uri> { new("https://replay.pokemonshowdown.com/smogtours-gen2ou-672504") }
             });
 
-            ClassicAssert.IsTrue(
+            Assert.That(
                 result.Teams.Any()
             );
-            ClassicAssert.IsTrue(
+            Assert.That(
                 result.Teams.First().Replays.Any()
             );
-            ClassicAssert.IsTrue(
+            Assert.That(
                 result.Teams.First().Replays.First().Winner == null
             );
         }
@@ -390,7 +402,7 @@ namespace ShowdownReplayScouter.Tests
                 }
             });
 
-            ClassicAssert.IsTrue(
+            Assert.That(
                 result.Teams.Count() == 4
             );
         }
