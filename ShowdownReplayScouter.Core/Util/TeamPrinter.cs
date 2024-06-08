@@ -8,7 +8,7 @@ namespace ShowdownReplayScouter.Core.Util
     {
         public static IEnumerable<string> Print(IEnumerable<Team> teams)
         {
-            return teams.Select((team) => Print(team));
+            return teams.Select(Print);
         }
 
         public static string Print(Team team)

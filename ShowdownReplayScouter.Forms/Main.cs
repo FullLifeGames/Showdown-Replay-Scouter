@@ -15,6 +15,7 @@ namespace ShowdownReplayScouter.Forms
 
         public Main()
         {
+            SQLitePCL.Batteries_V2.Init();
             _replayScouter = new Core.ReplayScouter.ShowdownReplayScouter(
                 new SqliteCache(
                     new SqliteCacheOptions()

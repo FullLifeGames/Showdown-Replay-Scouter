@@ -30,179 +30,179 @@ namespace ShowdownReplayScouter.Forms
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
-            this.ScoutReplayButton = new System.Windows.Forms.Button();
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.DescriptionLabel = new System.Windows.Forms.Label();
-            this.LinksLabel = new System.Windows.Forms.Label();
-            this.LinksTextBox = new System.Windows.Forms.TextBox();
-            this.OpponentLabel = new System.Windows.Forms.Label();
-            this.OpponentTextBox = new System.Windows.Forms.TextBox();
-            this.TierLabel = new System.Windows.Forms.Label();
-            this.TierTextBox = new System.Windows.Forms.TextBox();
-            this.UsernameLabel = new System.Windows.Forms.Label();
-            this.UsernameTextBox = new System.Windows.Forms.TextBox();
-            this.OutputWindow = new System.Windows.Forms.TextBox();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-            this.splitContainer1.Panel1.SuspendLayout();
-            this.splitContainer1.Panel2.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
-            this.SuspendLayout();
+            ScoutReplayButton = new System.Windows.Forms.Button();
+            splitContainer1 = new System.Windows.Forms.SplitContainer();
+            DescriptionLabel = new System.Windows.Forms.Label();
+            LinksLabel = new System.Windows.Forms.Label();
+            LinksTextBox = new System.Windows.Forms.TextBox();
+            OpponentLabel = new System.Windows.Forms.Label();
+            OpponentTextBox = new System.Windows.Forms.TextBox();
+            TierLabel = new System.Windows.Forms.Label();
+            TierTextBox = new System.Windows.Forms.TextBox();
+            UsernameLabel = new System.Windows.Forms.Label();
+            UsernameTextBox = new System.Windows.Forms.TextBox();
+            OutputWindow = new System.Windows.Forms.TextBox();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+            splitContainer1.Panel1.SuspendLayout();
+            splitContainer1.Panel2.SuspendLayout();
+            splitContainer1.SuspendLayout();
+            SuspendLayout();
             // 
             // ScoutReplayButton
             // 
-            this.ScoutReplayButton.Enabled = false;
-            this.ScoutReplayButton.Location = new System.Drawing.Point(15, 513);
-            this.ScoutReplayButton.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.ScoutReplayButton.Name = "ScoutReplayButton";
-            this.ScoutReplayButton.Size = new System.Drawing.Size(265, 43);
-            this.ScoutReplayButton.TabIndex = 4;
-            this.ScoutReplayButton.Text = "Scout Replays";
-            this.ScoutReplayButton.UseVisualStyleBackColor = true;
-            this.ScoutReplayButton.Click += new System.EventHandler(this.Scout_Replay_Click);
+            ScoutReplayButton.Enabled = false;
+            ScoutReplayButton.Location = new System.Drawing.Point(15, 513);
+            ScoutReplayButton.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            ScoutReplayButton.Name = "ScoutReplayButton";
+            ScoutReplayButton.Size = new System.Drawing.Size(265, 43);
+            ScoutReplayButton.TabIndex = 4;
+            ScoutReplayButton.Text = "Scout Replays";
+            ScoutReplayButton.UseVisualStyleBackColor = true;
+            ScoutReplayButton.Click += Scout_Replay_Click;
             // 
             // splitContainer1
             // 
-            this.splitContainer1.Location = new System.Drawing.Point(14, 16);
-            this.splitContainer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.splitContainer1.Name = "splitContainer1";
+            splitContainer1.Location = new System.Drawing.Point(14, 16);
+            splitContainer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.DescriptionLabel);
-            this.splitContainer1.Panel1.Controls.Add(this.LinksLabel);
-            this.splitContainer1.Panel1.Controls.Add(this.LinksTextBox);
-            this.splitContainer1.Panel1.Controls.Add(this.OpponentLabel);
-            this.splitContainer1.Panel1.Controls.Add(this.OpponentTextBox);
-            this.splitContainer1.Panel1.Controls.Add(this.TierLabel);
-            this.splitContainer1.Panel1.Controls.Add(this.TierTextBox);
-            this.splitContainer1.Panel1.Controls.Add(this.UsernameLabel);
-            this.splitContainer1.Panel1.Controls.Add(this.UsernameTextBox);
-            this.splitContainer1.Panel1.Controls.Add(this.ScoutReplayButton);
+            splitContainer1.Panel1.Controls.Add(DescriptionLabel);
+            splitContainer1.Panel1.Controls.Add(LinksLabel);
+            splitContainer1.Panel1.Controls.Add(LinksTextBox);
+            splitContainer1.Panel1.Controls.Add(OpponentLabel);
+            splitContainer1.Panel1.Controls.Add(OpponentTextBox);
+            splitContainer1.Panel1.Controls.Add(TierLabel);
+            splitContainer1.Panel1.Controls.Add(TierTextBox);
+            splitContainer1.Panel1.Controls.Add(UsernameLabel);
+            splitContainer1.Panel1.Controls.Add(UsernameTextBox);
+            splitContainer1.Panel1.Controls.Add(ScoutReplayButton);
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.OutputWindow);
-            this.splitContainer1.Size = new System.Drawing.Size(887, 568);
-            this.splitContainer1.SplitterDistance = 294;
-            this.splitContainer1.SplitterWidth = 5;
-            this.splitContainer1.TabIndex = 1;
+            splitContainer1.Panel2.Controls.Add(OutputWindow);
+            splitContainer1.Size = new System.Drawing.Size(887, 568);
+            splitContainer1.SplitterDistance = 294;
+            splitContainer1.SplitterWidth = 5;
+            splitContainer1.TabIndex = 1;
             // 
             // DescriptionLabel
             // 
-            this.DescriptionLabel.AutoSize = true;
-            this.DescriptionLabel.Location = new System.Drawing.Point(15, 7);
-            this.DescriptionLabel.Name = "DescriptionLabel";
-            this.DescriptionLabel.Size = new System.Drawing.Size(255, 20);
-            this.DescriptionLabel.TabIndex = 9;
-            this.DescriptionLabel.Text = "Minimum: Username or list of replays";
+            DescriptionLabel.AutoSize = true;
+            DescriptionLabel.Location = new System.Drawing.Point(15, 7);
+            DescriptionLabel.Name = "DescriptionLabel";
+            DescriptionLabel.Size = new System.Drawing.Size(255, 20);
+            DescriptionLabel.TabIndex = 9;
+            DescriptionLabel.Text = "Minimum: Username or list of replays";
             // 
             // LinksLabel
             // 
-            this.LinksLabel.AutoSize = true;
-            this.LinksLabel.Location = new System.Drawing.Point(15, 253);
-            this.LinksLabel.Name = "LinksLabel";
-            this.LinksLabel.Size = new System.Drawing.Size(162, 20);
-            this.LinksLabel.TabIndex = 8;
-            this.LinksLabel.Text = "Replay Links (Optional)";
+            LinksLabel.AutoSize = true;
+            LinksLabel.Location = new System.Drawing.Point(15, 253);
+            LinksLabel.Name = "LinksLabel";
+            LinksLabel.Size = new System.Drawing.Size(162, 20);
+            LinksLabel.TabIndex = 8;
+            LinksLabel.Text = "Replay Links (Optional)";
             // 
             // LinksTextBox
             // 
-            this.LinksTextBox.Location = new System.Drawing.Point(15, 277);
-            this.LinksTextBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.LinksTextBox.Multiline = true;
-            this.LinksTextBox.Name = "LinksTextBox";
-            this.LinksTextBox.PlaceholderText = "e.g. \"https://replay.pokemonshowdown.com/gen8ou-1089874504\"";
-            this.LinksTextBox.Size = new System.Drawing.Size(265, 212);
-            this.LinksTextBox.TabIndex = 3;
-            this.LinksTextBox.TextChanged += new System.EventHandler(this.LinksTextBox_TextChanged);
+            LinksTextBox.Location = new System.Drawing.Point(15, 277);
+            LinksTextBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            LinksTextBox.MaxLength = 32767999;
+            LinksTextBox.Multiline = true;
+            LinksTextBox.Name = "LinksTextBox";
+            LinksTextBox.PlaceholderText = "e.g. \"https://replay.pokemonshowdown.com/gen8ou-1089874504\"";
+            LinksTextBox.Size = new System.Drawing.Size(265, 212);
+            LinksTextBox.TabIndex = 3;
+            LinksTextBox.TextChanged += LinksTextBox_TextChanged;
             // 
             // OpponentLabel
             // 
-            this.OpponentLabel.AutoSize = true;
-            this.OpponentLabel.Location = new System.Drawing.Point(15, 187);
-            this.OpponentLabel.Name = "OpponentLabel";
-            this.OpponentLabel.Size = new System.Drawing.Size(148, 20);
-            this.OpponentLabel.TabIndex = 6;
-            this.OpponentLabel.Text = "Opponent (Optional)";
+            OpponentLabel.AutoSize = true;
+            OpponentLabel.Location = new System.Drawing.Point(15, 187);
+            OpponentLabel.Name = "OpponentLabel";
+            OpponentLabel.Size = new System.Drawing.Size(148, 20);
+            OpponentLabel.TabIndex = 6;
+            OpponentLabel.Text = "Opponent (Optional)";
             // 
             // OpponentTextBox
             // 
-            this.OpponentTextBox.Location = new System.Drawing.Point(15, 211);
-            this.OpponentTextBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.OpponentTextBox.Name = "OpponentTextBox";
-            this.OpponentTextBox.PlaceholderText = "e.g. \"fulllifegames, Senor L\"";
-            this.OpponentTextBox.Size = new System.Drawing.Size(265, 27);
-            this.OpponentTextBox.TabIndex = 2;
+            OpponentTextBox.Location = new System.Drawing.Point(15, 211);
+            OpponentTextBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            OpponentTextBox.Name = "OpponentTextBox";
+            OpponentTextBox.PlaceholderText = "e.g. \"fulllifegames, Senor L\"";
+            OpponentTextBox.Size = new System.Drawing.Size(265, 27);
+            OpponentTextBox.TabIndex = 2;
             // 
             // TierLabel
             // 
-            this.TierLabel.AutoSize = true;
-            this.TierLabel.Location = new System.Drawing.Point(15, 117);
-            this.TierLabel.Name = "TierLabel";
-            this.TierLabel.Size = new System.Drawing.Size(106, 20);
-            this.TierLabel.TabIndex = 4;
-            this.TierLabel.Text = "Tier (Optional)";
+            TierLabel.AutoSize = true;
+            TierLabel.Location = new System.Drawing.Point(15, 117);
+            TierLabel.Name = "TierLabel";
+            TierLabel.Size = new System.Drawing.Size(106, 20);
+            TierLabel.TabIndex = 4;
+            TierLabel.Text = "Tier (Optional)";
             // 
             // TierTextBox
             // 
-            this.TierTextBox.Location = new System.Drawing.Point(15, 141);
-            this.TierTextBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.TierTextBox.Name = "TierTextBox";
-            this.TierTextBox.PlaceholderText = "e.g. \"gen8ou, gen7ou\"";
-            this.TierTextBox.Size = new System.Drawing.Size(265, 27);
-            this.TierTextBox.TabIndex = 1;
-            this.TierTextBox.TextChanged += new System.EventHandler(this.TierTextBox_TextChanged);
+            TierTextBox.Location = new System.Drawing.Point(15, 141);
+            TierTextBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            TierTextBox.Name = "TierTextBox";
+            TierTextBox.PlaceholderText = "e.g. \"gen8ou, gen7ou\"";
+            TierTextBox.Size = new System.Drawing.Size(265, 27);
+            TierTextBox.TabIndex = 1;
+            TierTextBox.TextChanged += TierTextBox_TextChanged;
             // 
             // UsernameLabel
             // 
-            this.UsernameLabel.AutoSize = true;
-            this.UsernameLabel.Location = new System.Drawing.Point(15, 49);
-            this.UsernameLabel.Name = "UsernameLabel";
-            this.UsernameLabel.Size = new System.Drawing.Size(147, 20);
-            this.UsernameLabel.TabIndex = 2;
-            this.UsernameLabel.Text = "Username (Optional)";
+            UsernameLabel.AutoSize = true;
+            UsernameLabel.Location = new System.Drawing.Point(15, 49);
+            UsernameLabel.Name = "UsernameLabel";
+            UsernameLabel.Size = new System.Drawing.Size(147, 20);
+            UsernameLabel.TabIndex = 2;
+            UsernameLabel.Text = "Username (Optional)";
             // 
             // UsernameTextBox
             // 
-            this.UsernameTextBox.Location = new System.Drawing.Point(15, 73);
-            this.UsernameTextBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.UsernameTextBox.Name = "UsernameTextBox";
-            this.UsernameTextBox.PlaceholderText = "e.g. \"fulllifegames, Senor L\"";
-            this.UsernameTextBox.Size = new System.Drawing.Size(265, 27);
-            this.UsernameTextBox.TabIndex = 0;
-            this.UsernameTextBox.TextChanged += new System.EventHandler(this.UsernameTextBox_TextChanged);
+            UsernameTextBox.Location = new System.Drawing.Point(15, 73);
+            UsernameTextBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            UsernameTextBox.Name = "UsernameTextBox";
+            UsernameTextBox.PlaceholderText = "e.g. \"fulllifegames, Senor L\"";
+            UsernameTextBox.Size = new System.Drawing.Size(265, 27);
+            UsernameTextBox.TabIndex = 0;
+            UsernameTextBox.TextChanged += UsernameTextBox_TextChanged;
             // 
             // OutputWindow
             // 
-            this.OutputWindow.Location = new System.Drawing.Point(3, 4);
-            this.OutputWindow.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.OutputWindow.Multiline = true;
-            this.OutputWindow.Name = "OutputWindow";
-            this.OutputWindow.ReadOnly = true;
-            this.OutputWindow.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.OutputWindow.Size = new System.Drawing.Size(580, 559);
-            this.OutputWindow.TabIndex = 0;
+            OutputWindow.Location = new System.Drawing.Point(3, 4);
+            OutputWindow.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            OutputWindow.Multiline = true;
+            OutputWindow.Name = "OutputWindow";
+            OutputWindow.ReadOnly = true;
+            OutputWindow.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            OutputWindow.Size = new System.Drawing.Size(580, 559);
+            OutputWindow.TabIndex = 0;
             // 
             // Main
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(914, 600);
-            this.Controls.Add(this.splitContainer1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.MaximizeBox = false;
-            this.Name = "Main";
-            this.Text = "Showdown Replay Scouter";
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel1.PerformLayout();
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            this.splitContainer1.Panel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
-            this.ResumeLayout(false);
-
+            AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(914, 600);
+            Controls.Add(splitContainer1);
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            MaximizeBox = false;
+            Name = "Main";
+            Text = "Showdown Replay Scouter";
+            splitContainer1.Panel1.ResumeLayout(false);
+            splitContainer1.Panel1.PerformLayout();
+            splitContainer1.Panel2.ResumeLayout(false);
+            splitContainer1.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+            splitContainer1.ResumeLayout(false);
+            ResumeLayout(false);
         }
 
         #endregion

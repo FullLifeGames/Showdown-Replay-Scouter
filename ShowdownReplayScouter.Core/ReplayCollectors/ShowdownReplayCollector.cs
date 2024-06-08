@@ -180,11 +180,11 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
         private static bool NeedToContinue(string json, ScoutingRequest scoutingRequest)
         {
-            var replayEntries = JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? new List<ReplayEntry>();
+            var replayEntries = JsonConvert.DeserializeObject<List<OldReplayEntry>>(json) ?? [];
             return replayEntries.Any((replayEntry) => OverMinimum(replayEntry, scoutingRequest));
         }
 
-        private static bool OverMinimum(ReplayEntry replayEntry, ScoutingRequest scoutingRequest)
+        private static bool OverMinimum(OldReplayEntry replayEntry, ScoutingRequest scoutingRequest)
         {
             if (scoutingRequest.MinimumDate is not null)
             {
@@ -196,7 +196,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             return true;
         }
 
-        private static bool IsInScope(ReplayEntry replayEntry, ScoutingRequest scoutingRequest)
+        private static bool IsInScope(OldReplayEntry replayEntry, ScoutingRequest scoutingRequest)
         {
             if (scoutingRequest.MinimumDate is not null)
             {
@@ -265,7 +265,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             IEnumerable<string>? regexOpponents = null;
             if (opponents is not null)
             {
-                regexOpponents = opponents.Select((opponent) => RegexUtil.Regex(opponent));
+                regexOpponents = opponents.Select(RegexUtil.Regex);
             }
             regexOpponents ??= new List<string>();
 
@@ -276,7 +276,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             }
 
             foreach (var replayEntry in
-                JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? new List<ReplayEntry>())
+                JsonConvert.DeserializeObject<List<OldReplayEntry>>(json) ?? [])
             {
                 var format = replayEntry.Format;
                 if (!IsInScope(replayEntry, scoutingRequest))

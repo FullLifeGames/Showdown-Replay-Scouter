@@ -45,7 +45,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 foreach (var user in scoutingRequest.Users)
                 {
                     var publicReplayUrls = new List<Uri>();
-                    await foreach (var showdownReplay in RetrieveReplaysForUser(user, scoutingRequest))
+                    await foreach (var showdownReplay in RetrieveReplaysForUserAndTier(user, tier: null, scoutingRequest))
                     {
                         foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, user, scoutingRequest))
                         {
@@ -103,18 +103,17 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             }
         }
 
-        private async IAsyncEnumerable<string> RetrieveReplaysForUserAndTier(string user, string tier, ScoutingRequest scoutingRequest)
+        private async IAsyncEnumerable<string> RetrieveReplaysForUserAndTier(string user, string? tier, ScoutingRequest scoutingRequest)
         {
             var regexUser = RegexUtil.Regex(user);
 
-            var page = 1;
+            var fullUrl = $"https://replay.pokemonshowdown.com/search.json?user={regexUser}";
+            fullUrl += tier is not null ? $"&format={tier}" : "";
+            var currentUrl = $"{fullUrl}";
 
-            var fullUrl = $"https://replay.pokemonshowdown.com/api/replays/search?user={regexUser}&format={tier}";
-            var pageUrl = $"{fullUrl}&page={page}";
+            var json = await Common.HttpClient.GetStringAsync(currentUrl).ConfigureAwait(false);
 
-            var json = ParseReturnJson(await Common.HttpClient.GetStringAsync(pageUrl).ConfigureAwait(false));
-
-            var cachedPages = await GetCachedPages(fullUrl, pageUrl, json).ConfigureAwait(false);
+            var cachedPages = await GetCachedPages(fullUrl, currentUrl, json).ConfigureAwait(false);
             if (cachedPages != null)
             {
                 foreach (var cachedPage in cachedPages)
@@ -124,53 +123,21 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 yield break;
             }
 
-            _cache?.SetString(pageUrl, json);
+            yield return json;
+            var replayList = JsonConvert.DeserializeObject<ReplayEntry[]>(json);
+            long? before = replayList?.LastOrDefault()?.Uploadtime;
 
-            var cachingPages = new List<string>();
+            _cache?.SetString(currentUrl, json);
 
-            while (!json.Contains("\"ERROR: page limit is 25\"") && !json.Contains("[]") && NeedToContinue(json, scoutingRequest))
+            List<string> cachingPages = [json];
+
+            while (replayList?.Length == 51)
             {
+                json = await Common.HttpClient.GetStringAsync($"{fullUrl}&before={before}").ConfigureAwait(false);
+                replayList = JsonConvert.DeserializeObject<ReplayEntry[]>(json);
+                before = replayList?.LastOrDefault()?.Uploadtime;
                 yield return json;
                 cachingPages.Add(json);
-                page++;
-                json = ParseReturnJson(await Common.HttpClient.GetStringAsync($"{fullUrl}&page={page}").ConfigureAwait(false));
-            }
-
-            var cachingPagesString = JsonConvert.SerializeObject(cachingPages);
-            _cache?.SetString(fullUrl, cachingPagesString);
-        }
-
-        private async IAsyncEnumerable<string> RetrieveReplaysForUser(string user, ScoutingRequest scoutingRequest)
-        {
-            var regexUser = RegexUtil.Regex(user);
-
-            var page = 1;
-
-            var fullUrl = $"https://replay.pokemonshowdown.com/api/replays/search?user={regexUser}";
-            var pageUrl = $"{fullUrl}&page={page}";
-
-            var json = ParseReturnJson(await Common.HttpClient.GetStringAsync(pageUrl).ConfigureAwait(false));
-
-            var cachedPages = await GetCachedPages(fullUrl, pageUrl, json).ConfigureAwait(false);
-            if (cachedPages != null)
-            {
-                foreach (var cachedPage in cachedPages)
-                {
-                    yield return cachedPage;
-                }
-                yield break;
-            }
-
-            _cache?.SetString(pageUrl, json);
-
-            var cachingPages = new List<string>();
-
-            while (!json.Contains("\"ERROR: page limit is 25\"") && !json.Contains("[]") && NeedToContinue(json, scoutingRequest))
-            {
-                yield return json;
-                cachingPages.Add(json);
-                page++;
-                json = ParseReturnJson(await Common.HttpClient.GetStringAsync($"{fullUrl}&page={page}").ConfigureAwait(false));
             }
 
             var cachingPagesString = JsonConvert.SerializeObject(cachingPages);
@@ -179,7 +146,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
         private static bool NeedToContinue(string json, ScoutingRequest scoutingRequest)
         {
-            var replayEntries = JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? new List<ReplayEntry>();
+            var replayEntries = JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? [];
             return replayEntries.Any((replayEntry) => OverMinimum(replayEntry, scoutingRequest));
         }
 
@@ -218,19 +185,9 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
         {
             var regexTier = RegexUtil.Regex(tier);
 
-            var fullUrl = $"https://replay.pokemonshowdown.com/api/replays/search?format={regexTier}";
-            var pageUrl = $"{fullUrl}&page={1}";
+            var fullUrl = $"https://replay.pokemonshowdown.com/search.json?format={regexTier}";
 
-            yield return ParseReturnJson(await Common.HttpClient.GetStringAsync(pageUrl).ConfigureAwait(false));
-        }
-
-        private static string ParseReturnJson(string json)
-        {
-            if (json.StartsWith("]"))
-            {
-                json = json.Remove(0, 1);
-            }
-            return json;
+            yield return await Common.HttpClient.GetStringAsync(fullUrl).ConfigureAwait(false);
         }
 
         private async Task<IEnumerable<string>?> GetCachedPages(string fullUrl, string pageUrl, string json)
@@ -273,7 +230,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             IEnumerable<string>? regexOpponents = null;
             if (opponents is not null)
             {
-                regexOpponents = opponents.Select((opponent) => RegexUtil.Regex(opponent));
+                regexOpponents = opponents.Select(RegexUtil.Regex);
             }
             regexOpponents ??= new List<string>();
 
@@ -284,7 +241,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             }
 
             foreach (var replayEntry in
-                JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? new List<ReplayEntry>())
+                JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? [])
             {
                 var format = replayEntry.Format;
                 if (!IsInScope(replayEntry, scoutingRequest))
@@ -299,13 +256,13 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                     {
                         validatedOpponent = false;
                         var countPlayers = 0;
-                        var regexPlayerOne = RegexUtil.Regex(replayEntry.P1);
+                        var regexPlayerOne = RegexUtil.Regex(replayEntry.Players[0]);
                         if (regexPlayerOne == regexUser || regexOpponents.Any((opponent) => opponent == regexPlayerOne))
                         {
                             countPlayers++;
                         }
 
-                        var regexPlayerTwo = RegexUtil.Regex(replayEntry.P2);
+                        var regexPlayerTwo = RegexUtil.Regex(replayEntry.Players[1]);
                         if (regexPlayerTwo == regexUser || regexOpponents.Any((opponent) => opponent == regexPlayerTwo))
                         {
                             countPlayers++;

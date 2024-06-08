@@ -41,7 +41,7 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
 
             if (scoutingRequest.Links?.Any() == true)
             {
-                await Parallel.ForEachAsync(scoutingRequest.Links, async (replay, _) =>
+                await ParallelHelper.ParallelForEachAsync(scoutingRequest.Links, async (replay) =>
                     {
                         if (scoutingRequest.Users?.Any() == true)
                         {
@@ -69,16 +69,16 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
                             }
                         }
                     }
-                ).ConfigureAwait(false);
+                , Environment.ProcessorCount).ConfigureAwait(false);
             }
             else if (scoutingRequest.Users?.Any() == true || scoutingRequest.Tiers?.Any() == true)
             {
-                await Parallel.ForEachAsync(
+                await ParallelHelper.AsyncParallelForEachAsync(
                     ReplayCollector.CollectReplaysAsync(scoutingRequest),
-                    async (collectedReplay, _) =>
+                    async (collectedReplay) =>
                         await AnalyzeReplayAsync(collectedReplay, teamCollection)
                         .ConfigureAwait(false)
-                ).ConfigureAwait(false);
+                , Environment.ProcessorCount).ConfigureAwait(false);
             }
 
             return new ScoutingResult()

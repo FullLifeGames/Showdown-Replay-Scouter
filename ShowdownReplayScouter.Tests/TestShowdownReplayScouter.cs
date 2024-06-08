@@ -17,6 +17,17 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
+        public void Scout_FullLifeGames_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()
+            {
+                Users = new List<string> { "fulllifegames" },
+            });
+
+            Assert.That(result.Teams.Count() == 482);
+        }
+
+        [Test]
         public void Scout_FullLifeGames_Gen7Ou_Replays()
         {
             var result = _replayScouter.ScoutReplays(new Core.Data.ScoutingRequest()

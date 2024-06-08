@@ -35,6 +35,8 @@ namespace ShowdownReplayScouter.Cmd
                         return;
                     }
 
+                    SQLitePCL.Batteries_V2.Init();
+
                     var replayScouter = new Core.ReplayScouter.ShowdownReplayScouter(
                         new SqliteCache(
                             new SqliteCacheOptions()
