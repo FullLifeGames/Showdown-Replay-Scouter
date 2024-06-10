@@ -17,7 +17,7 @@ namespace ShowdownReplayScouter.Core.Util
             foreach (var pokemon in team.Pokemon.OrderBy((pokemon) => pokemon.ToString()))
             {
                 pokemonRepresentation +=
-                    ((pokemon.FormName != null) ? pokemon.FormName : pokemon.Name)
+                    (pokemon.FormName ?? pokemon.Name)
                     + ((pokemon.Item != null) ? " @ " + pokemon.Item : "")
                     + "\r\n";
                 if (pokemon.Ability != null)

@@ -2,9 +2,9 @@
 
 namespace ShowdownReplayScouter.Core.Util
 {
-    public static class RegexUtil
+    public static partial class RegexUtil
     {
-        private static readonly Regex _regex = new("[^a-zA-Z0-9]");
+        private static readonly Regex _regex = AlphaNumRegex();
 
         /// <summary>
         /// Removes any regular expression matches from the input string and returns the filtered string in lowercase.
@@ -20,5 +20,8 @@ namespace ShowdownReplayScouter.Core.Util
             toFilter = _regex.Replace(toFilter, "");
             return toFilter.ToLower();
         }
+
+        [GeneratedRegex("[^a-zA-Z0-9]")]
+        private static partial Regex AlphaNumRegex();
     }
 }
