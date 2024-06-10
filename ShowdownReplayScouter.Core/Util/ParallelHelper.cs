@@ -16,7 +16,12 @@ namespace ShowdownReplayScouter.Core.Util
         /// <param name="maxDegreeOfParallelism"></param>
         /// <param name="scheduler"></param>
         /// <returns></returns>
-        public static async Task ParallelForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> body, int maxDegreeOfParallelism = DataflowBlockOptions.Unbounded, TaskScheduler? scheduler = null)
+        public static async Task ParallelForEachAsync<T>(
+            this IEnumerable<T> source,
+            Func<T, Task> body,
+            int maxDegreeOfParallelism = DataflowBlockOptions.Unbounded,
+            TaskScheduler? scheduler = null
+        )
         {
             var options = new ExecutionDataflowBlockOptions
             {
@@ -43,7 +48,12 @@ namespace ShowdownReplayScouter.Core.Util
         /// <param name="maxDegreeOfParallelism"></param>
         /// <param name="scheduler"></param>
         /// <returns></returns>
-        public static async Task AsyncParallelForEachAsync<T>(this IAsyncEnumerable<T> source, Func<T, Task> body, int maxDegreeOfParallelism = DataflowBlockOptions.Unbounded, TaskScheduler? scheduler = null)
+        public static async Task AsyncParallelForEachAsync<T>(
+            this IAsyncEnumerable<T> source,
+            Func<T, Task> body,
+            int maxDegreeOfParallelism = DataflowBlockOptions.Unbounded,
+            TaskScheduler? scheduler = null
+        )
         {
             var options = new ExecutionDataflowBlockOptions
             {

@@ -1,11 +1,11 @@
-﻿using NeoSmart.Caching.Sqlite;
-using ShowdownReplayScouter.Core.ReplayScouter;
-using ShowdownReplayScouter.Core.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Windows.Forms;
+using NeoSmart.Caching.Sqlite;
+using ShowdownReplayScouter.Core.ReplayScouter;
+using ShowdownReplayScouter.Core.Util;
 
 namespace ShowdownReplayScouter.Forms
 {
@@ -37,8 +37,7 @@ namespace ShowdownReplayScouter.Forms
                 var linksText = LinksTextBox.Text.Trim();
                 if (linksText.Length > 0)
                 {
-                    linkUris = linksText.Split('\n')
-                        .Select((link) => new Uri(link.Trim()));
+                    linkUris = linksText.Split('\n').Select((link) => new Uri(link.Trim()));
                 }
             }
             catch
@@ -55,33 +54,49 @@ namespace ShowdownReplayScouter.Forms
 
             var scoutingRequest = new Core.Data.ScoutingRequest()
             {
-                Users = UsernameTextBox.Text.Trim() != "" ? UsernameTextBox.Text.Trim().Split(',').Select((user) => user.Trim()) : null,
-                Tiers = TierTextBox.Text.Trim() != "" ? TierTextBox.Text.Trim().Split(',').Select((tier) => tier.Trim()) : null,
-                Opponents = OpponentTextBox.Text.Trim() != "" ? OpponentTextBox.Text.Trim().Split(',').Select((opponent) => opponent.Trim()) : null,
+                Users =
+                    UsernameTextBox.Text.Trim() != ""
+                        ? UsernameTextBox.Text.Trim().Split(',').Select((user) => user.Trim())
+                        : null,
+                Tiers =
+                    TierTextBox.Text.Trim() != ""
+                        ? TierTextBox.Text.Trim().Split(',').Select((tier) => tier.Trim())
+                        : null,
+                Opponents =
+                    OpponentTextBox.Text.Trim() != ""
+                        ? OpponentTextBox
+                            .Text.Trim()
+                            .Split(',')
+                            .Select((opponent) => opponent.Trim())
+                        : null,
                 Links = linkUris
             };
 
-            var result = await _replayScouter.ScoutReplaysAsync(scoutingRequest).ConfigureAwait(false);
+            var result = await _replayScouter
+                .ScoutReplaysAsync(scoutingRequest)
+                .ConfigureAwait(false);
 
             var output = OutputPrinter.Print(scoutingRequest, result.Teams);
 
-            Invoke((MethodInvoker)delegate
-            {
-                OutputWindow.Text = output;
+            Invoke(
+                (MethodInvoker)
+                    delegate
+                    {
+                        OutputWindow.Text = output;
 
-                UsernameTextBox.ReadOnly = false;
-                TierTextBox.ReadOnly = false;
-                OpponentTextBox.ReadOnly = false;
-                LinksTextBox.ReadOnly = false;
-                ScoutReplayButton.Enabled = true;
-            });
+                        UsernameTextBox.ReadOnly = false;
+                        TierTextBox.ReadOnly = false;
+                        OpponentTextBox.ReadOnly = false;
+                        LinksTextBox.ReadOnly = false;
+                        ScoutReplayButton.Enabled = true;
+                    }
+            );
         }
 
         private void Button_Update()
         {
             ScoutReplayButton.Enabled =
-                UsernameTextBox.Text.Trim().Length > 0
-                || LinksTextBox.Text.Trim().Length > 0;
+                UsernameTextBox.Text.Trim().Length > 0 || LinksTextBox.Text.Trim().Length > 0;
         }
 
         private void UsernameTextBox_TextChanged(object sender, EventArgs e)

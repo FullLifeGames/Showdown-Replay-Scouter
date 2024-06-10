@@ -1,7 +1,7 @@
-﻿using ShowdownReplayScouter.Core.Data;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ShowdownReplayScouter.Core.Data;
 
 namespace ShowdownReplayScouter.Core.ReplayAnalyzers
 {

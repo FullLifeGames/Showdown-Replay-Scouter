@@ -1,8 +1,8 @@
-﻿using Polly;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Polly;
 
 namespace ShowdownReplayScouter.Core.Util
 {
@@ -11,15 +11,18 @@ namespace ShowdownReplayScouter.Core.Util
     {
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken) =>
+            CancellationToken cancellationToken
+        ) =>
             Policy
                 .Handle<HttpRequestException>()
                 .Or<TaskCanceledException>()
-                .OrResult<HttpResponseMessage>(
-                    x => !x.IsSuccessStatusCode
-                        && x.StatusCode != System.Net.HttpStatusCode.NotFound
+                .OrResult<HttpResponseMessage>(x =>
+                    !x.IsSuccessStatusCode && x.StatusCode != System.Net.HttpStatusCode.NotFound
                 )
-                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(3, retryAttempt)))
+                .WaitAndRetryAsync(
+                    3,
+                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(3, retryAttempt))
+                )
                 .ExecuteAsync(() => base.SendAsync(request, cancellationToken));
     }
 }

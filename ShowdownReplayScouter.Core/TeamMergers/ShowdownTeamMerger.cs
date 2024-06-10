@@ -1,6 +1,6 @@
-﻿using ShowdownReplayScouter.Core.Data;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Collections.Generic;
+using ShowdownReplayScouter.Core.Data;
 using ShowdownReplayScouter.Core.Util;
 
 namespace ShowdownReplayScouter.Core.TeamMergers
@@ -23,8 +23,8 @@ namespace ShowdownReplayScouter.Core.TeamMergers
 
             foreach (var returnEntry in returnList)
             {
-                returnEntry.Pokemon = returnEntry.Pokemon
-                    .OrderBy((pokemon) => pokemon.ToString())
+                returnEntry.Pokemon = returnEntry
+                    .Pokemon.OrderBy((pokemon) => pokemon.ToString())
                     .ToList();
             }
 
@@ -52,7 +52,9 @@ namespace ShowdownReplayScouter.Core.TeamMergers
 
             foreach (var pokemon in team2.Pokemon)
             {
-                var foundPokemon = team.Pokemon.FirstOrDefault((pokemonEntry) => pokemonEntry.Name == pokemon.Name);
+                var foundPokemon = team.Pokemon.FirstOrDefault(
+                    (pokemonEntry) => pokemonEntry.Name == pokemon.Name
+                );
                 if (foundPokemon is null)
                 {
                     team.Pokemon.Add(pokemon);

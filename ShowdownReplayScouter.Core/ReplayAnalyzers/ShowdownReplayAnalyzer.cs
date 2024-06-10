@@ -1,19 +1,21 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
-using ShowdownReplayScouter.Core.Data;
-using ShowdownReplayScouter.Core.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
+using ShowdownReplayScouter.Core.Data;
+using ShowdownReplayScouter.Core.Util;
 
 namespace ShowdownReplayScouter.Core.ReplayAnalyzers
 {
     public class ShowdownReplayAnalyzer : IReplayAnalyzer
     {
-        public ShowdownReplayAnalyzer() : this(null) { }
+        public ShowdownReplayAnalyzer()
+            : this(null) { }
 
         private readonly IDistributedCache? _cache;
+
         public ShowdownReplayAnalyzer(IDistributedCache? cache)
         {
             _cache = cache;
@@ -46,10 +48,11 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
 
         public async Task<IEnumerable<Team>> AnalyzeReplayAsync(Uri replay)
         {
-            return new List<Team> {
+            return
+            [
                 await GetTeamFromUrl(replay, playerValue: "p1").ConfigureAwait(false),
                 await GetTeamFromUrl(replay, playerValue: "p2").ConfigureAwait(false),
-            };
+            ];
         }
 
         public async Task<IEnumerable<Team>> AnalyzeReplayAsync(string replay, string? user)
@@ -63,12 +66,14 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             {
                 return await AnalyzeReplayAsync(replay).ConfigureAwait(false);
             }
-            return new List<Team> {
-                await GetTeamFromUrl(replay, user).ConfigureAwait(false)
-            };
+            return [await GetTeamFromUrl(replay, user).ConfigureAwait(false)];
         }
 
-        private async Task<Team> GetTeamFromUrl(Uri link, string? user = null, string playerValue = "")
+        private async Task<Team> GetTeamFromUrl(
+            Uri link,
+            string? user = null,
+            string playerValue = ""
+        )
         {
             var jsonLink = link.ToString();
             // Remove additions like "?p2"
@@ -87,15 +92,21 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 return cachedTeam;
             }
 
-            var playerInfo = new PlayerInfo
-            {
-                PlayerName = "",
-                PlayerValue = playerValue
-            };
+            var playerInfo = new PlayerInfo { PlayerName = "", PlayerValue = playerValue };
 
             var team = new Team();
 
             var replayJson = await Common.HttpClient.GetStringAsync(jsonLink).ConfigureAwait(false);
+            // Error handling, sometimes "<" is returned from the API
+            if (replayJson.StartsWith("<"))
+            {
+                replayJson = await Common.HttpClient.GetStringAsync(jsonLink).ConfigureAwait(false);
+                // If return twice, at least don't break everything
+                if (replayJson.StartsWith("<"))
+                {
+                    return team;
+                }
+            }
             if (replayJson == "Could not connect")
             {
                 return team;
@@ -145,7 +156,9 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine($"Error on replay {jsonLink}, canceling analyzing after exception:");
+                Console.Error.WriteLine(
+                    $"Error on replay {jsonLink}, canceling analyzing after exception:"
+                );
                 Console.Error.WriteLine(e);
                 Console.Error.WriteLine(e.StackTrace);
             }
@@ -158,7 +171,13 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             return team;
         }
 
-        private void AnalyzeLogic(string? user, PlayerInfo playerInfo, Team team, string replayLog, Replay? replayObject)
+        private void AnalyzeLogic(
+            string? user,
+            PlayerInfo playerInfo,
+            Team team,
+            string replayLog,
+            Replay? replayObject
+        )
         {
             foreach (var line in replayLog.Split('\n'))
             {
@@ -175,14 +194,20 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     var pokeinf = line.Split('|');
                     if (pokeinf[2] == playerInfo.PlayerValue)
                     {
-                        team.Pokemon.Add(new Pokemon()
-                        {
-                            Name = pokeinf[3].Split(',')[0],
-                            AltNames = { pokeinf[3].Split('-')[0] }
-                        });
+                        team.Pokemon.Add(
+                            new Pokemon()
+                            {
+                                Name = pokeinf[3].Split(',')[0],
+                                AltNames = { pokeinf[3].Split('-')[0] }
+                            }
+                        );
                     }
                 }
-                else if (line.Contains("|switch") || line.Contains("|drag") || line.Contains("|replace"))
+                else if (
+                    line.Contains("|switch")
+                    || line.Contains("|drag")
+                    || line.Contains("|replace")
+                )
                 {
                     if (line.Contains(playerInfo.PlayerValue!))
                     {
@@ -193,14 +218,21 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                             continue;
                         }
                         var maybepoke = pokeinf[3].Split(',')[0];
-                        var pokemon = team.Pokemon.FirstOrDefault((pokemon) => pokemon.Name == maybepoke || pokemon.FormName == maybepoke);
+                        var pokemon = team.Pokemon.FirstOrDefault(
+                            (pokemon) => pokemon.Name == maybepoke || pokemon.FormName == maybepoke
+                        );
                         if (pokemon == null)
                         {
-                            pokemon = team.Pokemon.FirstOrDefault((pokemon) =>
-                            {
-                                return Common.FormPokemonList
-                                    .Any((formPokemon) => formPokemon == pokemon.Name && maybepoke.Contains(formPokemon));
-                            });
+                            pokemon = team.Pokemon.FirstOrDefault(
+                                (pokemon) =>
+                                {
+                                    return Common.FormPokemonList.Any(
+                                        (formPokemon) =>
+                                            formPokemon == pokemon.Name
+                                            && maybepoke.Contains(formPokemon)
+                                    );
+                                }
+                            );
                             if (pokemon != null)
                             {
                                 pokemon.FormName = maybepoke;
@@ -208,10 +240,11 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                             else
                             {
                                 var maybeReal = pokeinf[2].Split(':')[1].Trim();
-                                pokemon = team.Pokemon.FirstOrDefault((pokemon) =>
-                                    pokemon.Name == maybeReal
-                                    || pokemon.FormName == maybeReal
-                                    || pokemon.AltNames.Any((altName) => altName == maybeReal)
+                                pokemon = team.Pokemon.FirstOrDefault(
+                                    (pokemon) =>
+                                        pokemon.Name == maybeReal
+                                        || pokemon.FormName == maybeReal
+                                        || pokemon.AltNames.Any((altName) => altName == maybeReal)
                                 );
                                 if (pokemon != null)
                                 {
@@ -219,10 +252,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                                 }
                                 else
                                 {
-                                    pokemon = new Pokemon()
-                                    {
-                                        Name = maybepoke
-                                    };
+                                    pokemon = new Pokemon() { Name = maybepoke };
                                     if (team.Pokemon.Count == 0)
                                     {
                                         pokemon.Lead = true;
@@ -277,7 +307,10 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                         }
                     }
                 }
-                else if (line.Contains("[from] item:") && !(line.Contains("-damage") && line.Contains("Rocky Helmet")))
+                else if (
+                    line.Contains("[from] item:")
+                    && !(line.Contains("-damage") && line.Contains("Rocky Helmet"))
+                )
                 {
                     var iteminf = line.Split('|');
                     if (iteminf[2].Contains(':'))
@@ -328,7 +361,10 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                         }
                     }
                 }
-                else if ((line.Contains("-ability|") || line.Contains(" ability:")) && line.Contains("-damage"))
+                else if (
+                    (line.Contains("-ability|") || line.Contains(" ability:"))
+                    && line.Contains("-damage")
+                )
                 {
                     var abilityinf = line.Split('|');
                     var ability = "";
@@ -355,7 +391,10 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                         {
                             ability = abinf.Split(':')[1].Trim();
                         }
-                        else if (abinf.Contains(':') && abinf.Split(':')[0].Contains(playerInfo.PlayerValue!))
+                        else if (
+                            abinf.Contains(':')
+                            && abinf.Split(':')[0].Contains(playerInfo.PlayerValue!)
+                        )
                         {
                             if (!abinf.Contains("[of]") && !ContainsLineAnOfAbility(line))
                             {
@@ -376,7 +415,10 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 else if (line.Contains("|-ability"))
                 {
                     var abilityinf = line.Split('|');
-                    if (abilityinf[2].Contains(':') && abilityinf[2].Split(':')[0].Contains(playerInfo.PlayerValue!))
+                    if (
+                        abilityinf[2].Contains(':')
+                        && abilityinf[2].Split(':')[0].Contains(playerInfo.PlayerValue!)
+                    )
                     {
                         var ability = abilityinf[3].Trim();
                         var mon = abilityinf[2].Split(':')[1].Trim();
@@ -388,7 +430,10 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 else if (line.Contains("|-terastallize"))
                 {
                     var terainf = line.Split('|');
-                    if (terainf[2].Contains(':') && terainf[2].Split(':')[0].Contains(playerInfo.PlayerValue!))
+                    if (
+                        terainf[2].Contains(':')
+                        && terainf[2].Split(':')[0].Contains(playerInfo.PlayerValue!)
+                    )
                     {
                         var teraType = terainf[3].Trim();
                         var mon = terainf[2].Split(':')[1].Trim();
@@ -404,7 +449,10 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     {
                         replayObject.Winner = terainf[2];
                         var regexWinner = RegexUtil.Regex(replayObject.Winner).ToLower();
-                        replayObject.WinForTeam = regexWinner == RegexUtil.Regex(playerInfo.PlayerName).ToLower();
+                        replayObject.WinForTeam = regexWinner.Equals(
+                            RegexUtil.Regex(playerInfo.PlayerName),
+                            StringComparison.CurrentCultureIgnoreCase
+                        );
                     }
                 }
             }
@@ -419,11 +467,11 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 try
                 {
                     result = await _cache.GetStringAsync($"{logLink}+{user}").ConfigureAwait(false);
-                    result ??= await _cache.GetStringAsync($"{logLink}+{playerValue}").ConfigureAwait(false);
+                    result ??= await _cache
+                        .GetStringAsync($"{logLink}+{playerValue}")
+                        .ConfigureAwait(false);
                 }
-                catch (NullReferenceException)
-                {
-                }
+                catch (NullReferenceException) { }
                 if (result != null)
                 {
                     cachedTeam = JsonConvert.DeserializeObject<Team>(result);
@@ -434,13 +482,18 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
         }
 
         private readonly object replayLock = new();
+
         private async Task SetCache(PlayerInfo playerInfo, string logLink, Team team)
         {
             if (_cache != null)
             {
                 var serializedTeam = JsonConvert.SerializeObject(team);
-                await _cache.SetStringAsync($"{logLink}+{playerInfo.PlayerName}", serializedTeam).ConfigureAwait(false);
-                await _cache.SetStringAsync($"{logLink}+{playerInfo.PlayerValue}", serializedTeam).ConfigureAwait(false);
+                await _cache
+                    .SetStringAsync($"{logLink}+{playerInfo.PlayerName}", serializedTeam)
+                    .ConfigureAwait(false);
+                await _cache
+                    .SetStringAsync($"{logLink}+{playerInfo.PlayerValue}", serializedTeam)
+                    .ConfigureAwait(false);
                 // Lock since otherwise this can become a race condition
                 lock (replayLock)
                 {
@@ -450,9 +503,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     {
                         currentReplays = _cache.GetString($"replays-{playerInfo.PlayerName}");
                     }
-                    catch (NullReferenceException)
-                    {
-                    }
+                    catch (NullReferenceException) { }
                     var uriLogLink = new Uri(logLink);
                     if (currentReplays != null)
                     {
@@ -460,15 +511,20 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                             JsonConvert.DeserializeObject<List<CachedLink>>(currentReplays)
                             ?? currentCachedLinkList;
                     }
-                    if (!currentCachedLinkList.Any((cachedLink) => cachedLink.ReplayLog == uriLogLink))
+                    if (
+                        !currentCachedLinkList.Any(
+                            (cachedLink) => cachedLink.ReplayLog == uriLogLink
+                        )
+                    )
                     {
-                        currentCachedLinkList.Add(new CachedLink()
-                        {
-                            ReplayLog = uriLogLink,
-                            Format = team.Format
-                        });
+                        currentCachedLinkList.Add(
+                            new CachedLink() { ReplayLog = uriLogLink, Format = team.Format }
+                        );
                     }
-                    _cache.SetString($"replays-{playerInfo.PlayerName}", JsonConvert.SerializeObject(currentCachedLinkList));
+                    _cache.SetString(
+                        $"replays-{playerInfo.PlayerName}",
+                        JsonConvert.SerializeObject(currentCachedLinkList)
+                    );
                 }
             }
         }
@@ -495,7 +551,10 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                         {
                             if (playerInfo.PlayerName.Contains(user))
                             {
-                                if (LevenshteinDistance.Compute(playerInfo.PlayerName, user) > distance)
+                                if (
+                                    LevenshteinDistance.Compute(playerInfo.PlayerName, user)
+                                    > distance
+                                )
                                 {
                                     setPlayer = true;
                                 }
@@ -514,7 +573,10 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     {
                         if (!string.IsNullOrWhiteSpace(playerInfo.PlayerName))
                         {
-                            if (LevenshteinDistance.Compute(playerInfo.PlayerName, user) > distance && !playerInfo.PlayerName.Contains(user))
+                            if (
+                                LevenshteinDistance.Compute(playerInfo.PlayerName, user) > distance
+                                && !playerInfo.PlayerName.Contains(user)
+                            )
                             {
                                 setPlayer = true;
                             }
@@ -551,39 +613,52 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             return false;
         }
 
-        private static Pokemon AddMonIfNotExists(ICollection<Pokemon> pokemonList, string pokemonCandidate)
+        private static Pokemon AddMonIfNotExists(
+            ICollection<Pokemon> pokemonList,
+            string pokemonCandidate
+        )
         {
-            var pokemon = pokemonList.FirstOrDefault((pokemon) => pokemon.Name == pokemonCandidate
-                || pokemon.FormName == pokemonCandidate
-                || pokemon.AltNames.Any((altName) => altName == pokemonCandidate));
+            var pokemon = pokemonList.FirstOrDefault(
+                (pokemon) =>
+                    pokemon.Name == pokemonCandidate
+                    || pokemon.FormName == pokemonCandidate
+                    || pokemon.AltNames.Any((altName) => altName == pokemonCandidate)
+            );
             if (pokemon == null)
             {
                 var regexPokemonCandidate = RegexUtil.Regex(pokemonCandidate);
-                pokemon = pokemonList.FirstOrDefault((pokemon) =>
-                {
-                    return Common.FormDescriptorList
-                        .Select((formDescriptor) => RegexUtil.Regex($"{pokemon.Name}-{formDescriptor}"))
-                        .Any((possibleForm) => possibleForm == regexPokemonCandidate);
-                });
+                pokemon = pokemonList.FirstOrDefault(
+                    (pokemon) =>
+                    {
+                        return Common
+                            .FormDescriptorList.Select(
+                                (formDescriptor) =>
+                                    RegexUtil.Regex($"{pokemon.Name}-{formDescriptor}")
+                            )
+                            .Any((possibleForm) => possibleForm == regexPokemonCandidate);
+                    }
+                );
                 if (pokemon != null)
                 {
                     pokemon.FormName = pokemonCandidate;
                 }
-                pokemon = pokemonList.FirstOrDefault((pokemon) =>
-                {
-                    return Common.FormPokemonList
-                        .Any((formPokemon) => formPokemon == pokemon.Name && pokemonCandidate.Contains(formPokemon));
-                });
+                pokemon = pokemonList.FirstOrDefault(
+                    (pokemon) =>
+                    {
+                        return Common.FormPokemonList.Any(
+                            (formPokemon) =>
+                                formPokemon == pokemon.Name
+                                && pokemonCandidate.Contains(formPokemon)
+                        );
+                    }
+                );
                 if (pokemon != null)
                 {
                     pokemon.FormName = pokemonCandidate;
                 }
                 else
                 {
-                    pokemon = new Pokemon()
-                    {
-                        Name = pokemonCandidate
-                    };
+                    pokemon = new Pokemon() { Name = pokemonCandidate };
                     pokemonList.Add(pokemon);
                 }
             }
@@ -638,10 +713,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
         /// <summary>
         /// Injectable List of Moves which are not added (e.g. "Struggle")
         /// </summary>
-        public IEnumerable<string> IllegalMoves = new List<string>
-        {
-            "Struggle"
-        };
+        public IEnumerable<string> IllegalMoves = ["Struggle"];
 
         /// <summary>
         /// Moves that trigger a specific item so be set (e.g. Z-Moves)
@@ -649,48 +721,48 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
         /// </summary>
         public IDictionary<string, string> ItemTransformingMoves = new Dictionary<string, string>
         {
-            {"Breakneck Blitz", "Normalium Z"},
-            {"All-Out Pummeling", "Fightinium Z"},
-            {"Supersonic Skystrike", "Flyinium Z"},
-            {"Acid Downpour", "Poisonium Z"},
-            {"Tectonic Rage", "Groundium Z"},
-            {"Continental Crush", "Rockium Z"},
-            {"Savage Spin-Out", "Buginium Z"},
-            {"Never-Ending Nightmare", "Ghostium Z"},
-            {"Corkscrew Crash", "Steelium Z"},
-            {"Inferno Overdrive", "Firium Z"},
-            {"Hydro Vortex", "Waterium Z"},
-            {"Bloom Doom", "Grassium Z"},
-            {"Gigavolt Havoc", "Electrium Z"},
-            {"Shattered Psyche", "Psychium Z"},
-            {"Subzero Slammer", "Icium Z"},
-            {"Devastating Drake", "Dragonium Z"},
-            {"Black Hole Eclipse", "Darkinium Z"},
-            {"Twinkle Tackle", "Fairium Z" },
-            {"Catastropika", "Pikanium Z"},
-            {"Sinister Arrow Raid", "Decidium Z"},
-            {"Malicious Moonsault", "Incinium Z"},
-            {"Oceanic Operetta", "Primarium Z"},
-            {"Guardian of Alola", "Tapunium Z"},
-            {"Soul-Stealing 7-Star Strike", "Marshadium Z"},
-            {"Stoked Sparksurfer", "Aloraichium Z"},
-            {"Pulverizing Pancake", "Snorlium Z"},
-            {"Extreme Evoboost", "Eevium Z"},
-            {"Genesis Supernova", "Mewnium Z"},
-            {"10,000,000 Volt Thunderbolt", "Pikashunium Z"},
-            {"Clangorous Soulblaze", "Kommonium Z"},
-            {"Splintered Stormshards", "Lycanium Z"},
-            {"Searing Sunraze Smash", "Solganium Z"},
-            {"Menacing Moonraze Maelstrom", "Lunalium Z"},
-            {"Light That Burns the Sky", "Ultranecrozium Z"},
-            {"Let's Snuggle Forever", "Mimikium Z"},
+            { "Breakneck Blitz", "Normalium Z" },
+            { "All-Out Pummeling", "Fightinium Z" },
+            { "Supersonic Skystrike", "Flyinium Z" },
+            { "Acid Downpour", "Poisonium Z" },
+            { "Tectonic Rage", "Groundium Z" },
+            { "Continental Crush", "Rockium Z" },
+            { "Savage Spin-Out", "Buginium Z" },
+            { "Never-Ending Nightmare", "Ghostium Z" },
+            { "Corkscrew Crash", "Steelium Z" },
+            { "Inferno Overdrive", "Firium Z" },
+            { "Hydro Vortex", "Waterium Z" },
+            { "Bloom Doom", "Grassium Z" },
+            { "Gigavolt Havoc", "Electrium Z" },
+            { "Shattered Psyche", "Psychium Z" },
+            { "Subzero Slammer", "Icium Z" },
+            { "Devastating Drake", "Dragonium Z" },
+            { "Black Hole Eclipse", "Darkinium Z" },
+            { "Twinkle Tackle", "Fairium Z" },
+            { "Catastropika", "Pikanium Z" },
+            { "Sinister Arrow Raid", "Decidium Z" },
+            { "Malicious Moonsault", "Incinium Z" },
+            { "Oceanic Operetta", "Primarium Z" },
+            { "Guardian of Alola", "Tapunium Z" },
+            { "Soul-Stealing 7-Star Strike", "Marshadium Z" },
+            { "Stoked Sparksurfer", "Aloraichium Z" },
+            { "Pulverizing Pancake", "Snorlium Z" },
+            { "Extreme Evoboost", "Eevium Z" },
+            { "Genesis Supernova", "Mewnium Z" },
+            { "10,000,000 Volt Thunderbolt", "Pikashunium Z" },
+            { "Clangorous Soulblaze", "Kommonium Z" },
+            { "Splintered Stormshards", "Lycanium Z" },
+            { "Searing Sunraze Smash", "Solganium Z" },
+            { "Menacing Moonraze Maelstrom", "Lunalium Z" },
+            { "Light That Burns the Sky", "Ultranecrozium Z" },
+            { "Let's Snuggle Forever", "Mimikium Z" },
         };
 
         private void MoveUpdate(Pokemon pokemon, string move)
         {
-            if (ItemTransformingMoves.ContainsKey(move))
+            if (ItemTransformingMoves.TryGetValue(move, out string? value))
             {
-                ItemUpdate(pokemon, ItemTransformingMoves[move]);
+                ItemUpdate(pokemon, value);
             }
             else if (!pokemon.Moves.Contains(move) && !IllegalMoves.Contains(move))
             {

@@ -7,6 +7,6 @@ namespace ShowdownReplayScouter.Core.Data
     public class OutputObject
     {
         public string Header { get; set; } = "";
-        public IList<string> Teams { get; set; } = new List<string>();
+        public IList<string> Teams { get; set; } = [];
     }
 }

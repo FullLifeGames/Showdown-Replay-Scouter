@@ -13,8 +13,8 @@ namespace ShowdownReplayScouter.Core.Data
 
         public Team()
         {
-            Replays = new List<Replay>();
-            Pokemon = new List<Pokemon>();
+            Replays = [];
+            Pokemon = [];
         }
 
         public Team Clone()

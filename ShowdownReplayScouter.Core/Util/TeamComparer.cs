@@ -1,6 +1,6 @@
-﻿using ShowdownReplayScouter.Core.Data;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using ShowdownReplayScouter.Core.Data;
 
 namespace ShowdownReplayScouter.Core.Util
 {
@@ -8,8 +8,10 @@ namespace ShowdownReplayScouter.Core.Util
     {
         public int Compare(Team? x, Team? y)
         {
-            var smogTourX = x?.Replays.Any((uri) => uri.Link.AbsoluteUri.Contains("smogtour")) == true;
-            var smogTourY = y?.Replays.Any((uri) => uri.Link.AbsoluteUri.Contains("smogtour")) == true;
+            var smogTourX =
+                x?.Replays.Any((uri) => uri.Link.AbsoluteUri.Contains("smogtour")) == true;
+            var smogTourY =
+                y?.Replays.Any((uri) => uri.Link.AbsoluteUri.Contains("smogtour")) == true;
             if (smogTourX && !smogTourY)
             {
                 return -1;
@@ -20,8 +22,12 @@ namespace ShowdownReplayScouter.Core.Util
             }
             if (smogTourX && smogTourY)
             {
-                var xMax = GetHighestNumber(x!.Replays.Where((uri) => uri.Link.AbsoluteUri.Contains("smogtour")));
-                var yMax = GetHighestNumber(y!.Replays.Where((uri) => uri.Link.AbsoluteUri.Contains("smogtour")));
+                var xMax = GetHighestNumber(
+                    x!.Replays.Where((uri) => uri.Link.AbsoluteUri.Contains("smogtour"))
+                );
+                var yMax = GetHighestNumber(
+                    y!.Replays.Where((uri) => uri.Link.AbsoluteUri.Contains("smogtour"))
+                );
                 if (xMax > yMax)
                 {
                     return -1;
@@ -56,7 +62,9 @@ namespace ShowdownReplayScouter.Core.Util
             var numberList = new List<int>();
             foreach (var replay in replays)
             {
-                var currentUri = replay.Link.AbsoluteUri[(replay.Link.AbsoluteUri.LastIndexOf("/") + 1)..];
+                var currentUri = replay.Link.AbsoluteUri[
+                    (replay.Link.AbsoluteUri.LastIndexOf("/") + 1)..
+                ];
                 var number = -1;
                 while (currentUri.Contains('-'))
                 {

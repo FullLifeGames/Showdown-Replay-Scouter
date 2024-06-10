@@ -5,7 +5,7 @@ namespace ShowdownReplayScouter.Core.Util
     public static class RegexUtil
     {
         private static readonly Regex _regex = new("[^a-zA-Z0-9]");
-        
+
         /// <summary>
         /// Removes any regular expression matches from the input string and returns the filtered string in lowercase.
         /// </summary>

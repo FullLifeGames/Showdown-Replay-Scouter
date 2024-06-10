@@ -10,23 +10,17 @@ namespace ShowdownReplayScouter.Core.Data
         private string? _name;
         public string? Name
         {
-            get
-            {
-                return _name;
-            }
-            set
-            {
-                _name = value?.Replace("-*", "");
-            }
+            get { return _name; }
+            set { _name = value?.Replace("-*", ""); }
         }
         public string? FormName { get; set; }
-        public ICollection<string> AltNames { get; set; } = new List<string>();
+        public ICollection<string> AltNames { get; set; } = [];
 
         public string? Ability { get; set; }
         public string? Item { get; set; }
         public string? TeraType { get; set; }
         public bool Lead { get; set; }
-        public ICollection<string> Moves { get; set; } = new List<string>();
+        public ICollection<string> Moves { get; set; } = [];
 
         public override string ToString()
         {

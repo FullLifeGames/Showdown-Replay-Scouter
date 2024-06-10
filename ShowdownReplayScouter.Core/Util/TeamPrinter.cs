@@ -1,6 +1,6 @@
-﻿using ShowdownReplayScouter.Core.Data;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using ShowdownReplayScouter.Core.Data;
 
 namespace ShowdownReplayScouter.Core.Util
 {
@@ -16,9 +16,14 @@ namespace ShowdownReplayScouter.Core.Util
             var pokemonRepresentation = "";
             foreach (var pokemon in team.Pokemon.OrderBy((pokemon) => pokemon.ToString()))
             {
-                pokemonRepresentation += ((pokemon.FormName != null) ? pokemon.FormName : pokemon.Name) + ((pokemon.Item != null) ? " @ " + pokemon.Item : "") + "\r\n";
-                if (pokemon.Ability != null) pokemonRepresentation += "Ability: " + pokemon.Ability + "\r\n";
-                if (pokemon.TeraType != null) pokemonRepresentation += "Tera Type: " + pokemon.TeraType + "\r\n";
+                pokemonRepresentation +=
+                    ((pokemon.FormName != null) ? pokemon.FormName : pokemon.Name)
+                    + ((pokemon.Item != null) ? " @ " + pokemon.Item : "")
+                    + "\r\n";
+                if (pokemon.Ability != null)
+                    pokemonRepresentation += "Ability: " + pokemon.Ability + "\r\n";
+                if (pokemon.TeraType != null)
+                    pokemonRepresentation += "Tera Type: " + pokemon.TeraType + "\r\n";
                 foreach (var move in pokemon.Moves.OrderBy((move) => move))
                 {
                     pokemonRepresentation += "- " + move + "\r\n";

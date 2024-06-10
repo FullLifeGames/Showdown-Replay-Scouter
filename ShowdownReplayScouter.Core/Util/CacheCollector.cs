@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json.Linq;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace ShowdownReplayScouter.Core.Util
 {
@@ -15,6 +14,7 @@ namespace ShowdownReplayScouter.Core.Util
         private readonly ConcurrentDictionary<string, string> _internalCache = new();
 
         public IDistributedCache? Cache { get; }
+
         public CacheCollector(IDistributedCache? cache)
         {
             Cache = cache;
@@ -63,7 +63,12 @@ namespace ShowdownReplayScouter.Core.Util
             Cache?.Set(key, value, options);
         }
 
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
+        public Task SetAsync(
+            string key,
+            byte[] value,
+            DistributedCacheEntryOptions options,
+            CancellationToken token = default
+        )
         {
             if (Cache == null)
             {

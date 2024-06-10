@@ -1,36 +1,52 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
-using ShowdownReplayScouter.Core.Data;
-using ShowdownReplayScouter.Core.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
+using ShowdownReplayScouter.Core.Data;
+using ShowdownReplayScouter.Core.Util;
 
 namespace ShowdownReplayScouter.Core.ReplayCollectors
 {
     public class ApiShowdownReplayCollector : IReplayCollector
     {
-        public ApiShowdownReplayCollector() : this(null) { }
+        public ApiShowdownReplayCollector()
+            : this(null) { }
 
         private readonly IDistributedCache? _cache;
+
         public ApiShowdownReplayCollector(IDistributedCache? cache)
         {
             _cache = cache;
         }
 
-        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(ScoutingRequest scoutingRequest)
+        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(
+            ScoutingRequest scoutingRequest
+        )
         {
-            if (scoutingRequest.Users is not null && scoutingRequest.Tiers is not null && scoutingRequest.Tiers.Any())
+            if (
+                scoutingRequest.Users is not null
+                && scoutingRequest.Tiers is not null
+                && scoutingRequest.Tiers.Any()
+            )
             {
                 foreach (var user in scoutingRequest.Users)
                 {
                     foreach (var tier in scoutingRequest.Tiers)
                     {
                         var publicReplayUrls = new List<Uri>();
-                        await foreach (var showdownReplay in RetrieveReplaysForUserAndTier(user, tier, scoutingRequest))
+                        await foreach (
+                            var showdownReplay in RetrieveReplaysForUserAndTier(user, tier)
+                        )
                         {
-                            foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, user, scoutingRequest))
+                            foreach (
+                                var showdownReplayUrl in CollectShowdownReplayUrl(
+                                    showdownReplay,
+                                    user,
+                                    scoutingRequest
+                                )
+                            )
                             {
                                 publicReplayUrls.Add(showdownReplayUrl);
                                 yield return new CollectedReplay(showdownReplayUrl, user);
@@ -45,9 +61,17 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 foreach (var user in scoutingRequest.Users)
                 {
                     var publicReplayUrls = new List<Uri>();
-                    await foreach (var showdownReplay in RetrieveReplaysForUserAndTier(user, tier: null, scoutingRequest))
+                    await foreach (
+                        var showdownReplay in RetrieveReplaysForUserAndTier(user, tier: null)
+                    )
                     {
-                        foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, user, scoutingRequest))
+                        foreach (
+                            var showdownReplayUrl in CollectShowdownReplayUrl(
+                                showdownReplay,
+                                user,
+                                scoutingRequest
+                            )
+                        )
                         {
                             publicReplayUrls.Add(showdownReplayUrl);
                             yield return new CollectedReplay(showdownReplayUrl, user);
@@ -64,23 +88,29 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                     {
                         cachedString = _cache.GetString($"replays-{user}");
                     }
-                    catch (NullReferenceException)
-                    {
-                    }
+                    catch (NullReferenceException) { }
                     if (cachedString == null)
                     {
                         continue;
                     }
-                    var cachedLinks = JsonConvert.DeserializeObject<IEnumerable<CachedLink>>(cachedString);
+                    var cachedLinks = JsonConvert.DeserializeObject<IEnumerable<CachedLink>>(
+                        cachedString
+                    );
                     if (cachedLinks == null)
                     {
                         continue;
                     }
-                    foreach (var cachedLink in cachedLinks.Where(
-                        (cachedLink) =>
-                            !publicReplayUrls.Contains(cachedLink.ReplayLog)
-                            && (scoutingRequest.Tiers?.Contains(RegexUtil.Regex(cachedLink.Format)) != false)
-                    ))
+                    foreach (
+                        var cachedLink in cachedLinks.Where(
+                            (cachedLink) =>
+                                !publicReplayUrls.Contains(cachedLink.ReplayLog)
+                                && (
+                                    scoutingRequest.Tiers?.Contains(
+                                        RegexUtil.Regex(cachedLink.Format)
+                                    ) != false
+                                )
+                        )
+                    )
                     {
                         yield return new CollectedReplay(cachedLink.ReplayLog, user);
                     }
@@ -93,7 +123,13 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 {
                     await foreach (var showdownReplay in RetrieveReplaysForTier(tier))
                     {
-                        foreach (var showdownReplayUrl in CollectShowdownReplayUrl(showdownReplay, null, scoutingRequest))
+                        foreach (
+                            var showdownReplayUrl in CollectShowdownReplayUrl(
+                                showdownReplay,
+                                null,
+                                scoutingRequest
+                            )
+                        )
                         {
                             yield return new CollectedReplay(showdownReplayUrl, null);
                         }
@@ -103,7 +139,10 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             }
         }
 
-        private async IAsyncEnumerable<string> RetrieveReplaysForUserAndTier(string user, string? tier, ScoutingRequest scoutingRequest)
+        private async IAsyncEnumerable<string> RetrieveReplaysForUserAndTier(
+            string user,
+            string? tier
+        )
         {
             var regexUser = RegexUtil.Regex(user);
 
@@ -133,33 +172,29 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
             while (replayList?.Length == 51)
             {
-                json = await Common.HttpClient.GetStringAsync($"{fullUrl}&before={before}").ConfigureAwait(false);
+                json = await Common
+                    .HttpClient.GetStringAsync($"{fullUrl}&before={before}")
+                    .ConfigureAwait(false);
                 replayList = JsonConvert.DeserializeObject<ReplayEntry[]>(json);
                 before = replayList?.LastOrDefault()?.Uploadtime;
+                // Error handling, sometimes "<" is returned from the API
+                if (json.StartsWith("<"))
+                {
+                    json = await Common
+                        .HttpClient.GetStringAsync($"{fullUrl}&before={before}")
+                        .ConfigureAwait(false);
+                    // If return twice, at least don't break everything
+                    if (json.StartsWith("<"))
+                    {
+                        break;
+                    }
+                }
                 yield return json;
                 cachingPages.Add(json);
             }
 
             var cachingPagesString = JsonConvert.SerializeObject(cachingPages);
             _cache?.SetString(fullUrl, cachingPagesString);
-        }
-
-        private static bool NeedToContinue(string json, ScoutingRequest scoutingRequest)
-        {
-            var replayEntries = JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? [];
-            return replayEntries.Any((replayEntry) => OverMinimum(replayEntry, scoutingRequest));
-        }
-
-        private static bool OverMinimum(ReplayEntry replayEntry, ScoutingRequest scoutingRequest)
-        {
-            if (scoutingRequest.MinimumDate is not null)
-            {
-                if (replayEntry.Uploadtime < ToUnixTime(scoutingRequest.MinimumDate.Value))
-                {
-                    return false;
-                }
-            }
-            return true;
         }
 
         private static bool IsInScope(ReplayEntry replayEntry, ScoutingRequest scoutingRequest)
@@ -190,7 +225,11 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             yield return await Common.HttpClient.GetStringAsync(fullUrl).ConfigureAwait(false);
         }
 
-        private async Task<IEnumerable<string>?> GetCachedPages(string fullUrl, string pageUrl, string json)
+        private async Task<IEnumerable<string>?> GetCachedPages(
+            string fullUrl,
+            string pageUrl,
+            string json
+        )
         {
             IEnumerable<string>? cachedPages = null;
             if (_cache != null)
@@ -200,9 +239,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 {
                     cachedPageUrl = await _cache.GetStringAsync(pageUrl).ConfigureAwait(false);
                 }
-                catch (NullReferenceException)
-                {
-                }
+                catch (NullReferenceException) { }
                 if (json == cachedPageUrl)
                 {
                     string? cachedStrings = null;
@@ -210,19 +247,23 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                     {
                         cachedStrings = await _cache.GetStringAsync(fullUrl).ConfigureAwait(false);
                     }
-                    catch (NullReferenceException)
-                    {
-                    }
+                    catch (NullReferenceException) { }
                     if (cachedStrings != null)
                     {
-                        cachedPages = JsonConvert.DeserializeObject<IEnumerable<string>>(cachedStrings);
+                        cachedPages = JsonConvert.DeserializeObject<IEnumerable<string>>(
+                            cachedStrings
+                        );
                     }
                 }
             }
             return cachedPages;
         }
 
-        private static IEnumerable<Uri> CollectShowdownReplayUrl(string json, string? user, ScoutingRequest scoutingRequest)
+        private static IEnumerable<Uri> CollectShowdownReplayUrl(
+            string json,
+            string? user,
+            ScoutingRequest scoutingRequest
+        )
         {
             var opponents = scoutingRequest.Opponents;
 
@@ -232,7 +273,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             {
                 regexOpponents = opponents.Select(RegexUtil.Regex);
             }
-            regexOpponents ??= new List<string>();
+            regexOpponents ??= [];
 
             var analyzedTiers = scoutingRequest.Tiers;
             if (analyzedTiers is not null)
@@ -240,8 +281,9 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 analyzedTiers = analyzedTiers.Select((tier) => tier.ToLower());
             }
 
-            foreach (var replayEntry in
-                JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? [])
+            foreach (
+                var replayEntry in JsonConvert.DeserializeObject<List<ReplayEntry>>(json) ?? []
+            )
             {
                 var format = replayEntry.Format;
                 if (!IsInScope(replayEntry, scoutingRequest))
@@ -249,7 +291,10 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                     continue;
                 }
 
-                if (analyzedTiers?.Any() != true || analyzedTiers.Any((tier) => tier == RegexUtil.Regex(format)))
+                if (
+                    analyzedTiers?.Any() != true
+                    || analyzedTiers.Any((tier) => tier == RegexUtil.Regex(format))
+                )
                 {
                     var validatedOpponent = true;
                     if (opponents?.Any() == true && user is not null)
@@ -257,13 +302,19 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                         validatedOpponent = false;
                         var countPlayers = 0;
                         var regexPlayerOne = RegexUtil.Regex(replayEntry.Players[0]);
-                        if (regexPlayerOne == regexUser || regexOpponents.Any((opponent) => opponent == regexPlayerOne))
+                        if (
+                            regexPlayerOne == regexUser
+                            || regexOpponents.Any((opponent) => opponent == regexPlayerOne)
+                        )
                         {
                             countPlayers++;
                         }
 
                         var regexPlayerTwo = RegexUtil.Regex(replayEntry.Players[1]);
-                        if (regexPlayerTwo == regexUser || regexOpponents.Any((opponent) => opponent == regexPlayerTwo))
+                        if (
+                            regexPlayerTwo == regexUser
+                            || regexOpponents.Any((opponent) => opponent == regexPlayerTwo)
+                        )
                         {
                             countPlayers++;
                         }
@@ -275,7 +326,9 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                     }
                     if (validatedOpponent)
                     {
-                        yield return new Uri($"https://replay.pokemonshowdown.com/{replayEntry.Id}");
+                        yield return new Uri(
+                            $"https://replay.pokemonshowdown.com/{replayEntry.Id}"
+                        );
                     }
                 }
             }

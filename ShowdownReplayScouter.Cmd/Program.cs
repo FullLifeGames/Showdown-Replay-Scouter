@@ -1,10 +1,10 @@
-﻿using CommandLine;
-using NeoSmart.Caching.Sqlite;
-using ShowdownReplayScouter.Core.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CommandLine;
+using NeoSmart.Caching.Sqlite;
+using ShowdownReplayScouter.Core.Util;
 
 namespace ShowdownReplayScouter.Cmd
 {
@@ -12,21 +12,50 @@ namespace ShowdownReplayScouter.Cmd
     {
         public class Options
         {
-            [Option('u', "users", Required = false, Default = null, HelpText = "The users you want to interpret the replays from.")]
+            [Option(
+                'u',
+                "users",
+                Required = false,
+                Default = null,
+                HelpText = "The users you want to interpret the replays from."
+            )]
             public IEnumerable<string> Users { get; set; }
-            [Option('t', "tiers", Required = false, Default = null, HelpText = "The tiers you want to look at.")]
+
+            [Option(
+                't',
+                "tiers",
+                Required = false,
+                Default = null,
+                HelpText = "The tiers you want to look at."
+            )]
             public IEnumerable<string> Tiers { get; set; }
-            [Option('o', "opponents", Required = false, Default = null, HelpText = "The opponents your users should have fought.")]
+
+            [Option(
+                'o',
+                "opponents",
+                Required = false,
+                Default = null,
+                HelpText = "The opponents your users should have fought."
+            )]
             public IEnumerable<string> Opponents { get; set; }
-            [Option('l', "links", Required = false, Default = null, HelpText = "The links you want to analyze.")]
+
+            [Option(
+                'l',
+                "links",
+                Required = false,
+                Default = null,
+                HelpText = "The links you want to analyze."
+            )]
             public IEnumerable<Uri> Links { get; set; }
+
             [Option('f', "file", Required = true, HelpText = "The file you want to write to.")]
             public string File { get; set; }
         }
 
         public static void Main(string[] args)
         {
-            Parser.Default.ParseArguments<Options>(args)
+            Parser
+                .Default.ParseArguments<Options>(args)
                 .WithParsed(o =>
                 {
                     if (o.Links?.Any() == false && o.Users?.Any() == false)
@@ -63,8 +92,7 @@ namespace ShowdownReplayScouter.Cmd
                         f.Delete();
                     }
                     File.WriteAllText(o.File, output);
-                }
-            );
+                });
         }
     }
 }

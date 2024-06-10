@@ -1,5 +1,5 @@
-﻿using ShowdownReplayScouter.Core.Data;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using ShowdownReplayScouter.Core.Data;
 
 namespace ShowdownReplayScouter.Core.TeamMergers
 {

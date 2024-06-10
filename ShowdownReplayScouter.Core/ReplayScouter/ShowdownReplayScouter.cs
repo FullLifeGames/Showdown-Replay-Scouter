@@ -1,16 +1,17 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
 using ShowdownReplayScouter.Core.Data;
 using ShowdownReplayScouter.Core.ReplayAnalyzers;
 using ShowdownReplayScouter.Core.ReplayCollectors;
 using ShowdownReplayScouter.Core.TeamMergers;
 using ShowdownReplayScouter.Core.Util;
-using System.Threading.Tasks;
 
 namespace ShowdownReplayScouter.Core.ReplayScouter
 {
     public class ShowdownReplayScouter(IDistributedCache? cache) : ReplayScouter
     {
-        public ShowdownReplayScouter() : this(null) { }
+        public ShowdownReplayScouter()
+            : this(null) { }
 
         private readonly CacheCollector _cache = new(cache);
 
@@ -27,7 +28,9 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
             return result;
         }
 
-        public async override Task<ScoutingResult?> ScoutReplaysAsync(ScoutingRequest scoutingRequest)
+        public override async Task<ScoutingResult?> ScoutReplaysAsync(
+            ScoutingRequest scoutingRequest
+        )
         {
             var result = await base.ScoutReplaysAsync(scoutingRequest);
             _cache.Store();

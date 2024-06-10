@@ -1,6 +1,6 @@
-﻿using ShowdownReplayScouter.Core.Data;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using ShowdownReplayScouter.Core.Data;
 
 namespace ShowdownReplayScouter.Core.Util
 {
@@ -13,7 +13,10 @@ namespace ShowdownReplayScouter.Core.Util
             {
                 output += string.Join(", ", scoutingRequest.Users);
             }
-            output += scoutingRequest.Tiers != null ? $" ({string.Join(", ", scoutingRequest.Tiers)})" : "";
+            output +=
+                scoutingRequest.Tiers != null
+                    ? $" ({string.Join(", ", scoutingRequest.Tiers)})"
+                    : "";
             output += ":\r\n\r\n";
 
             foreach (var team in teams)
@@ -31,7 +34,10 @@ namespace ShowdownReplayScouter.Core.Util
             return output;
         }
 
-        public static OutputObject PrintObject(ScoutingRequest scoutingRequest, IEnumerable<Team> teams)
+        public static OutputObject PrintObject(
+            ScoutingRequest scoutingRequest,
+            IEnumerable<Team> teams
+        )
         {
             var outputObject = new OutputObject();
             var header = "";
@@ -39,7 +45,10 @@ namespace ShowdownReplayScouter.Core.Util
             {
                 header += string.Join(", ", scoutingRequest.Users);
             }
-            header += scoutingRequest.Tiers != null ? $" ({string.Join(", ", scoutingRequest.Tiers)})" : "";
+            header +=
+                scoutingRequest.Tiers != null
+                    ? $" ({string.Join(", ", scoutingRequest.Tiers)})"
+                    : "";
             header += ":";
             outputObject.Header = header;
 

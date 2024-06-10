@@ -5,9 +5,7 @@ namespace ShowdownReplayScouter.Api.Data
     [Serializable]
     public class ApiScoutingResult : ScoutingResult
     {
-        public ApiScoutingResult()
-        {
-        }
+        public ApiScoutingResult() { }
 
         public ApiScoutingResult(ScoutingResult scoutingResult)
         {

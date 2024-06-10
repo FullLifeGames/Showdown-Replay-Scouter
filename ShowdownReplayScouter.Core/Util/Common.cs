@@ -10,36 +10,38 @@ namespace ShowdownReplayScouter.Core.Util
         {
             get
             {
-                return _httpClient ??= new HttpClient(new HttpRetryMessageHandler(new HttpClientHandler()));
+                return _httpClient ??= new HttpClient(
+                    new HttpRetryMessageHandler(new HttpClientHandler())
+                );
             }
             set => _httpClient = value;
         }
 
         public static int LevenshteinDistanceAcceptable { get; set; } = 3;
 
-        public static IEnumerable<string> FormPokemonList { get; set; } = new List<string>
-        {
-            "Arceus",
-            "Silvally",
-            "Genesect",
-            "Gourgeist",
-            "Pumpkaboo"
-        };
+        public static IEnumerable<string> FormPokemonList { get; set; } =
+            ["Arceus", "Silvally", "Genesect", "Gourgeist", "Pumpkaboo"];
 
-        public static IEnumerable<string> FormDescriptorList { get; set; } = new List<string>
-        {
-            "Mega",
-            "Origin",
-            "Alola",
-            "Galar"
-        };
+        public static IEnumerable<string> FormDescriptorList { get; set; } =
+            ["Mega", "Origin", "Alola", "Galar"];
 
-        public static IEnumerable<string> OfAbilities { get; set; } = new List<string>
-        {
-            "Frisk", "Poison Touch",
-            "Electric Surge", "Psychic Surge", "Grassy Surge", "Misty Surge",
-            "Drought", "Sand Stream", "Drizzle", "Snow Warning",
-            "Static", "Flame Body", "Cute Charm", "Poison Point", "Effect Sport"
-        };
+        public static IEnumerable<string> OfAbilities { get; set; } =
+            [
+                "Frisk",
+                "Poison Touch",
+                "Electric Surge",
+                "Psychic Surge",
+                "Grassy Surge",
+                "Misty Surge",
+                "Drought",
+                "Sand Stream",
+                "Drizzle",
+                "Snow Warning",
+                "Static",
+                "Flame Body",
+                "Cute Charm",
+                "Poison Point",
+                "Effect Sport"
+            ];
     }
 }

@@ -33,14 +33,19 @@ namespace ShowdownReplayScouter.Api.Controllers
 
         private async Task<ApiScoutingResult?> RequestHandler(ApiScoutingRequest scoutingRequest)
         {
-            var basicScoutingResult = await _replayScouter.ScoutReplaysAsync(scoutingRequest).ConfigureAwait(false);
+            var basicScoutingResult = await _replayScouter
+                .ScoutReplaysAsync(scoutingRequest)
+                .ConfigureAwait(false);
             ApiScoutingResult? scoutingResult = null;
             if (basicScoutingResult is not null)
             {
                 scoutingResult = new ApiScoutingResult(basicScoutingResult);
                 if (scoutingRequest.ProvideOutput == true)
                 {
-                    scoutingResult.Outputs = OutputPrinter.PrintObject(scoutingRequest, scoutingResult.Teams);
+                    scoutingResult.Outputs = OutputPrinter.PrintObject(
+                        scoutingRequest,
+                        scoutingResult.Teams
+                    );
                 }
             }
             return scoutingResult;
