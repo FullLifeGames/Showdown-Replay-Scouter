@@ -83,8 +83,17 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
                     .AsyncParallelForEachAsync(
                         ReplayCollector.CollectReplaysAsync(scoutingRequest),
                         async (collectedReplay) =>
-                            await AnalyzeReplayAsync(collectedReplay, teamCollection)
-                                .ConfigureAwait(false),
+                        {
+                            try
+                            {
+                                await AnalyzeReplayAsync(collectedReplay, teamCollection)
+                                    .ConfigureAwait(false);
+                            }
+                            catch (Exception)
+                            {
+                                Console.WriteLine($"Error on {collectedReplay}");
+                            }
+                        },
                         Environment.ProcessorCount
                     )
                     .ConfigureAwait(false);

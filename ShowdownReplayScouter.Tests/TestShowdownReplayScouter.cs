@@ -164,6 +164,20 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
+        public void Scout_Error_With_404_Link_Replays()
+        {
+            var result = _replayScouter.ScoutReplays(
+                new Core.Data.ScoutingRequest()
+                {
+                    Users = ["evuelf"],
+                    MaximumDate = new DateTime(2024, 7, 1),
+                    MinimumDate = new DateTime(2023, 11, 1)
+                }
+            );
+            Assert.That(result.Teams.Any());
+        }
+
+        [Test]
         public void Scout_Gen7Ou_Broken_Link_Replays()
         {
             var result = _replayScouter.ScoutReplays(

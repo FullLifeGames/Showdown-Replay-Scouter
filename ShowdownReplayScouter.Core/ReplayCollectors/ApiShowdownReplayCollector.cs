@@ -150,7 +150,13 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             fullUrl += tier is not null ? $"&format={tier}" : "";
             var currentUrl = $"{fullUrl}";
 
-            var json = await Common.HttpClient.GetStringAsync(currentUrl).ConfigureAwait(false);
+            var response = await Common.HttpClient.GetAsync(currentUrl).ConfigureAwait(false);
+            // Broken request
+            if (!response.IsSuccessStatusCode)
+            {
+                yield break;
+            }
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             var cachedPages = await GetCachedPages(fullUrl, currentUrl, json).ConfigureAwait(false);
             if (cachedPages != null)
@@ -172,14 +178,21 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
             while (replayList?.Length == 51)
             {
-                json = await Common
-                    .HttpClient.GetStringAsync($"{fullUrl}&before={before}")
+                response = await Common
+                    .HttpClient.GetAsync($"{fullUrl}&before={before}")
                     .ConfigureAwait(false);
+                // Broken request
+                if (!response.IsSuccessStatusCode)
+                {
+                    yield break;
+                }
+                json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 replayList = JsonConvert.DeserializeObject<ReplayEntry[]>(json);
                 before = replayList?.LastOrDefault()?.Uploadtime;
                 // Error handling, sometimes "<" is returned from the API
                 if (json.StartsWith("<"))
                 {
+                    // Assume that the request will work
                     json = await Common
                         .HttpClient.GetStringAsync($"{fullUrl}&before={before}")
                         .ConfigureAwait(false);

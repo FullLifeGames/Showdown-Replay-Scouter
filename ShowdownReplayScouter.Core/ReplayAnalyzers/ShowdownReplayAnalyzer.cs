@@ -96,10 +96,18 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
 
             var team = new Team();
 
-            var replayJson = await Common.HttpClient.GetStringAsync(jsonLink).ConfigureAwait(false);
-            // Error handling, sometimes "<" is returned from the API
+            var replayResult = await Common.HttpClient.GetAsync(jsonLink).ConfigureAwait(false);
+            if (!replayResult.IsSuccessStatusCode)
+            {
+                // No success might mean 404 or the server is down, anyway we shut this down gracefully
+                return team;
+            }
+
+            var replayJson = await replayResult.Content.ReadAsStringAsync().ConfigureAwait(false);
+            // Old error handling, sometimes "<" is returned from the API
             if (replayJson.StartsWith("<"))
             {
+                // Use get String as the assumption is the first request went through, this will so as well
                 replayJson = await Common.HttpClient.GetStringAsync(jsonLink).ConfigureAwait(false);
                 // If return twice, at least don't break everything
                 if (replayJson.StartsWith("<"))
