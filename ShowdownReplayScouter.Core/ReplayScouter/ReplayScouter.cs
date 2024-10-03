@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ShowdownReplayScouter.Core.Data;
@@ -99,7 +100,13 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
                     .ConfigureAwait(false);
             }
 
-            return new ScoutingResult() { Teams = TeamMerger.MergeTeams(teamCollection) };
+            IEnumerable<Team> teams = teamCollection;
+            if (scoutingRequest.Grouped)
+            {
+                teams = TeamMerger.MergeTeams(teams);
+            }
+
+            return new ScoutingResult() { Teams = teams };
         }
 
         private async Task AnalyzeReplayAsync(

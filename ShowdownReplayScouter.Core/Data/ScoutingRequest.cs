@@ -11,5 +11,6 @@ namespace ShowdownReplayScouter.Core.Data
         public IEnumerable<Uri>? Links { get; set; }
         public DateTime? MaximumDate { get; set; }
         public DateTime? MinimumDate { get; set; }
+        public bool Grouped { get; set; } = true;
     }
 }

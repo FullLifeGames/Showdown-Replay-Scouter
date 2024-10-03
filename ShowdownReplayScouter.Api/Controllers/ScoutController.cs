@@ -17,7 +17,7 @@ namespace ShowdownReplayScouter.Api.Controllers
             _replayScouter = new Core.ReplayScouter.ShowdownReplayScouter();
         }
 
-        [ResponseCache(VaryByQueryKeys = ["*"], Duration = 30)]
+        [OutputCache(VaryByQueryKeys = ["*"], Duration = 30)]
         [HttpGet(Name = "GetScoutingResult")]
         public async Task<ApiScoutingResult?> Get([FromQuery] ApiScoutingRequest scoutingRequest)
         {

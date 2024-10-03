@@ -150,6 +150,42 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
+        public void Scout_Grouped()
+        {
+            var result = _replayScouter.ScoutReplays(
+                new Core.Data.ScoutingRequest()
+                {
+                    Users = ["fulllifegames"],
+                    Links = [
+                        new Uri("https://replay.pokemonshowdown.com/gen7ou-856921732"),
+                        new Uri("https://replay.pokemonshowdown.com/gen7ou-860458474")
+                    ],
+                    Grouped = true,
+                }
+            );
+
+            Assert.That(result.Teams.Count() == 1);
+        }
+
+        [Test]
+        public void Scout_Not_Grouped()
+        {
+            var result = _replayScouter.ScoutReplays(
+                new Core.Data.ScoutingRequest()
+                {
+                    Users = ["fulllifegames"],
+                    Links = [
+                        new Uri("https://replay.pokemonshowdown.com/gen7ou-856921732"),
+                        new Uri("https://replay.pokemonshowdown.com/gen7ou-860458474")
+                    ],
+                    Grouped = false,
+                }
+            );
+
+            Assert.That(result.Teams.Count() == 2);
+        }
+
+        [Test]
         public void Scout_Multiple_Gen7Ou_Replays()
         {
             var result = _replayScouter.ScoutReplays(
