@@ -36,6 +36,7 @@ namespace ShowdownReplayScouter.Core.Data
                 Item = Item,
                 Ability = Ability,
                 Lead = Lead,
+                AltNames = AltNames.Select(item => (string)item.Clone()).ToList(),
                 Moves = Moves.Select(item => (string)item.Clone()).ToList(),
                 TeraType = TeraType
             };

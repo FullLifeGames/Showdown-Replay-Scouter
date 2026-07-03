@@ -152,6 +152,28 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
+        public void ShowdownTeamMerger_MergeTeams_PreservesAltNamesFromEveryMergedReplay()
+        {
+            var teamOne = TeamWithPokemonAltNames(
+                "gen7ou-1",
+                "Hydreigon",
+                ["Hydreigon, M"]
+            );
+            var teamTwo = TeamWithPokemonAltNames(
+                "gen7ou-2",
+                "Hydreigon",
+                ["Hydreigon", "Hydreigon, F"]
+            );
+
+            var mergedTeam = new ShowdownTeamMerger().MergeTeams([teamOne, teamTwo]).Single();
+
+            Assert.That(
+                mergedTeam.Pokemon.Single().AltNames,
+                Is.EquivalentTo(["Hydreigon, M", "Hydreigon", "Hydreigon, F"])
+            );
+        }
+
+        [Test]
         public async Task ScoutReplaysAsync_WithHighConcurrency_ReturnsEveryCollectedReplayOnce()
         {
             var replayCount = 250;
@@ -257,6 +279,31 @@ namespace ShowdownReplayScouter.Tests
             }
 
             Assert.That(snapshot, Is.EqualTo(scenario.ExpectedSnapshot));
+        }
+
+        private static Team TeamWithPokemonAltNames(
+            string replayId,
+            string pokemonName,
+            IEnumerable<string> altNames
+        )
+        {
+            return new Team
+            {
+                Format = "gen7ou",
+                Pokemon = [new Pokemon { Name = pokemonName, AltNames = altNames.ToList() }],
+                Replays =
+                [
+                    new Replay
+                    {
+                        Id = replayId,
+                        Format = "gen7ou",
+                        FormatId = "gen7ou",
+                        Link = new Uri($"https://replay.pokemonshowdown.com/{replayId}"),
+                        Log = "",
+                        Players = ["player-one", "player-two"]
+                    }
+                ]
+            };
         }
 
         private sealed class GoldenMasterScenario
