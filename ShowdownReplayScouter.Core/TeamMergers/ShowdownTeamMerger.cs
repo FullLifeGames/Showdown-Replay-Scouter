@@ -10,9 +10,8 @@ namespace ShowdownReplayScouter.Core.TeamMergers
         public IEnumerable<Team> MergeTeams(IEnumerable<Team> teams)
         {
             var returnList = new List<Team>();
-            foreach (var definition in teams.Select((team) => team.ToString()).Distinct())
+            foreach (var definitionTeams in teams.GroupBy((team) => team.ToString()))
             {
-                var definitionTeams = teams.Where((team) => team.ToString() == definition);
                 var team = new Team();
                 foreach (var definitionTeam in definitionTeams)
                 {

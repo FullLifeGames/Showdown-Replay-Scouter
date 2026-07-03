@@ -48,10 +48,30 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
 
         public async Task<IEnumerable<Team>> AnalyzeReplayAsync(Uri replay)
         {
+            var jsonLink = GetJsonLink(replay);
+            var cachedPlayerOneTeam = await GetFromCache(null, "p1", jsonLink)
+                .ConfigureAwait(false);
+            var cachedPlayerTwoTeam = await GetFromCache(null, "p2", jsonLink)
+                .ConfigureAwait(false);
+            if (cachedPlayerOneTeam is not null && cachedPlayerTwoTeam is not null)
+            {
+                return [cachedPlayerOneTeam, cachedPlayerTwoTeam];
+            }
+
+            var replayObject = await GetReplayFromUrl(jsonLink).ConfigureAwait(false);
+            if (replayObject is null)
+            {
+                return [cachedPlayerOneTeam ?? new Team(), cachedPlayerTwoTeam ?? new Team()];
+            }
+
             return
             [
-                await GetTeamFromUrl(replay, playerValue: "p1").ConfigureAwait(false),
-                await GetTeamFromUrl(replay, playerValue: "p2").ConfigureAwait(false),
+                cachedPlayerOneTeam
+                    ?? await GetTeamFromReplay(replay, null, "p1", jsonLink, replayObject)
+                        .ConfigureAwait(false),
+                cachedPlayerTwoTeam
+                    ?? await GetTeamFromReplay(replay, null, "p2", jsonLink, replayObject)
+                        .ConfigureAwait(false),
             ];
         }
 
@@ -75,6 +95,26 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             string playerValue = ""
         )
         {
+            var jsonLink = GetJsonLink(link);
+
+            var cachedTeam = await GetFromCache(user, playerValue, jsonLink).ConfigureAwait(false);
+            if (cachedTeam != null)
+            {
+                return cachedTeam;
+            }
+
+            var replayObject = await GetReplayFromUrl(jsonLink).ConfigureAwait(false);
+            if (replayObject is null)
+            {
+                return new Team();
+            }
+
+            return await GetTeamFromReplay(link, user, playerValue, jsonLink, replayObject)
+                .ConfigureAwait(false);
+        }
+
+        private static string GetJsonLink(Uri link)
+        {
             var jsonLink = link.ToString();
             // Remove additions like "?p2"
             if (!string.IsNullOrWhiteSpace(link.Query))
@@ -85,22 +125,16 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             {
                 jsonLink += ".json";
             }
+            return jsonLink;
+        }
 
-            var cachedTeam = await GetFromCache(user, playerValue, jsonLink).ConfigureAwait(false);
-            if (cachedTeam != null)
-            {
-                return cachedTeam;
-            }
-
-            var playerInfo = new PlayerInfo { PlayerName = "", PlayerValue = playerValue };
-
-            var team = new Team();
-
+        private static async Task<Replay?> GetReplayFromUrl(string jsonLink)
+        {
             var replayResult = await Common.HttpClient.GetAsync(jsonLink).ConfigureAwait(false);
             if (!replayResult.IsSuccessStatusCode)
             {
                 // No success might mean 404 or the server is down, anyway we shut this down gracefully
-                return team;
+                return null;
             }
 
             var replayJson = await replayResult.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -112,51 +146,57 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 // If return twice, at least don't break everything
                 if (replayJson.StartsWith("<"))
                 {
-                    return team;
+                    return null;
                 }
             }
             if (replayJson == "Could not connect")
             {
-                return team;
+                return null;
             }
-            var replayLog = "";
-            Replay? replayObject = null;
-            if (replayJson is not null && replayJson != "Could not connect")
+            return JsonConvert.DeserializeObject<Replay>(replayJson);
+        }
+
+        private async Task<Team> GetTeamFromReplay(
+            Uri link,
+            string? user,
+            string playerValue,
+            string jsonLink,
+            Replay sourceReplayObject
+        )
+        {
+            var playerInfo = new PlayerInfo { PlayerName = "", PlayerValue = playerValue };
+
+            var team = new Team();
+            var replayObject = sourceReplayObject.Clone();
+            team.Replays.Add(replayObject);
+            replayObject.Link = link;
+            var replayLog = replayObject.Log;
+            team.Format = replayObject.Format;
+            if (playerValue == "p1")
             {
-                replayObject = JsonConvert.DeserializeObject<Replay>(replayJson);
-                if (replayObject is not null)
+                if (replayObject.P1 is not null)
                 {
-                    team.Replays.Add(replayObject);
-                    replayObject.Link = link;
-                    replayLog = replayObject.Log;
-                    team.Format = replayObject.Format;
-                    if (playerValue == "p1")
-                    {
-                        if (replayObject.P1 is not null)
-                        {
-                            playerInfo.PlayerName = replayObject.P1;
-                        }
-                        else
-                        {
-                            playerInfo.PlayerName = replayObject.Players.FirstOrDefault();
-                            replayObject.P1 = replayObject.Players.FirstOrDefault();
-                        }
-                    }
-                    if (playerValue == "p2")
-                    {
-                        if (replayObject.P2 is not null)
-                        {
-                            playerInfo.PlayerName = replayObject.P2;
-                        }
-                        else
-                        {
-                            playerInfo.PlayerName = replayObject.Players.LastOrDefault();
-                            replayObject.P2 = replayObject.Players.LastOrDefault();
-                        }
-                    }
-                    replayObject.PlayerInfo = playerInfo;
+                    playerInfo.PlayerName = replayObject.P1;
+                }
+                else
+                {
+                    playerInfo.PlayerName = replayObject.Players.FirstOrDefault();
+                    replayObject.P1 = replayObject.Players.FirstOrDefault();
                 }
             }
+            if (playerValue == "p2")
+            {
+                if (replayObject.P2 is not null)
+                {
+                    playerInfo.PlayerName = replayObject.P2;
+                }
+                else
+                {
+                    playerInfo.PlayerName = replayObject.Players.LastOrDefault();
+                    replayObject.P2 = replayObject.Players.LastOrDefault();
+                }
+            }
+            replayObject.PlayerInfo = playerInfo;
 
             try
             {

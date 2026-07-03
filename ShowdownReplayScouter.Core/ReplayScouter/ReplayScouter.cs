@@ -32,6 +32,7 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
             }
 
             var teamCollection = new ConcurrentBag<Team>();
+            var maxDegreeOfParallelism = GetMaxDegreeOfParallelism(scoutingRequest);
 
             if (scoutingRequest.Links?.Any() == true)
             {
@@ -74,7 +75,7 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
                                 }
                             }
                         },
-                        Environment.ProcessorCount
+                        maxDegreeOfParallelism
                     )
                     .ConfigureAwait(false);
             }
@@ -95,7 +96,7 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
                                 Console.WriteLine($"Error on {collectedReplay}");
                             }
                         },
-                        Environment.ProcessorCount
+                        maxDegreeOfParallelism
                     )
                     .ConfigureAwait(false);
             }
@@ -107,6 +108,19 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
             }
 
             return new ScoutingResult() { Teams = teams };
+        }
+
+        protected virtual int DefaultMaxConcurrentReplayAnalysis =>
+            Math.Max(Environment.ProcessorCount, 16);
+
+        private int GetMaxDegreeOfParallelism(ScoutingRequest scoutingRequest)
+        {
+            if (scoutingRequest.MaxConcurrentReplayAnalysis is > 0)
+            {
+                return scoutingRequest.MaxConcurrentReplayAnalysis.Value;
+            }
+
+            return DefaultMaxConcurrentReplayAnalysis;
         }
 
         private async Task AnalyzeReplayAsync(

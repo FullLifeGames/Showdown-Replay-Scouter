@@ -5,6 +5,7 @@ using NUnit.Framework;
 namespace ShowdownReplayScouter.Tests
 {
     [TestFixture]
+    [Category("Live")]
     public class TestShowdownReplayScouter
     {
         private Core.ReplayScouter.ReplayScouter _replayScouter;

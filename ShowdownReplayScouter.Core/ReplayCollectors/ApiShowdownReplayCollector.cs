@@ -37,7 +37,11 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                     {
                         var publicReplayUrls = new List<Uri>();
                         await foreach (
-                            var showdownReplay in RetrieveReplaysForUserAndTier(user, tier)
+                            var showdownReplay in RetrieveReplaysForUserAndTier(
+                                user,
+                                tier,
+                                scoutingRequest
+                            )
                         )
                         {
                             foreach (
@@ -62,7 +66,11 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 {
                     var publicReplayUrls = new List<Uri>();
                     await foreach (
-                        var showdownReplay in RetrieveReplaysForUserAndTier(user, tier: null)
+                        var showdownReplay in RetrieveReplaysForUserAndTier(
+                            user,
+                            tier: null,
+                            scoutingRequest
+                        )
                     )
                     {
                         foreach (
@@ -141,14 +149,21 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
         private async IAsyncEnumerable<string> RetrieveReplaysForUserAndTier(
             string user,
-            string? tier
+            string? tier,
+            ScoutingRequest scoutingRequest
         )
         {
             var regexUser = RegexUtil.Regex(user);
 
             var fullUrl = $"https://replay.pokemonshowdown.com/search.json?user={regexUser}";
             fullUrl += tier is not null ? $"&format={tier}" : "";
-            var currentUrl = $"{fullUrl}";
+            var maximumUploadTime = scoutingRequest.MaximumDate is not null
+                ? ToUnixTime(scoutingRequest.MaximumDate.Value) + 1
+                : (long?)null;
+            var currentUrl = maximumUploadTime is not null
+                ? $"{fullUrl}&before={maximumUploadTime}"
+                : fullUrl;
+            var cacheKey = currentUrl;
 
             var response = await Common.HttpClient.GetAsync(currentUrl).ConfigureAwait(false);
             // Broken request
@@ -158,7 +173,8 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             }
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            var cachedPages = await GetCachedPages(fullUrl, currentUrl, json).ConfigureAwait(false);
+            var cachedPages = await GetCachedPages(cacheKey, currentUrl, json)
+                .ConfigureAwait(false);
             if (cachedPages != null)
             {
                 foreach (var cachedPage in cachedPages)
@@ -176,7 +192,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
 
             List<string> cachingPages = [json];
 
-            while (replayList?.Length == 51)
+            while (ShouldContinuePaging(replayList, scoutingRequest))
             {
                 response = await Common
                     .HttpClient.GetAsync($"{fullUrl}&before={before}")
@@ -207,7 +223,27 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             }
 
             var cachingPagesString = JsonConvert.SerializeObject(cachingPages);
-            _cache?.SetString(fullUrl, cachingPagesString);
+            _cache?.SetString(cacheKey, cachingPagesString);
+        }
+
+        private static bool ShouldContinuePaging(
+            ReplayEntry[]? replayList,
+            ScoutingRequest scoutingRequest
+        )
+        {
+            if (replayList?.Length != 51)
+            {
+                return false;
+            }
+
+            if (scoutingRequest.MinimumDate is null)
+            {
+                return true;
+            }
+
+            var oldestReplayUploadTime = replayList.LastOrDefault()?.Uploadtime;
+            return oldestReplayUploadTime is null
+                || oldestReplayUploadTime > ToUnixTime(scoutingRequest.MinimumDate.Value);
         }
 
         private static bool IsInScope(ReplayEntry replayEntry, ScoutingRequest scoutingRequest)

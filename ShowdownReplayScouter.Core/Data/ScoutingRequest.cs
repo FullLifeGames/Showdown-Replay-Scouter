@@ -12,5 +12,6 @@ namespace ShowdownReplayScouter.Core.Data
         public DateTime? MaximumDate { get; set; }
         public DateTime? MinimumDate { get; set; }
         public bool Grouped { get; set; } = true;
+        public int? MaxConcurrentReplayAnalysis { get; set; }
     }
 }

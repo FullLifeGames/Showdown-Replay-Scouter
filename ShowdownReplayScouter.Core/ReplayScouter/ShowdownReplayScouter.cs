@@ -8,18 +8,29 @@ using ShowdownReplayScouter.Core.Util;
 
 namespace ShowdownReplayScouter.Core.ReplayScouter
 {
-    public class ShowdownReplayScouter(IDistributedCache? cache) : ReplayScouter
+    public class ShowdownReplayScouter : ReplayScouter
     {
         public ShowdownReplayScouter()
             : this(null) { }
 
-        private readonly CacheCollector _cache = new(cache);
+        private readonly CacheCollector _cache;
+        private readonly IReplayAnalyzer _replayAnalyzer;
+        private readonly IReplayCollector _replayCollector;
+        private readonly ITeamMerger _teamMerger;
 
-        public override IReplayAnalyzer ReplayAnalyzer => new ShowdownReplayAnalyzer(_cache);
+        public ShowdownReplayScouter(IDistributedCache? cache)
+        {
+            _cache = new CacheCollector(cache);
+            _replayAnalyzer = new ShowdownReplayAnalyzer(_cache);
+            _replayCollector = new ApiShowdownReplayCollector(_cache);
+            _teamMerger = new ShowdownTeamMerger();
+        }
 
-        public override IReplayCollector ReplayCollector => new ApiShowdownReplayCollector(_cache);
+        public override IReplayAnalyzer ReplayAnalyzer => _replayAnalyzer;
 
-        public override ITeamMerger TeamMerger => new ShowdownTeamMerger();
+        public override IReplayCollector ReplayCollector => _replayCollector;
+
+        public override ITeamMerger TeamMerger => _teamMerger;
 
         public override ScoutingResult? ScoutReplays(ScoutingRequest scoutingRequest)
         {
