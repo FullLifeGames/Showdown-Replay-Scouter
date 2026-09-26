@@ -239,6 +239,18 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             /// </summary>
             public HashSet<Pokemon> PostedSets { get; } = [];
 
+            /// <summary>
+            /// Pokemon transformed into another Pokemon (Transform / Imposter), their moves are copied.
+            /// </summary>
+            public HashSet<Pokemon> Transformed { get; } = [];
+
+            /// <summary>
+            /// The active Pokemon per position and its state when it switched in,
+            /// used to move what a disguised Zoroark revealed to the Zoroark.
+            /// </summary>
+            public Dictionary<string, (Pokemon Pokemon, Pokemon SwitchInState)> Active { get; } =
+                [];
+
             public string? TrickUser { get; set; }
             public string? TrickTarget { get; set; }
             public HashSet<Pokemon> ForeignItemHoldersBeforeTrick { get; set; } = [];
@@ -378,6 +390,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     default:
                         HandleItems(context);
                         HandleAbilities(context);
+                        HandleRevealedMoves(context);
                         break;
                 }
             }
@@ -414,16 +427,36 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 return;
             }
 
+            var state = context.State;
+            var pokemon = FindSwitchedInPokemon(context, nickname, pokeinf[3].Split(',')[0]);
+            if (
+                context.Command == "replace"
+                && state.Active.TryGetValue(side, out var disguise)
+                && disguise.Pokemon != pokemon
+            )
+            {
+                // Illusion ended, everything revealed while disguised belongs to the Zoroark
+                TransferRevealedInformation(disguise.Pokemon, disguise.SwitchInState, pokemon);
+            }
+            state.Transformed.Remove(pokemon);
+            state.Active[side] = (pokemon, pokemon.Clone());
+        }
+
+        private static Pokemon FindSwitchedInPokemon(
+            LineContext context,
+            string nickname,
+            string maybepoke
+        )
+        {
             var team = context.Team;
             var nicknames = context.State.Nicknames;
-            var maybepoke = pokeinf[3].Split(',')[0];
             if (nicknames.TryGetValue(nickname, out var pokemon))
             {
                 if (pokemon.Name != maybepoke && pokemon.FormName != maybepoke)
                 {
                     pokemon.FormName = maybepoke;
                 }
-                return;
+                return pokemon;
             }
 
             // Pokemon already identified by another nickname are a different Pokemon,
@@ -469,6 +502,44 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             {
                 pokemon.AltNames.Add(nickname);
             }
+            return pokemon;
+        }
+
+        private static void TransferRevealedInformation(
+            Pokemon disguise,
+            Pokemon disguiseBefore,
+            Pokemon actual
+        )
+        {
+            foreach (var move in disguise.Moves.Except(disguiseBefore.Moves).ToList())
+            {
+                disguise.Moves.Remove(move);
+                if (!actual.Moves.Contains(move))
+                {
+                    actual.Moves.Add(move);
+                }
+            }
+            actual.Item = Common.MergeAlternatives(
+                actual.Item,
+                AddedAlternatives(disguiseBefore.Item, disguise.Item)
+            );
+            disguise.Item = disguiseBefore.Item;
+            actual.Ability = Common.MergeAlternatives(
+                actual.Ability,
+                AddedAlternatives(disguiseBefore.Ability, disguise.Ability)
+            );
+            disguise.Ability = disguiseBefore.Ability;
+        }
+
+        private static string? AddedAlternatives(string? before, string? after)
+        {
+            if (string.IsNullOrEmpty(after))
+            {
+                return null;
+            }
+            var previous = before?.Split(Common.AlternativeSeparator) ?? [];
+            var added = after.Split(Common.AlternativeSeparator).Except(previous).ToList();
+            return added.Count > 0 ? string.Join(Common.AlternativeSeparator, added) : null;
         }
 
         private void HandleMove(LineContext context)
@@ -503,14 +574,84 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                     AbilityUpdate(pokemon, "Magic Bounce");
                     return;
                 }
-                if (from == "move: Metronome")
+                var source = from.StartsWith("move:") ? from["move:".Length..].Trim() : from;
+                if (MoveCallingMoves.Contains(source))
                 {
-                    // Only Metronome itself is part of the set, not the move it called
+                    // Only e.g. Metronome itself is part of the set, not the move it called
                     return;
                 }
             }
+            if (context.State.Transformed.Contains(pokemon))
+            {
+                // Transformed Pokemon use the moves of the Pokemon they transformed into
+                return;
+            }
+            if (move.StartsWith("Max ") || move.StartsWith("G-Max "))
+            {
+                // Max Moves do not reveal the move they are based on
+                return;
+            }
 
             MoveUpdate(pokemon, move);
+        }
+
+        /// <summary>
+        /// Moves that call a move which is not part of the set (in contrast to e.g. Sleep Talk).
+        /// </summary>
+        private static readonly HashSet<string> MoveCallingMoves =
+        [
+            "Metronome",
+            "Assist",
+            "Copycat",
+            "Mirror Move",
+            "Me First",
+            "Magic Coat",
+            "Nature Power",
+            "Snatch"
+        ];
+
+        private void HandleRevealedMoves(LineContext context)
+        {
+            switch (context.Command)
+            {
+                case "-transform":
+                    var transformed = context.Resolve(context.Main);
+                    if (transformed is not null)
+                    {
+                        context.State.Transformed.Add(transformed);
+                    }
+                    break;
+                case "cant":
+                    // "|cant|p1a: Nick|move: Taunt|Calm Mind", with Dazzling / Queenly Majesty
+                    // "|cant|p1a: Holder|ability: Queenly Majesty|Extreme Speed|[of] p2a: Nick"
+                    var move = context.Arg(4);
+                    if (!string.IsNullOrWhiteSpace(move) && !move.StartsWith('['))
+                    {
+                        RevealMove(context, context.Of ?? context.Main, move);
+                    }
+                    break;
+                case "-activate":
+                    // "|-activate|p1a: Holder|ability: Forewarn|Move|[of] p2a: Nick"
+                    if (context.Arg(3) == "ability: Forewarn")
+                    {
+                        RevealMove(context, context.Of, context.Arg(4));
+                    }
+                    break;
+            }
+        }
+
+        private void RevealMove(LineContext context, string? ident, string? move)
+        {
+            move = move?.Trim();
+            if (string.IsNullOrEmpty(move))
+            {
+                return;
+            }
+            var pokemon = context.Resolve(ident);
+            if (pokemon is not null && !context.State.Transformed.Contains(pokemon))
+            {
+                MoveUpdate(pokemon, move);
+            }
         }
 
         private static void HandleDetailsChange(LineContext context)
@@ -571,13 +712,19 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 return;
             }
 
+            // Only "!showteam" is clearly marked, other posts must match a Pokemon of the team
+            var onlyKnownPokemon = !ShowdownSetParser.IsPostedTeam(message);
             foreach (var set in ShowdownSetParser.ParseRawHtml(message))
             {
-                ApplyPostedSet(context, set);
+                ApplyPostedSet(context, set, onlyKnownPokemon);
             }
         }
 
-        private static void ApplyPostedSet(LineContext context, ShowdownSet set)
+        private static void ApplyPostedSet(
+            LineContext context,
+            ShowdownSet set,
+            bool onlyKnownPokemon
+        )
         {
             var state = context.State;
             var team = context.Team;
@@ -604,6 +751,10 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             );
             if (pokemon is null)
             {
+                if (onlyKnownPokemon)
+                {
+                    return;
+                }
                 pokemon = new Pokemon() { Name = set.Species };
                 team.Pokemon.Add(pokemon);
             }
@@ -852,6 +1003,16 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             }
         }
 
+        /// <summary>
+        /// Increase whenever the analysis changes, so teams analyzed by an older version are not reused.
+        /// </summary>
+        public const int AnalysisVersion = 2;
+
+        private static string TeamCacheKey(string logLink, string? player)
+        {
+            return $"{logLink}+v{AnalysisVersion}+{player}";
+        }
+
         private async Task<Team?> GetFromCache(string? user, string playerValue, string logLink)
         {
             Team? cachedTeam = null;
@@ -860,9 +1021,11 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 string? result = null;
                 try
                 {
-                    result = await _cache.GetStringAsync($"{logLink}+{user}").ConfigureAwait(false);
+                    result = await _cache
+                        .GetStringAsync(TeamCacheKey(logLink, user))
+                        .ConfigureAwait(false);
                     result ??= await _cache
-                        .GetStringAsync($"{logLink}+{playerValue}")
+                        .GetStringAsync(TeamCacheKey(logLink, playerValue))
                         .ConfigureAwait(false);
                 }
                 catch (NullReferenceException) { }
@@ -883,10 +1046,10 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             {
                 var serializedTeam = JsonConvert.SerializeObject(team);
                 await _cache
-                    .SetStringAsync($"{logLink}+{playerInfo.PlayerName}", serializedTeam)
+                    .SetStringAsync(TeamCacheKey(logLink, playerInfo.PlayerName), serializedTeam)
                     .ConfigureAwait(false);
                 await _cache
-                    .SetStringAsync($"{logLink}+{playerInfo.PlayerValue}", serializedTeam)
+                    .SetStringAsync(TeamCacheKey(logLink, playerInfo.PlayerValue), serializedTeam)
                     .ConfigureAwait(false);
                 // Lock since otherwise this can become a race condition
                 lock (replayLock)
@@ -1114,10 +1277,9 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
         /// <summary>
         /// Status moves whose Z-powered variant ("Z-Move") reveals a specific Z-Crystal.
         /// </summary>
-        public IDictionary<string, string> ZStatusMoveItems = new Dictionary<string, string>
-        {
-            { "Metronome", "Normalium Z" },
-        };
+        public IDictionary<string, string> ZStatusMoveItems = new Dictionary<string, string>(
+            ZStatusMoves.Crystals
+        );
 
         private void MoveUpdate(Pokemon pokemon, string move)
         {

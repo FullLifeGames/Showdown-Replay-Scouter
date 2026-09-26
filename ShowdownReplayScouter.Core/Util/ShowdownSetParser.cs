@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -20,14 +20,33 @@ namespace ShowdownReplayScouter.Core.Util
     /// </summary>
     public static partial class ShowdownSetParser
     {
+        private const string InfoboxStart = "/raw <div class=\"infobox\">";
+
+        /// <summary>
+        /// "!showteam" and "!showset" are posted as infobox ("/raw <div class="infobox">...").
+        /// </summary>
         public static bool IsPostedSets(string chatMessage)
         {
-            return chatMessage.StartsWith("/raw ") && chatMessage.Contains("<summary>View ");
+            return chatMessage.StartsWith(InfoboxStart);
+        }
+
+        /// <summary>
+        /// Only "!showteam" wraps the sets in "<details><summary>View team</summary>".
+        /// </summary>
+        public static bool IsPostedTeam(string chatMessage)
+        {
+            return IsPostedSets(chatMessage)
+                && chatMessage.Contains("<summary>View team</summary>");
         }
 
         public static IEnumerable<ShowdownSet> ParseRawHtml(string html)
         {
-            var content = html;
+            return ParseSets(html).Where((set) => set.Ability is not null || set.Moves.Count > 0);
+        }
+
+        private static IEnumerable<ShowdownSet> ParseSets(string html)
+        {
+            var content = html.StartsWith(InfoboxStart) ? html[InfoboxStart.Length..] : html;
             var summaryEnd = content.IndexOf("</summary>");
             if (summaryEnd >= 0)
             {

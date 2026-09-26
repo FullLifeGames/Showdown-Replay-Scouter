@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using ShowdownReplayScouter.Core.Data;
 using ShowdownReplayScouter.Core.ReplayAnalyzers;
@@ -189,6 +192,142 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
+        public async Task MovesPreventedByCantAreTracked()
+        {
+            var (playerOne, playerTwo) = await AnalyzeAsync("sim-gen9-cant-showset")
+                .ConfigureAwait(false);
+
+            // "|cant|p2a: Clefable|move: Taunt|Calm Mind"
+            Assert.That(PokemonByName(playerTwo, "Clefable").Moves, Does.Contain("Calm Mind"));
+            // "|cant|p2a: Tsareena|ability: Queenly Majesty|Extreme Speed|[of] p1a: Bob's Bane"
+            Assert.That(
+                PokemonByName(playerTwo, "Tsareena").Moves,
+                Does.Not.Contain("Extreme Speed")
+            );
+            Assert.That(
+                PokemonByName(playerTwo, "Tsareena").Ability,
+                Is.EqualTo("Queenly Majesty")
+            );
+            Assert.That(PokemonByName(playerOne, "Dragonite").Moves, Does.Contain("Extreme Speed"));
+        }
+
+        [Test]
+        public async Task PostedSingleSetsAreUsedAsTheActualSet()
+        {
+            var (playerOne, _) = await AnalyzeAsync("sim-gen9-cant-showset").ConfigureAwait(false);
+
+            var dragonite = PokemonByNickname(playerOne, "Bob's Bane");
+            Assert.That(dragonite.Item, Is.EqualTo("Leftovers"));
+            Assert.That(dragonite.Ability, Is.EqualTo("Multiscale"));
+            Assert.That(
+                dragonite.Moves,
+                Is.EqualTo(new[] { "Extreme Speed", "Dragon Dance", "Earthquake", "Roost" })
+            );
+            Assert.That(PokemonByName(playerOne, "Grimmsnarl").Item, Is.Null);
+        }
+
+        [Test]
+        public async Task MovesOfTransformedPokemonAreNotTracked()
+        {
+            var (playerOne, _) = await AnalyzeAsync("sim-gen9-transform").ConfigureAwait(false);
+
+            var ditto = PokemonByName(playerOne, "Ditto");
+            Assert.That(ditto.Ability, Is.EqualTo("Imposter"));
+            Assert.That(ditto.Moves, Is.Empty);
+            Assert.That(PokemonByName(playerOne, "Mew").Moves, Is.EqualTo(new[] { "Transform" }));
+        }
+
+        [Test]
+        public async Task MovesUsedWhileDisguisedByIllusionBelongToZoroark()
+        {
+            var (_, playerTwo) = await AnalyzeAsync("sim-gen9-illusion-forewarn")
+                .ConfigureAwait(false);
+
+            Assert.That(playerTwo.Pokemon, Has.Count.EqualTo(2));
+            Assert.That(
+                PokemonByName(playerTwo, "Zoroark").Moves,
+                Is.EqualTo(new[] { "Nasty Plot" })
+            );
+            Assert.That(PokemonByName(playerTwo, "Hypno").Moves, Is.EqualTo(new[] { "Toxic" }));
+            Assert.That(PokemonByName(playerTwo, "Hypno").Ability, Is.EqualTo("Forewarn"));
+        }
+
+        [Test]
+        public async Task ForewarnRevealsAMoveOfTheOpponent()
+        {
+            var (playerOne, _) = await AnalyzeAsync("sim-gen9-illusion-forewarn")
+                .ConfigureAwait(false);
+
+            Assert.That(
+                PokemonByName(playerOne, "Blissey").Moves,
+                Is.EquivalentTo(new[] { "Seismic Toss", "Soft-Boiled" })
+            );
+        }
+
+        [Test]
+        public async Task MovesCalledByOtherMovesAreNotTracked()
+        {
+            var (playerOne, _) = await AnalyzeAsync("sim-gen7-called-moves-zstatus")
+                .ConfigureAwait(false);
+
+            Assert.That(
+                PokemonByName(playerOne, "Liepard").Moves,
+                Is.EqualTo(new[] { "Assist", "Copycat", "Magic Coat" })
+            );
+        }
+
+        [Test]
+        public async Task ZPoweredStatusMovesRevealTheZCrystalOfTheirType()
+        {
+            var (playerOne, _) = await AnalyzeAsync("sim-gen7-called-moves-zstatus")
+                .ConfigureAwait(false);
+
+            var breloom = PokemonByName(playerOne, "Breloom");
+            Assert.That(breloom.Item, Is.EqualTo("Grassium Z"));
+            Assert.That(breloom.Moves, Is.EqualTo(new[] { "Spore" }));
+        }
+
+        [Test]
+        public async Task MaxMovesAreNotTracked()
+        {
+            var (playerOne, _) = await AnalyzeAsync("sim-gen8-dynamax").ConfigureAwait(false);
+
+            Assert.That(
+                PokemonByName(playerOne, "Charizard").Moves,
+                Is.EqualTo(new[] { "Air Slash" })
+            );
+        }
+
+        [Test]
+        public async Task TeamsCachedByAnOlderAnalysisAreNotReused()
+        {
+            var replayId = "gen9metronomebattle-2092010901";
+            var jsonLink = $"https://replay.pokemonshowdown.com/{replayId}.json";
+            var cache = new DictionaryDistributedCache();
+            var staleTeam = JsonConvert.SerializeObject(
+                new Team { Pokemon = [new Pokemon { Name = "Glastrier", Ability = "Toxic Chain" }] }
+            );
+            await cache.SetStringAsync($"{jsonLink}+p1", staleTeam).ConfigureAwait(false);
+            await cache.SetStringAsync($"{jsonLink}+p2", staleTeam).ConfigureAwait(false);
+
+            var teams = (
+                await new ShowdownReplayAnalyzer(cache)
+                    .AnalyzeReplayAsync(new Uri($"https://replay.pokemonshowdown.com/{replayId}"))
+                    .ConfigureAwait(false)
+            ).ToList();
+
+            Assert.That(PokemonByName(teams[1], "Glastrier").Ability, Is.EqualTo("Delta Stream"));
+            Assert.That(
+                await cache
+                    .GetStringAsync(
+                        $"{jsonLink}+v{ShowdownReplayAnalyzer.AnalysisVersion}+p2"
+                    )
+                    .ConfigureAwait(false),
+                Does.Contain("Delta Stream")
+            );
+        }
+
+        [Test]
         public void Issue13_MergingTeamsDoesNotDuplicateTeraTypes()
         {
             var teams = new[] { "Flying", "Flying", "Water" }.Select(
@@ -280,6 +419,55 @@ namespace ShowdownReplayScouter.Tests
                         )
                     }
                 );
+            }
+        }
+
+        private sealed class DictionaryDistributedCache : IDistributedCache
+        {
+            private readonly ConcurrentDictionary<string, byte[]> _entries = new();
+
+            public byte[]? Get(string key)
+            {
+                return _entries.TryGetValue(key, out var value) ? value : null;
+            }
+
+            public Task<byte[]?> GetAsync(string key, CancellationToken token = default)
+            {
+                return Task.FromResult(Get(key));
+            }
+
+            public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
+            {
+                _entries[key] = value;
+            }
+
+            public Task SetAsync(
+                string key,
+                byte[] value,
+                DistributedCacheEntryOptions options,
+                CancellationToken token = default
+            )
+            {
+                Set(key, value, options);
+                return Task.CompletedTask;
+            }
+
+            public void Refresh(string key) { }
+
+            public Task RefreshAsync(string key, CancellationToken token = default)
+            {
+                return Task.CompletedTask;
+            }
+
+            public void Remove(string key)
+            {
+                _entries.TryRemove(key, out _);
+            }
+
+            public Task RemoveAsync(string key, CancellationToken token = default)
+            {
+                Remove(key);
+                return Task.CompletedTask;
             }
         }
     }
