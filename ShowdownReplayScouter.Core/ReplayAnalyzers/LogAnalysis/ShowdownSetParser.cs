@@ -3,22 +3,13 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 
-namespace ShowdownReplayScouter.Core.Util
+namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
 {
-    public sealed record ShowdownSet(
-        string? Nickname,
-        string Species,
-        string? Item,
-        string? Ability,
-        string? TeraType,
-        IReadOnlyList<string> Moves
-    );
-
     /// <summary>
     /// Parses the sets posted into the battle chat via "!showteam" / "!showset",
     /// which are rendered as "/raw" HTML containing the Showdown export format.
     /// </summary>
-    public static partial class ShowdownSetParser
+    internal static partial class ShowdownSetParser
     {
         private const string InfoboxStart = "/raw <div class=\"infobox\">";
 

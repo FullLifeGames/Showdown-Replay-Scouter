@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace ShowdownReplayScouter.Core.Util
+namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
 {
-    public static class ZStatusMoves
+    internal static class ZStatusMoves
     {
         /// <summary>
         /// The Z-Crystal needed for the Z-powered variant ("Z-Move") of every status move, based on its type.
