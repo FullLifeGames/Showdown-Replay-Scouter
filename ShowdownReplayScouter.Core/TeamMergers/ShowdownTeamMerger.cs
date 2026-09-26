@@ -49,44 +49,35 @@ namespace ShowdownReplayScouter.Core.TeamMergers
 
             var team = team1.Clone();
 
+            var matchedPokemon = new HashSet<Pokemon>();
             foreach (var pokemon in team2.Pokemon)
             {
-                var foundPokemon = team.Pokemon.FirstOrDefault(
-                    (pokemonEntry) => pokemonEntry.Name == pokemon.Name
-                );
+                var foundPokemon = FindMatchingPokemon(team.Pokemon, pokemon, matchedPokemon);
                 if (foundPokemon is null)
                 {
-                    team.Pokemon.Add(pokemon);
+                    var addedPokemon = pokemon.Clone();
+                    team.Pokemon.Add(addedPokemon);
+                    matchedPokemon.Add(addedPokemon);
                 }
                 else
                 {
-                    if (foundPokemon.Name == null && pokemon.Name != null)
-                    {
-                        foundPokemon.Name = pokemon.Name;
-                    }
+                    matchedPokemon.Add(foundPokemon);
                     if (foundPokemon.FormName == null && pokemon.FormName != null)
                     {
                         foundPokemon.FormName = pokemon.FormName;
                     }
-                    if (foundPokemon.Item == null && pokemon.Item != null)
-                    {
-                        foundPokemon.Item = pokemon.Item;
-                    }
-                    if (foundPokemon.Ability == null && pokemon.Ability != null)
-                    {
-                        foundPokemon.Ability = pokemon.Ability;
-                    }
+                    foundPokemon.Item = Common.MergeAlternatives(foundPokemon.Item, pokemon.Item);
+                    foundPokemon.Ability = Common.MergeAlternatives(
+                        foundPokemon.Ability,
+                        pokemon.Ability
+                    );
+                    foundPokemon.TeraType = Common.MergeAlternatives(
+                        foundPokemon.TeraType,
+                        pokemon.TeraType
+                    );
                     if (!foundPokemon.Lead && pokemon.Lead)
                     {
                         foundPokemon.Lead = pokemon.Lead;
-                    }
-                    if (foundPokemon.TeraType == null && pokemon.TeraType != null)
-                    {
-                        foundPokemon.TeraType = pokemon.TeraType;
-                    }
-                    else if (foundPokemon.TeraType != null && pokemon.TeraType != null)
-                    {
-                        foundPokemon.TeraType += " | " + pokemon.TeraType;
                     }
                     foreach (var move in pokemon.Moves)
                     {
@@ -114,6 +105,27 @@ namespace ShowdownReplayScouter.Core.TeamMergers
             }
 
             return team;
+        }
+
+        /// <summary>
+        /// Finds the Pokemon of the same species that has not been merged yet,
+        /// preferring one with a shared nickname, so the same species twice stays two Pokemon.
+        /// </summary>
+        private static Pokemon? FindMatchingPokemon(
+            IEnumerable<Pokemon> pokemonList,
+            Pokemon pokemon,
+            ISet<Pokemon> matchedPokemon
+        )
+        {
+            var candidates = pokemonList
+                .Where(
+                    (pokemonEntry) =>
+                        pokemonEntry.Name == pokemon.Name && !matchedPokemon.Contains(pokemonEntry)
+                )
+                .ToList();
+            return candidates.FirstOrDefault(
+                    (pokemonEntry) => pokemonEntry.AltNames.Intersect(pokemon.AltNames).Any()
+                ) ?? candidates.FirstOrDefault();
         }
     }
 }
