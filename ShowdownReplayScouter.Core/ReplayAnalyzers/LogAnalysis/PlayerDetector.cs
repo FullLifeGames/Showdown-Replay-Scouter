@@ -1,4 +1,5 @@
-﻿using ShowdownReplayScouter.Core.Data;
+﻿using System;
+using ShowdownReplayScouter.Core.Data;
 using ShowdownReplayScouter.Core.Util;
 
 namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
@@ -51,7 +52,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
                             setPlayer = true;
                         }
                     }
-                    else if (distance <= Common.LevenshteinDistanceAcceptable)
+                    else if (distance <= AcceptableDistance(user))
                     {
                         if (!string.IsNullOrWhiteSpace(playerInfo.PlayerName))
                         {
@@ -81,6 +82,15 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
             {
                 playerInfo.PlayerName = regexedPlayerInf;
             }
+        }
+
+        /// <summary>
+        /// Typos are accepted relative to the length of the name,
+        /// so a short name like "bob" does not match "tom".
+        /// </summary>
+        private static int AcceptableDistance(string user)
+        {
+            return Math.Min(Common.LevenshteinDistanceAcceptable, user.Length / 4);
         }
     }
 }

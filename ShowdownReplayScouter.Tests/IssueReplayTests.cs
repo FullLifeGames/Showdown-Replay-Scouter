@@ -365,6 +365,30 @@ namespace ShowdownReplayScouter.Tests
             Assert.That(playerOne.Pokemon, Has.Count.EqualTo(5));
         }
 
+        [TestCase("Alice", "Grimmsnarl")]
+        [TestCase("Alicee", "Grimmsnarl")]
+        [TestCase("bob", "Clefable")]
+        public async Task SearchedUserIsMatchedToTheirPlayer(string user, string expectedPokemon)
+        {
+            var team = await AnalyzeForUserAsync("sim-gen9-cant-showset", user)
+                .ConfigureAwait(false);
+
+            Assert.That(
+                team.Pokemon.Select((pokemon) => pokemon.Name),
+                Does.Contain(expectedPokemon)
+            );
+        }
+
+        [Test]
+        public async Task ShortNamesDoNotMatchOtherPlayersBySimilarity()
+        {
+            // "rob" has a distance of only 1 to "bob", which is too much for a name of three letters
+            var team = await AnalyzeForUserAsync("sim-gen9-cant-showset", "Rob")
+                .ConfigureAwait(false);
+
+            Assert.That(team.Pokemon, Is.Empty);
+        }
+
         [Test]
         public void Issue13_MergingTeamsDoesNotDuplicateTeraTypes()
         {
@@ -415,6 +439,14 @@ namespace ShowdownReplayScouter.Tests
                     .ConfigureAwait(false)
             ).ToList();
             return (teams[0], teams[1]);
+        }
+
+        private static async Task<Team> AnalyzeForUserAsync(string replayId, string user)
+        {
+            var teams = await new ShowdownReplayAnalyzer()
+                .AnalyzeReplayAsync(new Uri($"https://replay.pokemonshowdown.com/{replayId}"), user)
+                .ConfigureAwait(false);
+            return teams.Single();
         }
 
         private static Pokemon PokemonByName(Team team, string name)
