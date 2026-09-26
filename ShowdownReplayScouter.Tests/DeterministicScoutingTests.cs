@@ -57,7 +57,7 @@ namespace ShowdownReplayScouter.Tests
                         MaximumDate = new DateTime(2023, 5, 5),
                         MinimumDate = new DateTime(2019, 5, 1),
                         Grouped = false,
-                        MaxConcurrentReplayAnalysis = 2
+                        MaxConcurrentReplayAnalysis = 2,
                     }
                 )
                 .ConfigureAwait(false);
@@ -84,7 +84,7 @@ namespace ShowdownReplayScouter.Tests
                         Users = ["fulllifegames"],
                         Links = [replayOne, replayTwo],
                         Grouped = true,
-                        MaxConcurrentReplayAnalysis = 2
+                        MaxConcurrentReplayAnalysis = 2,
                     }
                 )
                 .ConfigureAwait(false);
@@ -115,7 +115,7 @@ namespace ShowdownReplayScouter.Tests
                     {
                         Links = links,
                         Grouped = false,
-                        MaxConcurrentReplayAnalysis = 3
+                        MaxConcurrentReplayAnalysis = 3,
                     }
                 )
                 .ConfigureAwait(false);
@@ -147,18 +147,17 @@ namespace ShowdownReplayScouter.Tests
             await distributedCache.SetStringAsync("team", "third").ConfigureAwait(false);
             await distributedCache.RemoveAsync("team").ConfigureAwait(false);
 
-            Assert.That(await distributedCache.GetStringAsync("team").ConfigureAwait(false), Is.Null);
+            Assert.That(
+                await distributedCache.GetStringAsync("team").ConfigureAwait(false),
+                Is.Null
+            );
             Assert.That(innerCache.GetString("team"), Is.Null);
         }
 
         [Test]
         public void ShowdownTeamMerger_MergeTeams_PreservesAltNamesFromEveryMergedReplay()
         {
-            var teamOne = TeamWithPokemonAltNames(
-                "gen7ou-1",
-                "Hydreigon",
-                ["Hydreigon, M"]
-            );
+            var teamOne = TeamWithPokemonAltNames("gen7ou-1", "Hydreigon", ["Hydreigon, M"]);
             var teamTwo = TeamWithPokemonAltNames(
                 "gen7ou-2",
                 "Hydreigon",
@@ -189,7 +188,7 @@ namespace ShowdownReplayScouter.Tests
                     {
                         Users = ["alice"],
                         Grouped = false,
-                        MaxConcurrentReplayAnalysis = 32
+                        MaxConcurrentReplayAnalysis = 32,
                     }
                 )
                 .ConfigureAwait(false);
@@ -198,63 +197,71 @@ namespace ShowdownReplayScouter.Tests
 
             Assert.That(replayIds, Has.Count.EqualTo(replayCount));
             Assert.That(replayIds.Distinct().Count(), Is.EqualTo(replayCount));
-            Assert.That(replayIds, Is.EquivalentTo(Enumerable.Range(0, replayCount).Select(index => $"gen9ou-{index}")));
+            Assert.That(
+                replayIds,
+                Is.EquivalentTo(Enumerable.Range(0, replayCount).Select(index => $"gen9ou-{index}"))
+            );
         }
 
         private static string Snapshot(IEnumerable<Team> teams)
         {
             return string.Join(
                 "\n",
-                teams.Select(team =>
-                {
-                    var replays = team.Replays.OrderBy(replay => replay.Id).ToList();
-                    var replayIds = string.Join(",", replays.Select(replay => replay.Id));
-                    var playerNames = string.Join(
-                        ",",
-                        replays.Select(replay => replay.PlayerInfo?.PlayerName)
-                    );
-                    var winsForTeam = string.Join(
-                        ",",
-                        replays.Select(replay => replay.WinForTeam)
-                    );
-                    var pokemonSnapshot = string.Join(
-                        ";",
-                        team.Pokemon.OrderBy(pokemon => pokemon.Name).Select(pokemon =>
-                            string.Join(
-                                "|",
-                                pokemon.Name,
-                                pokemon.Item,
-                                pokemon.Ability,
-                                pokemon.TeraType,
-                                string.Join(",", pokemon.Moves.OrderBy(move => move)),
-                                string.Join(",", pokemon.AltNames.OrderBy(altName => altName))
-                            )
-                        )
-                    );
-
-                    return new
+                teams
+                    .Select(team =>
                     {
-                        ReplayIds = replayIds,
-                        team.Format,
-                        PlayerNames = playerNames,
-                        WinsForTeam = winsForTeam,
-                        PokemonSnapshot = pokemonSnapshot
-                    };
-                })
-                .OrderBy(team => team.ReplayIds)
-                .ThenBy(team => team.PlayerNames)
-                .ThenBy(team => team.PokemonSnapshot)
-                .Select(team =>
-                {
-                    return string.Join(
-                        "|",
-                        team.ReplayIds,
-                        team.Format,
-                        team.PlayerNames,
-                        team.WinsForTeam,
-                        team.PokemonSnapshot
-                    );
-                })
+                        var replays = team.Replays.OrderBy(replay => replay.Id).ToList();
+                        var replayIds = string.Join(",", replays.Select(replay => replay.Id));
+                        var playerNames = string.Join(
+                            ",",
+                            replays.Select(replay => replay.PlayerInfo?.PlayerName)
+                        );
+                        var winsForTeam = string.Join(
+                            ",",
+                            replays.Select(replay => replay.WinForTeam)
+                        );
+                        var pokemonSnapshot = string.Join(
+                            ";",
+                            team.Pokemon.OrderBy(pokemon => pokemon.Name)
+                                .Select(pokemon =>
+                                    string.Join(
+                                        "|",
+                                        pokemon.Name,
+                                        pokemon.Item,
+                                        pokemon.Ability,
+                                        pokemon.TeraType,
+                                        string.Join(",", pokemon.Moves.OrderBy(move => move)),
+                                        string.Join(
+                                            ",",
+                                            pokemon.AltNames.OrderBy(altName => altName)
+                                        )
+                                    )
+                                )
+                        );
+
+                        return new
+                        {
+                            ReplayIds = replayIds,
+                            team.Format,
+                            PlayerNames = playerNames,
+                            WinsForTeam = winsForTeam,
+                            PokemonSnapshot = pokemonSnapshot,
+                        };
+                    })
+                    .OrderBy(team => team.ReplayIds)
+                    .ThenBy(team => team.PlayerNames)
+                    .ThenBy(team => team.PokemonSnapshot)
+                    .Select(team =>
+                    {
+                        return string.Join(
+                            "|",
+                            team.ReplayIds,
+                            team.Format,
+                            team.PlayerNames,
+                            team.WinsForTeam,
+                            team.PokemonSnapshot
+                        );
+                    })
             );
         }
 
@@ -300,9 +307,9 @@ namespace ShowdownReplayScouter.Tests
                         FormatId = "gen7ou",
                         Link = new Uri($"https://replay.pokemonshowdown.com/{replayId}"),
                         Log = "",
-                        Players = ["player-one", "player-two"]
-                    }
-                ]
+                        Players = ["player-one", "player-two"],
+                    },
+                ],
             };
         }
 
@@ -377,9 +384,8 @@ namespace ShowdownReplayScouter.Tests
             }
         }
 
-        private sealed class FixtureShowdownHandler(
-            IReadOnlyDictionary<string, string> responses
-        ) : HttpMessageHandler
+        private sealed class FixtureShowdownHandler(IReadOnlyDictionary<string, string> responses)
+            : HttpMessageHandler
         {
             private int _requestCount;
 
@@ -406,7 +412,7 @@ namespace ShowdownReplayScouter.Tests
                 return Task.FromResult(
                     new HttpResponseMessage(HttpStatusCode.OK)
                     {
-                        Content = new StringContent(response, Encoding.UTF8, "application/json")
+                        Content = new StringContent(response, Encoding.UTF8, "application/json"),
                     }
                 );
             }
@@ -544,10 +550,10 @@ namespace ShowdownReplayScouter.Tests
                                 FormatId = "gen9ou",
                                 Link = replay,
                                 Log = "",
-                                Players = ["alice", "bob"]
-                            }
-                        ]
-                    }
+                                Players = ["alice", "bob"],
+                            },
+                        ],
+                    },
                 ];
             }
         }

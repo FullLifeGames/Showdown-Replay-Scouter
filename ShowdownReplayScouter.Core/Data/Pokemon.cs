@@ -38,7 +38,7 @@ namespace ShowdownReplayScouter.Core.Data
                 Lead = Lead,
                 AltNames = AltNames.Select(item => (string)item.Clone()).ToList(),
                 Moves = Moves.Select(item => (string)item.Clone()).ToList(),
-                TeraType = TeraType
+                TeraType = TeraType,
             };
         }
     }

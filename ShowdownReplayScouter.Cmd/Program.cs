@@ -80,7 +80,7 @@ namespace ShowdownReplayScouter.Cmd
                         Users = o.Users,
                         Tiers = o.Tiers,
                         Links = o.Links,
-                        Opponents = o.Opponents
+                        Opponents = o.Opponents,
                     };
                     var result = replayScouter.ScoutReplays(scoutingRequest);
 

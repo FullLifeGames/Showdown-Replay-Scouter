@@ -279,7 +279,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
                 { "Wonder Room", "Psychium Z" },
                 { "Work Up", "Normalium Z" },
                 { "Worry Seed", "Grassium Z" },
-                { "Yawn", "Normalium Z" }
+                { "Yawn", "Normalium Z" },
             };
     }
 }

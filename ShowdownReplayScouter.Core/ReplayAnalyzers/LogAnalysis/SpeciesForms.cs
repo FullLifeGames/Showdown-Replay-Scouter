@@ -22,7 +22,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
             "Wo-Chien",
             "Chien-Pao",
             "Ting-Lu",
-            "Chi-Yu"
+            "Chi-Yu",
         ];
 
         /// <summary>

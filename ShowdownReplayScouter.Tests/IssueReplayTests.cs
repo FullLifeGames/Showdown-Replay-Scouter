@@ -456,8 +456,8 @@ namespace ShowdownReplayScouter.Tests
                                 Name = "Glastrier",
                                 TeraType = teraType,
                                 Item = "Leftovers",
-                                Ability = "Chilling Neigh"
-                            }
+                                Ability = "Chilling Neigh",
+                            },
                         ],
                         Replays =
                         [
@@ -470,9 +470,9 @@ namespace ShowdownReplayScouter.Tests
                                     $"https://replay.pokemonshowdown.com/gen9ou-{index}"
                                 ),
                                 Log = "",
-                                Players = ["player-one", "player-two"]
-                            }
-                        ]
+                                Players = ["player-one", "player-two"],
+                            },
+                        ],
                     }
             );
 
@@ -538,7 +538,7 @@ namespace ShowdownReplayScouter.Tests
                             File.ReadAllText(fixturePath),
                             Encoding.UTF8,
                             "application/json"
-                        )
+                        ),
                     }
                 );
             }

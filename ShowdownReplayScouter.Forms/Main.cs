@@ -69,7 +69,7 @@ namespace ShowdownReplayScouter.Forms
                             .Split(',')
                             .Select((opponent) => opponent.Trim())
                         : null,
-                Links = linkUris
+                Links = linkUris,
             };
 
             var result = await _replayScouter

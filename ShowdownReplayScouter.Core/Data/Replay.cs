@@ -51,7 +51,7 @@ namespace ShowdownReplayScouter.Core.Data
                 WinForTeam = WinForTeam,
                 PlayerInfo = PlayerInfo,
                 Players = Players.ToList(),
-                Link = Link
+                Link = Link,
             };
         }
     }

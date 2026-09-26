@@ -15,7 +15,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis.Handlers
         [
             "Trace",
             "Receiver",
-            "Power of Alchemy"
+            "Power of Alchemy",
         ];
 
         public void Handle(ProtocolLine line, AnalysisContext context)

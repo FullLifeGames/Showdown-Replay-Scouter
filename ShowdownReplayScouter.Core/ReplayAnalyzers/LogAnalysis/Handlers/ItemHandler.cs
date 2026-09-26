@@ -15,7 +15,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis.Handlers
         [
             "Rocky Helmet",
             "Jaboca Berry",
-            "Rowap Berry"
+            "Rowap Berry",
         ];
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis.Handlers
             "move: Bestow",
             "ability: Magician",
             "ability: Pickpocket",
-            "ability: Pickup"
+            "ability: Pickup",
         ];
 
         /// <summary>

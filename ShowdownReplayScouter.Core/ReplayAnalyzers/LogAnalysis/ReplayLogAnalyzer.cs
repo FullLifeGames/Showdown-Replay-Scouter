@@ -26,7 +26,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
                 new ItemHandler(),
                 new AbilityHandler(),
                 new PostedSetHandler(),
-                new WinHandler()
+                new WinHandler(),
             ];
 
             foreach (var rawLine in replayLog.Split('\n'))

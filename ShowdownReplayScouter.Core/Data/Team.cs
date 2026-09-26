@@ -23,7 +23,7 @@ namespace ShowdownReplayScouter.Core.Data
             {
                 Replays = Replays.Select((replay) => replay.Clone()).ToList(),
                 Pokemon = Pokemon.Select((pokemon) => pokemon.Clone()).ToList(),
-                Format = Format
+                Format = Format,
             };
         }
 

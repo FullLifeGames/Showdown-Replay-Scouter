@@ -51,7 +51,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis.Handlers
                     new Pokemon()
                     {
                         Name = details.Split(',')[0],
-                        AltNames = { details.Split('-')[0] }
+                        AltNames = { details.Split('-')[0] },
                     }
                 );
             }

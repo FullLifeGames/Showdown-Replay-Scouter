@@ -102,7 +102,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
                 { "Venusaur-Mega", "Venusaurite" },
                 { "Victreebel-Mega", "Victreebelite" },
                 { "Zeraora-Mega", "Zeraorite" },
-                { "Zygarde-Mega", "Zygardite" }
+                { "Zygarde-Mega", "Zygardite" },
             };
     }
 }

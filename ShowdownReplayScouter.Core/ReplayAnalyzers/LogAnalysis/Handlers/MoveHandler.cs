@@ -20,7 +20,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis.Handlers
             "Me First",
             "Magic Coat",
             "Nature Power",
-            "Snatch"
+            "Snatch",
         ];
 
         /// <summary>

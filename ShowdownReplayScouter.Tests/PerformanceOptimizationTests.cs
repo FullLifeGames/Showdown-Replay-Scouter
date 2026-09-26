@@ -48,9 +48,11 @@ namespace ShowdownReplayScouter.Tests
             Common.HttpClient = new HttpClient(handler);
 
             var analyzer = new ShowdownReplayAnalyzer();
-            var teams = (await analyzer
-                .AnalyzeReplayAsync(new Uri("https://replay.pokemonshowdown.com/gen9ou-1"))
-                .ConfigureAwait(false)).ToList();
+            var teams = (
+                await analyzer
+                    .AnalyzeReplayAsync(new Uri("https://replay.pokemonshowdown.com/gen9ou-1"))
+                    .ConfigureAwait(false)
+            ).ToList();
 
             Assert.That(teams, Has.Count.EqualTo(2));
             Assert.That(teams.All(team => team.Pokemon.Count == 1), Is.True);
@@ -79,7 +81,7 @@ namespace ShowdownReplayScouter.Tests
             var request = new ScoutingRequest
             {
                 Users = ["alice"],
-                MinimumDate = DateTimeOffset.FromUnixTimeSeconds(100).UtcDateTime
+                MinimumDate = DateTimeOffset.FromUnixTimeSeconds(100).UtcDateTime,
             };
 
             var replays = new List<CollectedReplay>();
@@ -99,7 +101,9 @@ namespace ShowdownReplayScouter.Tests
         [Test]
         public async Task CollectReplaysAsync_WithMaximumDate_StartsSearchBeforeMaximumDate()
         {
-            var handler = new CountingHttpMessageHandler(_ => SearchPage(firstUploadTime: 0, count: 0));
+            var handler = new CountingHttpMessageHandler(_ =>
+                SearchPage(firstUploadTime: 0, count: 0)
+            );
             Common.HttpClient = new HttpClient(handler);
 
             var collector = new ApiShowdownReplayCollector();
@@ -131,7 +135,7 @@ namespace ShowdownReplayScouter.Tests
                 {
                     Users = ["alice"],
                     Grouped = false,
-                    MaxConcurrentReplayAnalysis = requestedConcurrency
+                    MaxConcurrentReplayAnalysis = requestedConcurrency,
                 }
             );
 
@@ -147,14 +151,8 @@ namespace ShowdownReplayScouter.Tests
         {
             var scouter = new Core.ReplayScouter.ShowdownReplayScouter();
 
-            Assert.That(
-                ReferenceEquals(scouter.ReplayAnalyzer, scouter.ReplayAnalyzer),
-                Is.True
-            );
-            Assert.That(
-                ReferenceEquals(scouter.ReplayCollector, scouter.ReplayCollector),
-                Is.True
-            );
+            Assert.That(ReferenceEquals(scouter.ReplayAnalyzer, scouter.ReplayAnalyzer), Is.True);
+            Assert.That(ReferenceEquals(scouter.ReplayCollector, scouter.ReplayCollector), Is.True);
             Assert.That(ReferenceEquals(scouter.TeamMerger, scouter.TeamMerger), Is.True);
         }
 
@@ -222,7 +220,7 @@ namespace ShowdownReplayScouter.Tests
                         uploadtime = uploadTime,
                         id = $"gen9ou-{uploadTime}",
                         format = "gen9ou",
-                        players = new[] { "alice", "bob" }
+                        players = new[] { "alice", "bob" },
                     };
                 });
 
@@ -256,7 +254,7 @@ namespace ShowdownReplayScouter.Tests
                             responseFactory(request),
                             Encoding.UTF8,
                             "application/json"
-                        )
+                        ),
                     }
                 );
             }
@@ -278,13 +276,11 @@ namespace ShowdownReplayScouter.Tests
                             Id = $"gen9ou-{index}",
                             Format = "gen9ou",
                             FormatId = "gen9ou",
-                            Link = new Uri(
-                                $"https://replay.pokemonshowdown.com/gen9ou-{index}"
-                            ),
+                            Link = new Uri($"https://replay.pokemonshowdown.com/gen9ou-{index}"),
                             Log = "",
-                            Players = ["alice", "bob"]
-                        }
-                    ]
+                            Players = ["alice", "bob"],
+                        },
+                    ],
                 };
             }
 
@@ -323,14 +319,15 @@ namespace ShowdownReplayScouter.Tests
             }
         }
 
-        private sealed class ConcurrencyTrackingReplayAnalyzer(
-            int expectedConcurrency
-        ) : IReplayAnalyzer
+        private sealed class ConcurrencyTrackingReplayAnalyzer(int expectedConcurrency)
+            : IReplayAnalyzer
         {
-            private readonly TaskCompletionSource _expectedConcurrencyReached =
-                new(TaskCreationOptions.RunContinuationsAsynchronously);
-            private readonly TaskCompletionSource _release =
-                new(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly TaskCompletionSource _expectedConcurrencyReached = new(
+                TaskCreationOptions.RunContinuationsAsynchronously
+            );
+            private readonly TaskCompletionSource _release = new(
+                TaskCreationOptions.RunContinuationsAsynchronously
+            );
             private int _currentConcurrency;
 
             public int MaxObservedConcurrency { get; private set; }
@@ -409,10 +406,10 @@ namespace ShowdownReplayScouter.Tests
                                 FormatId = "gen9ou",
                                 Link = replay,
                                 Log = "",
-                                Players = ["alice", "bob"]
-                            }
-                        ]
-                    }
+                                Players = ["alice", "bob"],
+                            },
+                        ],
+                    },
                 ];
             }
         }
