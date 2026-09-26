@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 
@@ -26,11 +25,6 @@ namespace ShowdownReplayScouter.Core.Util
 
         public static IEnumerable<string> FormDescriptorList { get; set; } =
             ["Mega", "Origin", "Alola", "Galar"];
-
-        [Obsolete(
-            "Ability holders are now derived from the protocol ([from]/[of]) and this list is no longer used."
-        )]
-        public static IEnumerable<string> OfAbilities { get; set; } = [];
 
         public const string AlternativeSeparator = " | ";
 
