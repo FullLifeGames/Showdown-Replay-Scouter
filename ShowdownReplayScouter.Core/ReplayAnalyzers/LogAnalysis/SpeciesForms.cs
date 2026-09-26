@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ShowdownReplayScouter.Core.Data;
 
 namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
 {
@@ -33,6 +34,18 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
             return baseSpecies is not null
                 && !HyphenatedSpecies.Contains(species)
                 && species.StartsWith($"{baseSpecies}-", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Whether <paramref name="species"/> is the species (or a form of the species) of the Pokemon,
+        /// e.g. "Manectric-Mega" for Manectric.
+        /// </summary>
+        public static bool IsSameSpecies(string species, Pokemon pokemon)
+        {
+            return pokemon.Name == species
+                || pokemon.FormName == species
+                || IsFormOf(species, pokemon.Name)
+                || (pokemon.Name is not null && IsFormOf(pokemon.Name, species));
         }
     }
 }

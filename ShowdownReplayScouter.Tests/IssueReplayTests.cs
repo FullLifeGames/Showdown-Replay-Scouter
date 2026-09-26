@@ -390,6 +390,58 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
+        public async Task PokemonSharingANicknameAreKeptApart()
+        {
+            // Old replays allowed the same nickname ("Underrated") for several Pokemon
+            var (_, playerTwo) = await AnalyzeAsync("ou-161147061").ConfigureAwait(false);
+
+            Assert.That(playerTwo.Pokemon, Has.Count.EqualTo(6));
+            Assert.That(playerTwo.Pokemon.Select((pokemon) => pokemon.FormName), Is.All.Null);
+
+            var scyther = PokemonByName(playerTwo, "Scyther");
+            Assert.That(scyther.Moves, Is.EquivalentTo(new[] { "U-turn" }));
+            Assert.That(scyther.Ability, Is.EqualTo("Technician"));
+
+            var lanturn = PokemonByName(playerTwo, "Lanturn");
+            Assert.That(
+                lanturn.Moves,
+                Is.EquivalentTo(new[] { "Scald", "Ice Beam", "Heal Bell", "Volt Switch" })
+            );
+            Assert.That(lanturn.Item, Is.EqualTo("Leftovers"));
+            Assert.That(lanturn.Ability, Is.EqualTo("Volt Absorb"));
+
+            var shiftry = PokemonByName(playerTwo, "Shiftry");
+            Assert.That(shiftry.Moves, Is.EquivalentTo(new[] { "Sucker Punch", "Knock Off" }));
+            Assert.That(shiftry.Item, Is.EqualTo("Life Orb"));
+            Assert.That(shiftry.Ability, Is.EqualTo("Early Bird"));
+
+            var jynx = PokemonByName(playerTwo, "Jynx");
+            Assert.That(jynx.Moves, Is.EquivalentTo(new[] { "Trick", "Lovely Kiss", "Ice Beam" }));
+            Assert.That(jynx.Item, Is.EqualTo("Choice Scarf"));
+
+            var camerupt = PokemonByName(playerTwo, "Camerupt");
+            Assert.That(
+                camerupt.Moves,
+                Is.EquivalentTo(new[] { "Lava Plume", "Stealth Rock", "Earth Power" })
+            );
+            Assert.That(camerupt.Item, Is.EqualTo("Leftovers"));
+        }
+
+        [Test]
+        public async Task MegaEvolutionWithoutMegaMessageRevealsTheMegaStone()
+        {
+            // Old replays only have "|detailschange|p1a: Manectric|Manectric-Mega, M"
+            var (playerOne, _) = await AnalyzeAsync("ou-161147061").ConfigureAwait(false);
+
+            var manectric = PokemonByName(playerOne, "Manectric-Mega");
+            Assert.That(manectric.Item, Is.EqualTo("Manectite"));
+            Assert.That(manectric.Ability, Is.EqualTo("Intimidate"));
+            Assert.That(PokemonByName(playerOne, "Slowbro").Item, Is.EqualTo("Rocky Helmet"));
+            Assert.That(PokemonByName(playerOne, "Gardevoir").Item, Is.EqualTo("Choice Scarf"));
+            Assert.That(PokemonByName(playerOne, "Gardevoir").Ability, Is.EqualTo("Trace"));
+        }
+
+        [Test]
         public void Issue13_MergingTeamsDoesNotDuplicateTeraTypes()
         {
             var teams = new[] { "Flying", "Flying", "Water" }.Select(

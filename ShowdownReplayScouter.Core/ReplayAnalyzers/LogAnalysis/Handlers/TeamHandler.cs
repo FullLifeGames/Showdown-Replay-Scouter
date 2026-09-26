@@ -16,6 +16,11 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis.Handlers
         /// </summary>
         private readonly Dictionary<string, (Pokemon Pokemon, Pokemon SwitchInState)> _active = [];
 
+        /// <summary>
+        /// The nickname a Pokemon was first identified by.
+        /// </summary>
+        private readonly Dictionary<Pokemon, string> _nicknameOwners = [];
+
         public void Handle(ProtocolLine line, AnalysisContext context)
         {
             switch (line.Command)
@@ -66,6 +71,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis.Handlers
             }
 
             var pokemon = FindSwitchedInPokemon(context, nickname, details.Split(',')[0]);
+            _nicknameOwners.TryAdd(pokemon, nickname);
             if (
                 line.Command == "replace"
                 && _active.TryGetValue(position, out var disguise)
@@ -78,7 +84,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis.Handlers
             _active[position] = (pokemon, pokemon.Clone());
         }
 
-        private static Pokemon FindSwitchedInPokemon(
+        private Pokemon FindSwitchedInPokemon(
             AnalysisContext context,
             string nickname,
             string species
@@ -86,7 +92,12 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis.Handlers
         {
             var team = context.Team;
             var nicknames = context.Nicknames;
-            if (nicknames.TryGetValue(nickname, out var pokemon))
+            // Old replays allowed the same nickname for several Pokemon, so the nickname
+            // only identifies the Pokemon if the species matches
+            if (
+                nicknames.TryGetValue(nickname, out var pokemon)
+                && SpeciesForms.IsSameSpecies(species, pokemon)
+            )
             {
                 if (pokemon.Name != species && pokemon.FormName != species)
                 {
@@ -98,7 +109,10 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis.Handlers
             // Pokemon already identified by another nickname are a different Pokemon,
             // this keeps e.g. two Heracross in the same team apart
             var unclaimed = team
-                .Pokemon.Where((pokemon) => !nicknames.ContainsValue(pokemon))
+                .Pokemon.Where(
+                    (pokemon) =>
+                        !_nicknameOwners.TryGetValue(pokemon, out var owner) || owner == nickname
+                )
                 .ToList();
             pokemon = unclaimed.FirstOrDefault(
                 (pokemon) => pokemon.Name == species || pokemon.FormName == species
@@ -164,9 +178,18 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis.Handlers
         {
             var species = line.Arg(3)?.Split(',')[0];
             var pokemon = context.Resolve(line.Arg(2));
-            if (pokemon is not null && species is not null && pokemon.FormName != species)
+            if (pokemon is null || species is null)
+            {
+                return;
+            }
+            if (pokemon.FormName != species)
             {
                 pokemon.FormName = species;
+            }
+            // Old replays show a Mega Evolution only as details change, without "|-mega|"
+            if (MegaStones.Items.TryGetValue(species, out var megaStone))
+            {
+                pokemon.RevealItem(megaStone);
             }
         }
 
