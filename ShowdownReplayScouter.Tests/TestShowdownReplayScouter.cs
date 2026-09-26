@@ -20,7 +20,7 @@ namespace ShowdownReplayScouter.Tests
         public void Scout_FullLifeGames_Replays()
         {
             var result = _replayScouter.ScoutReplays(
-                new Core.Data.ScoutingRequest() { Users = ["fulllifegames"], }
+                new Core.Data.ScoutingRequest() { Users = ["fulllifegames"] }
             );
 
             Assert.That(result.Teams.Count() == 482);
@@ -45,7 +45,7 @@ namespace ShowdownReplayScouter.Tests
                     Users = ["fulllifegames"],
                     Tiers = ["gen7ou"],
                     MaximumDate = new DateTime(2023, 5, 5),
-                    MinimumDate = new DateTime(2019, 7, 5)
+                    MinimumDate = new DateTime(2019, 7, 5),
                 }
             );
 
@@ -70,7 +70,7 @@ namespace ShowdownReplayScouter.Tests
             var result = _replayScouter.ScoutReplays(
                 new Core.Data.ScoutingRequest()
                 {
-                    Links = [new Uri("https://replay.pokemonshowdown.com/smogtours-gen7ou-278958"),]
+                    Links = [new Uri("https://replay.pokemonshowdown.com/smogtours-gen7ou-278958")],
                 }
             );
 
@@ -83,7 +83,7 @@ namespace ShowdownReplayScouter.Tests
             var result = _replayScouter.ScoutReplays(
                 new Core.Data.ScoutingRequest()
                 {
-                    Links = [new("https://replay.pokemonshowdown.com/smogtours-gen9ou-733546")]
+                    Links = [new("https://replay.pokemonshowdown.com/smogtours-gen9ou-733546")],
                 }
             );
 
@@ -96,7 +96,7 @@ namespace ShowdownReplayScouter.Tests
             var result = _replayScouter.ScoutReplays(
                 new Core.Data.ScoutingRequest()
                 {
-                    Links = [new("https://replay.pokemonshowdown.com/smogtours-gen1ou-733374")]
+                    Links = [new("https://replay.pokemonshowdown.com/smogtours-gen1ou-733374")],
                 }
             );
 
@@ -112,7 +112,7 @@ namespace ShowdownReplayScouter.Tests
                 new Core.Data.ScoutingRequest()
                 {
                     Links = [new("https://replay.pokemonshowdown.com/smogtours-gen1ou-734539")],
-                    Users = ["RaiZen1704"]
+                    Users = ["RaiZen1704"],
                 }
             );
 
@@ -127,7 +127,7 @@ namespace ShowdownReplayScouter.Tests
             var result = _replayScouter.ScoutReplays(
                 new Core.Data.ScoutingRequest()
                 {
-                    Links = [new("https://replay.pokemonshowdown.com/smogtours-gen9ou-735029?p2")]
+                    Links = [new("https://replay.pokemonshowdown.com/smogtours-gen9ou-735029?p2")],
                 }
             );
 
@@ -143,7 +143,7 @@ namespace ShowdownReplayScouter.Tests
                     Users = ["relous"],
                     Tiers = ["gen7ou"],
                     MaximumDate = new DateTime(2020, 5, 5),
-                    MinimumDate = new DateTime(2019, 7, 5)
+                    MinimumDate = new DateTime(2019, 7, 5),
                 }
             );
 
@@ -157,9 +157,10 @@ namespace ShowdownReplayScouter.Tests
                 new Core.Data.ScoutingRequest()
                 {
                     Users = ["fulllifegames"],
-                    Links = [
+                    Links =
+                    [
                         new Uri("https://replay.pokemonshowdown.com/gen7ou-856921732"),
-                        new Uri("https://replay.pokemonshowdown.com/gen7ou-860458474")
+                        new Uri("https://replay.pokemonshowdown.com/gen7ou-860458474"),
                     ],
                     Grouped = true,
                 }
@@ -175,9 +176,10 @@ namespace ShowdownReplayScouter.Tests
                 new Core.Data.ScoutingRequest()
                 {
                     Users = ["fulllifegames"],
-                    Links = [
+                    Links =
+                    [
                         new Uri("https://replay.pokemonshowdown.com/gen7ou-856921732"),
-                        new Uri("https://replay.pokemonshowdown.com/gen7ou-860458474")
+                        new Uri("https://replay.pokemonshowdown.com/gen7ou-860458474"),
                     ],
                     Grouped = false,
                 }
@@ -193,7 +195,7 @@ namespace ShowdownReplayScouter.Tests
                 new Core.Data.ScoutingRequest()
                 {
                     Users = ["fulllifegames", "Senor L"],
-                    Tiers = ["gen7ou"]
+                    Tiers = ["gen7ou"],
                 }
             );
 
@@ -208,7 +210,7 @@ namespace ShowdownReplayScouter.Tests
                 {
                     Users = ["evuelf"],
                     MaximumDate = new DateTime(2024, 7, 1),
-                    MinimumDate = new DateTime(2023, 11, 1)
+                    MinimumDate = new DateTime(2023, 11, 1),
                 }
             );
             Assert.That(result.Teams.Any());
@@ -221,7 +223,7 @@ namespace ShowdownReplayScouter.Tests
                 new Core.Data.ScoutingRequest()
                 {
                     Users = ["fulllifegames"],
-                    Links = [new("https://replay.pokemonshowdown.com/gen7ou-826668378")]
+                    Links = [new("https://replay.pokemonshowdown.com/gen7ou-826668378")],
                 }
             );
             Assert.That(result.Teams.Any());
@@ -234,7 +236,7 @@ namespace ShowdownReplayScouter.Tests
                 new Core.Data.ScoutingRequest()
                 {
                     Users = ["fulllifegames"],
-                    Tiers = ["gen7ou", "gen8ou"]
+                    Tiers = ["gen7ou", "gen8ou"],
                 }
             );
 
@@ -257,7 +259,7 @@ namespace ShowdownReplayScouter.Tests
                 new Core.Data.ScoutingRequest()
                 {
                     Users = ["fulllifegames"],
-                    Links = [new("https://replay.pokemonshowdown.com/future-gen7ou-2227")]
+                    Links = [new("https://replay.pokemonshowdown.com/future-gen7ou-2227")],
                 }
             );
 
@@ -271,7 +273,7 @@ namespace ShowdownReplayScouter.Tests
                 new Core.Data.ScoutingRequest()
                 {
                     Users = ["fulllifegames"],
-                    Links = [new("http://replay.pokemonshowdown.com/smogtours-gen7ou-450650")]
+                    Links = [new("http://replay.pokemonshowdown.com/smogtours-gen7ou-450650")],
                 }
             );
 
@@ -285,7 +287,7 @@ namespace ShowdownReplayScouter.Tests
                 new Core.Data.ScoutingRequest()
                 {
                     Users = ["fulllifegames"],
-                    Links = [new("https://replay.pokemonshowdown.com/gen7pokebankubers-499462699")]
+                    Links = [new("https://replay.pokemonshowdown.com/gen7pokebankubers-499462699")],
                 }
             );
 
@@ -303,7 +305,7 @@ namespace ShowdownReplayScouter.Tests
                         new("https://replay.pokemonshowdown.com/smogtours-gen8ou-551237"),
                         new("https://replay.pokemonshowdown.com/smogtours-gen8ou-551243"),
                         new("https://replay.pokemonshowdown.com/smogtours-gen8ou-551299"),
-                    ]
+                    ],
                 }
             );
 
@@ -316,7 +318,7 @@ namespace ShowdownReplayScouter.Tests
             var result = _replayScouter.ScoutReplays(
                 new Core.Data.ScoutingRequest()
                 {
-                    Links = [new("https://replay.pokemonshowdown.com/smogtours-gen9ou-681522"),]
+                    Links = [new("https://replay.pokemonshowdown.com/smogtours-gen9ou-681522")],
                 }
             );
 
@@ -343,7 +345,7 @@ namespace ShowdownReplayScouter.Tests
                     [
                         new("https://replay.pokemonshowdown.com/smogtours-gen8ou-551237"),
                         new("https://replay.pokemonshowdown.com/smogtours-gen8ou-66666666"),
-                    ]
+                    ],
                 }
             );
 
@@ -360,7 +362,7 @@ namespace ShowdownReplayScouter.Tests
                     Links =
                     [
                         new("https://replay.pokemonshowdown.com/smogtours-gen8nationaldex-599393"),
-                    ]
+                    ],
                 }
             );
 
@@ -380,7 +382,7 @@ namespace ShowdownReplayScouter.Tests
                     Links =
                     [
                         new("https://replay.pokemonshowdown.com/smogtours-gen8nationaldex-599393"),
-                    ]
+                    ],
                 }
             );
 
@@ -449,7 +451,7 @@ namespace ShowdownReplayScouter.Tests
             var result = _replayScouter.ScoutReplays(
                 new Core.Data.ScoutingRequest()
                 {
-                    Links = [new("https://replay.pokemonshowdown.com/smogtours-gen2ou-672504")]
+                    Links = [new("https://replay.pokemonshowdown.com/smogtours-gen2ou-672504")],
                 }
             );
 
@@ -467,8 +469,8 @@ namespace ShowdownReplayScouter.Tests
                     Links =
                     [
                         new("https://replay.pokemonshowdown.com/smogtours-gen2ou-674735"),
-                        new("https://replay.pokemonshowdown.com/smogtours-gen2ou-674874")
-                    ]
+                        new("https://replay.pokemonshowdown.com/smogtours-gen2ou-674874"),
+                    ],
                 }
             );
 

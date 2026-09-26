@@ -25,7 +25,7 @@ namespace ShowdownReplayScouter.Core.Util
         {
             var options = new ExecutionDataflowBlockOptions
             {
-                MaxDegreeOfParallelism = maxDegreeOfParallelism
+                MaxDegreeOfParallelism = maxDegreeOfParallelism,
             };
             if (scheduler != null)
                 options.TaskScheduler = scheduler;
@@ -57,7 +57,7 @@ namespace ShowdownReplayScouter.Core.Util
         {
             var options = new ExecutionDataflowBlockOptions
             {
-                MaxDegreeOfParallelism = maxDegreeOfParallelism
+                MaxDegreeOfParallelism = maxDegreeOfParallelism,
             };
             if (scheduler != null)
                 options.TaskScheduler = scheduler;
