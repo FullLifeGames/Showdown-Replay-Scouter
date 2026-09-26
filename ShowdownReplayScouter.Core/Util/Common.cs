@@ -23,9 +23,6 @@ namespace ShowdownReplayScouter.Core.Util
         public static IEnumerable<string> FormPokemonList { get; set; } =
             ["Arceus", "Silvally", "Genesect", "Gourgeist", "Pumpkaboo"];
 
-        public static IEnumerable<string> FormDescriptorList { get; set; } =
-            ["Mega", "Origin", "Alola", "Galar"];
-
         public const string AlternativeSeparator = " | ";
 
         /// <summary>

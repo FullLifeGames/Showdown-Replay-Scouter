@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ShowdownReplayScouter.Core.Data;
 using ShowdownReplayScouter.Core.Util;
@@ -58,6 +59,25 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
                 : null;
         }
 
+        /// <summary>
+        /// Species with a hyphen in their name, which are no form of another species
+        /// (e.g. "Porygon-Z" is no form of "Porygon").
+        /// </summary>
+        private static readonly HashSet<string> HyphenatedSpecies =
+        [
+            "Nidoran-F",
+            "Nidoran-M",
+            "Ho-Oh",
+            "Porygon-Z",
+            "Jangmo-o",
+            "Hakamo-o",
+            "Kommo-o",
+            "Wo-Chien",
+            "Chien-Pao",
+            "Ting-Lu",
+            "Chi-Yu"
+        ];
+
         private Pokemon AddMonIfNotExists(string pokemonCandidate)
         {
             var pokemonList = Team.Pokemon;
@@ -69,17 +89,15 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
             );
             if (pokemon == null)
             {
-                var regexPokemonCandidate = RegexUtil.Regex(pokemonCandidate);
+                // A form of a known Pokemon, e.g. "Zoroark-Hisui" or "Tauros-Paldea-Combat"
                 pokemon = pokemonList.FirstOrDefault(
                     (pokemon) =>
-                    {
-                        return Common
-                            .FormDescriptorList.Select(
-                                (formDescriptor) =>
-                                    RegexUtil.Regex($"{pokemon.Name}-{formDescriptor}")
-                            )
-                            .Any((possibleForm) => possibleForm == regexPokemonCandidate);
-                    }
+                        pokemon.Name is not null
+                        && !HyphenatedSpecies.Contains(pokemonCandidate)
+                        && pokemonCandidate.StartsWith(
+                            $"{pokemon.Name}-",
+                            StringComparison.OrdinalIgnoreCase
+                        )
                 );
                 if (pokemon != null)
                 {

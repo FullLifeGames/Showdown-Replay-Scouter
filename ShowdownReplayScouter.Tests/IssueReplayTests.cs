@@ -319,12 +319,31 @@ namespace ShowdownReplayScouter.Tests
             Assert.That(PokemonByName(teams[1], "Glastrier").Ability, Is.EqualTo("Delta Stream"));
             Assert.That(
                 await cache
-                    .GetStringAsync(
-                        $"{jsonLink}+v{ShowdownReplayAnalyzer.AnalysisVersion}+p2"
-                    )
+                    .GetStringAsync($"{jsonLink}+v{ShowdownReplayAnalyzer.AnalysisVersion}+p2")
                     .ConfigureAwait(false),
                 Does.Contain("Delta Stream")
             );
+        }
+
+        [Test]
+        public async Task UnknownFormsAreMatchedToTheirBasePokemon()
+        {
+            // Pokemon referenced before they switched in, e.g. because of a broken switch line
+            var (playerOne, _) = await AnalyzeAsync("synthetic-form-fallback")
+                .ConfigureAwait(false);
+
+            Assert.That(PokemonByName(playerOne, "Zoroark-Hisui").Ability, Is.EqualTo("Illusion"));
+            Assert.That(
+                PokemonByName(playerOne, "Tauros-Paldea-Combat").Ability,
+                Is.EqualTo("Intimidate")
+            );
+            Assert.That(PokemonByName(playerOne, "Ho-Oh").Ability, Is.EqualTo("Pressure"));
+
+            // Porygon-Z is its own species and no form of Porygon
+            Assert.That(PokemonByName(playerOne, "Porygon").Ability, Is.Null);
+            Assert.That(PokemonByName(playerOne, "Porygon").FormName, Is.Null);
+            Assert.That(PokemonByName(playerOne, "Porygon-Z").Ability, Is.EqualTo("Adaptability"));
+            Assert.That(playerOne.Pokemon, Has.Count.EqualTo(5));
         }
 
         [Test]
