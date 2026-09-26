@@ -219,6 +219,110 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             return team;
         }
 
+        /// <summary>
+        /// Per replay state that is needed to attribute protocol messages correctly.
+        /// </summary>
+        private sealed class BattleState
+        {
+            /// <summary>
+            /// Maps the nickname used in protocol idents ("p1a: Nickname") to the Pokemon.
+            /// </summary>
+            public Dictionary<string, Pokemon> Nicknames { get; } = [];
+
+            /// <summary>
+            /// Pokemon currently holding an item they did not bring (e.g. after Trick).
+            /// </summary>
+            public HashSet<Pokemon> ForeignItemHolders { get; } = [];
+
+            /// <summary>
+            /// Pokemon whose set was posted via "!showteam" / "!showset".
+            /// </summary>
+            public HashSet<Pokemon> PostedSets { get; } = [];
+
+            public string? TrickUser { get; set; }
+            public string? TrickTarget { get; set; }
+            public HashSet<Pokemon> ForeignItemHoldersBeforeTrick { get; set; } = [];
+        }
+
+        private sealed class LineContext(
+            Team team,
+            PlayerInfo playerInfo,
+            BattleState state,
+            string[] parts
+        )
+        {
+            public Team Team { get; } = team;
+            public PlayerInfo PlayerInfo { get; } = playerInfo;
+            public BattleState State { get; } = state;
+            public string[] Parts { get; } = parts;
+            public string Command => Parts[1];
+
+            public string? Arg(int index)
+            {
+                return Parts.Length > index ? Parts[index] : null;
+            }
+
+            /// <summary>
+            /// The main Pokemon of the message (for e.g. "|-status|p1a: Nick|..." this is "p1a: Nick").
+            /// </summary>
+            public string? Main => Command.StartsWith("-side") ? null : Arg(2);
+
+            public string? From => GetKwarg("[from]");
+            public string? Of => GetKwarg("[of]");
+
+            private string? GetKwarg(string key)
+            {
+                var part = Parts.Skip(2).FirstOrDefault((part) => part.StartsWith(key));
+                return part?[key.Length..].Trim();
+            }
+
+            /// <summary>
+            /// Returns the Pokemon of the scouted player for an ident like "p1a: Nick", null otherwise.
+            /// </summary>
+            public Pokemon? Resolve(string? ident)
+            {
+                if (!TryParseIdent(ident, out var side, out var nickname))
+                {
+                    return null;
+                }
+                if (!side.StartsWith(PlayerInfo.PlayerValue!))
+                {
+                    return null;
+                }
+                if (State.Nicknames.TryGetValue(nickname, out var pokemon))
+                {
+                    return pokemon;
+                }
+                return AddMonIfNotExists(Team.Pokemon, nickname);
+            }
+        }
+
+        private static bool TryParseIdent(string? ident, out string side, out string nickname)
+        {
+            side = "";
+            nickname = "";
+            if (ident is null)
+            {
+                return false;
+            }
+            var separator = ident.IndexOf(':');
+            if (separator <= 0)
+            {
+                return false;
+            }
+            side = ident[..separator].Trim();
+            nickname = ident[(separator + 1)..].Trim();
+            return side.Length is 2 or 3 && side[0] == 'p' && char.IsDigit(side[1]);
+        }
+
+        private static bool SameIdent(string? first, string? second)
+        {
+            return TryParseIdent(first, out var firstSide, out var firstNickname)
+                && TryParseIdent(second, out var secondSide, out var secondNickname)
+                && firstSide == secondSide
+                && firstNickname == secondNickname;
+        }
+
         private void AnalyzeLogic(
             string? user,
             PlayerInfo playerInfo,
@@ -227,282 +331,519 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             Replay? replayObject
         )
         {
+            var state = new BattleState();
             foreach (var line in replayLog.Split('\n'))
             {
-                if (line.Contains("|player"))
-                {
-                    DeterminePlayer(user, playerInfo, line);
-                }
-                else if (playerInfo.PlayerValue?.Length == 0)
+                var parts = line.TrimEnd('\r').Split('|');
+                if (parts.Length < 2)
                 {
                     continue;
                 }
-                else if (line.Contains("|poke|"))
+                if (parts[1] == "player")
                 {
-                    var pokeinf = line.Split('|');
-                    if (pokeinf[2] == playerInfo.PlayerValue)
-                    {
-                        team.Pokemon.Add(
-                            new Pokemon()
-                            {
-                                Name = pokeinf[3].Split(',')[0],
-                                AltNames = { pokeinf[3].Split('-')[0] }
-                            }
-                        );
-                    }
+                    DeterminePlayer(user, playerInfo, line);
+                    continue;
                 }
-                else if (
-                    line.Contains("|switch")
-                    || line.Contains("|drag")
-                    || line.Contains("|replace")
-                )
+                if (playerInfo.PlayerValue?.Length == 0)
                 {
-                    if (line.Contains(playerInfo.PlayerValue!))
-                    {
-                        var pokeinf = line.Split('|');
-                        if (pokeinf.Length < 4)
-                        {
-                            // Something broke in the replay, skipping
-                            continue;
-                        }
-                        var maybepoke = pokeinf[3].Split(',')[0];
-                        var pokemon = team.Pokemon.FirstOrDefault(
-                            (pokemon) => pokemon.Name == maybepoke || pokemon.FormName == maybepoke
-                        );
-                        if (pokemon == null)
-                        {
-                            pokemon = team.Pokemon.FirstOrDefault(
-                                (pokemon) =>
-                                {
-                                    return Common.FormPokemonList.Any(
-                                        (formPokemon) =>
-                                            formPokemon == pokemon.Name
-                                            && maybepoke.Contains(formPokemon)
-                                    );
-                                }
-                            );
-                            if (pokemon != null)
-                            {
-                                pokemon.FormName = maybepoke;
-                            }
-                            else
-                            {
-                                var maybeReal = pokeinf[2].Split(':')[1].Trim();
-                                pokemon = team.Pokemon.FirstOrDefault(
-                                    (pokemon) =>
-                                        pokemon.Name == maybeReal
-                                        || pokemon.FormName == maybeReal
-                                        || pokemon.AltNames.Any((altName) => altName == maybeReal)
-                                );
-                                if (pokemon != null)
-                                {
-                                    pokemon.FormName = maybepoke;
-                                }
-                                else
-                                {
-                                    pokemon = new Pokemon() { Name = maybepoke };
-                                    if (team.Pokemon.Count == 0)
-                                    {
-                                        pokemon.Lead = true;
-                                    }
-                                    team.Pokemon.Add(pokemon);
-                                }
-                            }
-                        }
-                        if (pokeinf[2].Contains(':'))
-                        {
-                            var nick = pokeinf[2].Split(':')[1].Trim();
-                            if (!pokemon.AltNames.Any((altName) => altName == nick))
-                            {
-                                pokemon.AltNames.Add(nick);
-                            }
-                        }
-                    }
+                    continue;
                 }
-                else if (line.Contains("|move|") && !line.Contains("|-sidestart"))
-                {
-                    var moveinf = line.Split('|');
-                    if (moveinf[2].Contains(':'))
-                    {
-                        var playerString = moveinf[2][..moveinf[2].IndexOf(":")];
-                        if (playerString.Contains(playerInfo.PlayerValue!))
-                        {
-                            var mon = moveinf[2].Split(':')[1].Trim();
-                            var move = moveinf[3];
-                            var pokemon = AddMonIfNotExists(team.Pokemon, mon);
-                            if (line.Contains("[from]Magic Bounce"))
-                            {
-                                AbilityUpdate(pokemon, "Magic Bounce");
-                            }
-                            else
-                            {
-                                MoveUpdate(pokemon, move);
-                            }
-                        }
-                    }
-                }
-                else if (line.Contains("|detailschange"))
-                {
-                    var detailinf = line.Split('|');
-                    if (detailinf[2].Contains(playerInfo.PlayerValue!))
-                    {
-                        var mon = detailinf[2].Split(':')[1].Trim();
-                        var newmon = detailinf[3].Split(',')[0];
-                        var pokemon = AddMonIfNotExists(team.Pokemon, mon);
-                        if (pokemon.FormName != newmon)
-                        {
-                            pokemon.FormName = newmon;
-                        }
-                    }
-                }
-                else if (
-                    line.Contains("[from] item:")
-                    && !(line.Contains("-damage") && line.Contains("Rocky Helmet"))
-                )
-                {
-                    var iteminf = line.Split('|');
-                    if (iteminf[2].Contains(':'))
-                    {
-                        var playerString = iteminf[2][..iteminf[2].IndexOf(":")];
 
-                        if (playerString.Contains(playerInfo.PlayerValue!))
-                        {
-                            var mon = iteminf[2].Split(':')[1].Trim();
-                            var item = "";
-                            if (iteminf[4].Contains("item"))
-                            {
-                                item = iteminf[4].Split(':')[1].Trim();
-                            }
-                            else
-                            {
-                                item = iteminf[5].Split(':')[1].Trim();
-                            }
-                            var pokemon = AddMonIfNotExists(team.Pokemon, mon);
-                            ItemUpdate(pokemon, item);
-                        }
-                    }
-                }
-                else if (line.Contains("-damage") && line.Contains("Rocky Helmet"))
+                var context = new LineContext(team, playerInfo, state, parts);
+                switch (context.Command)
                 {
-                    var iteminf = line.Split('|');
-                    if (iteminf.Length > 5 && iteminf[5].Contains(playerInfo.PlayerValue!))
-                    {
-                        var mon = iteminf[5].Split(':')[1].Trim();
-                        var item = iteminf[4].Split(':')[1].Trim();
-                        var pokemon = AddMonIfNotExists(team.Pokemon, mon);
-                        ItemUpdate(pokemon, item);
-                    }
+                    case "poke":
+                        HandlePoke(context);
+                        break;
+                    case "switch":
+                    case "drag":
+                    case "replace":
+                        HandleSwitch(context);
+                        break;
+                    case "move":
+                        HandleMove(context);
+                        break;
+                    case "detailschange":
+                        HandleDetailsChange(context);
+                        break;
+                    case "-terastallize":
+                        HandleTerastallize(context);
+                        break;
+                    case "c":
+                        HandleChat(context);
+                        break;
+                    case "win":
+                        HandleWin(context, replayObject);
+                        break;
+                    default:
+                        HandleItems(context);
+                        HandleAbilities(context);
+                        break;
                 }
-                else if (line.Contains("|-enditem"))
-                {
-                    var iteminf = line.Split('|');
-                    if (iteminf[2].Contains(':'))
-                    {
-                        var playerString = iteminf[2][..iteminf[2].IndexOf(":")];
+            }
+        }
 
-                        if (playerString.Contains(playerInfo.PlayerValue!))
-                        {
-                            var mon = iteminf[2].Split(':')[1].Trim();
-                            var item = iteminf[3].Trim();
-                            var pokemon = AddMonIfNotExists(team.Pokemon, mon);
-                            ItemUpdate(pokemon, item);
-                        }
-                    }
-                }
-                else if (
-                    (line.Contains("-ability|") || line.Contains(" ability:"))
-                    && line.Contains("-damage")
-                )
-                {
-                    var abilityinf = line.Split('|');
-                    var ability = "";
-                    var mon = "";
-                    ability = abilityinf[4].Split(':')[1].Trim();
-                    if (abilityinf.Length > 5)
+        private static void HandlePoke(LineContext context)
+        {
+            var pokeinf = context.Parts;
+            if (pokeinf.Length > 3 && pokeinf[2] == context.PlayerInfo.PlayerValue)
+            {
+                context.Team.Pokemon.Add(
+                    new Pokemon()
                     {
-                        mon = abilityinf[5].Split(':')[1].Trim();
-                        if (abilityinf[5].Split(':')[1].Contains(playerInfo.PlayerValue!))
-                        {
-                            var pokemon = AddMonIfNotExists(team.Pokemon, mon);
-                            AbilityUpdate(pokemon, ability);
-                        }
+                        Name = pokeinf[3].Split(',')[0],
+                        AltNames = { pokeinf[3].Split('-')[0] }
                     }
-                }
-                else if (line.Contains("ability:") && !line.Contains("ability: Imposter"))
+                );
+            }
+        }
+
+        private static void HandleSwitch(LineContext context)
+        {
+            var pokeinf = context.Parts;
+            if (pokeinf.Length < 4)
+            {
+                // Something broke in the replay, skipping
+                return;
+            }
+            if (
+                !TryParseIdent(pokeinf[2], out var side, out var nickname)
+                || !side.StartsWith(context.PlayerInfo.PlayerValue!)
+            )
+            {
+                return;
+            }
+
+            var team = context.Team;
+            var nicknames = context.State.Nicknames;
+            var maybepoke = pokeinf[3].Split(',')[0];
+            if (nicknames.TryGetValue(nickname, out var pokemon))
+            {
+                if (pokemon.Name != maybepoke && pokemon.FormName != maybepoke)
                 {
-                    var abilityinf = line.Split('|');
-                    var ability = "";
-                    var mon = "";
-                    foreach (var abinf in abilityinf)
+                    pokemon.FormName = maybepoke;
+                }
+                return;
+            }
+
+            // Pokemon already identified by another nickname are a different Pokemon,
+            // this keeps e.g. two Heracross in the same team apart
+            var unclaimed = team
+                .Pokemon.Where((pokemon) => !nicknames.ContainsValue(pokemon))
+                .ToList();
+            pokemon = unclaimed.FirstOrDefault(
+                (pokemon) => pokemon.Name == maybepoke || pokemon.FormName == maybepoke
+            );
+            if (pokemon == null)
+            {
+                pokemon = unclaimed.FirstOrDefault(
+                    (pokemon) =>
+                        Common.FormPokemonList.Any(
+                            (formPokemon) =>
+                                formPokemon == pokemon.Name && maybepoke.Contains(formPokemon)
+                        )
+                );
+                pokemon ??= unclaimed.FirstOrDefault(
+                    (pokemon) =>
+                        pokemon.Name == nickname
+                        || pokemon.FormName == nickname
+                        || pokemon.AltNames.Any((altName) => altName == nickname)
+                );
+                if (pokemon != null)
+                {
+                    pokemon.FormName = maybepoke;
+                }
+                else
+                {
+                    pokemon = new Pokemon() { Name = maybepoke };
+                    if (team.Pokemon.Count == 0)
                     {
-                        if (abinf.Contains("ability:"))
+                        pokemon.Lead = true;
+                    }
+                    team.Pokemon.Add(pokemon);
+                }
+            }
+
+            nicknames[nickname] = pokemon;
+            if (!pokemon.AltNames.Any((altName) => altName == nickname))
+            {
+                pokemon.AltNames.Add(nickname);
+            }
+        }
+
+        private void HandleMove(LineContext context)
+        {
+            var move = context.Arg(3);
+            if (move is null)
+            {
+                return;
+            }
+            if (move is "Trick" or "Switcheroo")
+            {
+                StartItemSwap(context, context.Arg(2), context.Arg(4));
+            }
+
+            var pokemon = context.Resolve(context.Arg(2));
+            if (pokemon is null)
+            {
+                return;
+            }
+
+            var from = context.From;
+            if (from is not null)
+            {
+                if (from.StartsWith("ability:"))
+                {
+                    // Moves used by an ability (e.g. Magic Bounce, Dancer) are not part of the set
+                    AbilityUpdate(pokemon, from["ability:".Length..].Trim());
+                    return;
+                }
+                if (from.Contains("Magic Bounce"))
+                {
+                    AbilityUpdate(pokemon, "Magic Bounce");
+                    return;
+                }
+                if (from == "move: Metronome")
+                {
+                    // Only Metronome itself is part of the set, not the move it called
+                    return;
+                }
+            }
+
+            MoveUpdate(pokemon, move);
+        }
+
+        private static void HandleDetailsChange(LineContext context)
+        {
+            var newmon = context.Arg(3)?.Split(',')[0];
+            var pokemon = context.Resolve(context.Arg(2));
+            if (pokemon is not null && newmon is not null && pokemon.FormName != newmon)
+            {
+                pokemon.FormName = newmon;
+            }
+        }
+
+        private static void HandleTerastallize(LineContext context)
+        {
+            var teraType = context.Arg(3)?.Trim();
+            var pokemon = context.Resolve(context.Arg(2));
+            if (pokemon is not null && !string.IsNullOrEmpty(teraType))
+            {
+                TeraUpdate(pokemon, teraType);
+            }
+        }
+
+        private static void HandleWin(LineContext context, Replay? replayObject)
+        {
+            var winner = context.Arg(2);
+            if (replayObject is not null && winner is not null)
+            {
+                replayObject.Winner = winner;
+                var regexWinner = RegexUtil.Regex(replayObject.Winner).ToLower();
+                replayObject.WinForTeam = regexWinner.Equals(
+                    RegexUtil.Regex(context.PlayerInfo.PlayerName),
+                    StringComparison.CurrentCultureIgnoreCase
+                );
+            }
+        }
+
+        /// <summary>
+        /// Sets posted with "!showteam" / "!showset" by the scouted player are the actual sets.
+        /// </summary>
+        private static void HandleChat(LineContext context)
+        {
+            var sender = context.Arg(2);
+            if (sender is null || context.Parts.Length < 4)
+            {
+                return;
+            }
+            var message = string.Join("|", context.Parts.Skip(3));
+            if (!ShowdownSetParser.IsPostedSets(message))
+            {
+                return;
+            }
+            var regexSender = RegexUtil.Regex(sender);
+            if (
+                regexSender.Length == 0
+                || regexSender != RegexUtil.Regex(context.PlayerInfo.PlayerName)
+            )
+            {
+                return;
+            }
+
+            foreach (var set in ShowdownSetParser.ParseRawHtml(message))
+            {
+                ApplyPostedSet(context, set);
+            }
+        }
+
+        private static void ApplyPostedSet(LineContext context, ShowdownSet set)
+        {
+            var state = context.State;
+            var team = context.Team;
+            Pokemon? pokemon = null;
+            if (set.Nickname is not null)
+            {
+                state.Nicknames.TryGetValue(set.Nickname, out pokemon);
+            }
+            var candidates = team
+                .Pokemon.Where((pokemon) => !state.PostedSets.Contains(pokemon))
+                .ToList();
+            pokemon ??= candidates.FirstOrDefault(
+                (pokemon) =>
+                    set.Nickname is not null
+                    && pokemon.AltNames.Any((altName) => altName == set.Nickname)
+            );
+            pokemon ??= candidates.FirstOrDefault(
+                (pokemon) =>
+                    (pokemon.Name == set.Species || pokemon.FormName == set.Species)
+                    && !state.Nicknames.ContainsValue(pokemon)
+            );
+            pokemon ??= candidates.FirstOrDefault(
+                (pokemon) => pokemon.Name == set.Species || pokemon.FormName == set.Species
+            );
+            if (pokemon is null)
+            {
+                pokemon = new Pokemon() { Name = set.Species };
+                team.Pokemon.Add(pokemon);
+            }
+            if (
+                set.Nickname is not null
+                && !pokemon.AltNames.Any((altName) => altName == set.Nickname)
+            )
+            {
+                pokemon.AltNames.Add(set.Nickname);
+            }
+
+            state.PostedSets.Add(pokemon);
+            if (set.Item is not null)
+            {
+                pokemon.Item = set.Item;
+            }
+            if (set.Ability is not null)
+            {
+                pokemon.Ability = set.Ability;
+            }
+            if (set.TeraType is not null)
+            {
+                pokemon.TeraType = set.TeraType;
+            }
+            if (set.Moves.Count > 0)
+            {
+                pokemon.Moves = set.Moves.ToList();
+            }
+        }
+
+        /// <summary>
+        /// Items that hurt the attacker, so the damaged Pokemon is not the holder.
+        /// </summary>
+        private static readonly HashSet<string> AttackerDamagingItems =
+        [
+            "Rocky Helmet",
+            "Jaboca Berry",
+            "Rowap Berry"
+        ];
+
+        /// <summary>
+        /// Effects that give a Pokemon an item it did not bring, the [of] Pokemon (if any) brought it.
+        /// </summary>
+        private static readonly HashSet<string> ItemTransferEffects =
+        [
+            "move: Thief",
+            "move: Covet",
+            "move: Bestow",
+            "ability: Magician",
+            "ability: Pickpocket",
+            "ability: Pickup"
+        ];
+
+        private static void HandleItems(LineContext context)
+        {
+            var from = context.From;
+            switch (context.Command)
+            {
+                case "-item":
+                    HandleItemGain(context);
+                    break;
+                case "-enditem":
+                    ItemReveal(context, context.Main, context.Arg(3));
+                    break;
+                case "-activate":
+                    var effect = context.Arg(3)?.Trim();
+                    if (effect is "move: Trick" or "move: Switcheroo")
+                    {
+                        StartItemSwap(context, context.Main, context.Of);
+                    }
+                    else if (effect == "move: Poltergeist")
+                    {
+                        // "|-activate|p1a: Target|move: Poltergeist|Item" reveals the item of the target
+                        ItemReveal(context, context.Main, context.Arg(4));
+                    }
+                    else if (effect?.StartsWith("item:") == true)
+                    {
+                        ItemReveal(context, context.Main, effect["item:".Length..]);
+                    }
+                    break;
+                default:
+                    if (from?.StartsWith("item:") == true)
+                    {
+                        var item = from["item:".Length..].Trim();
+                        var holder = context.Main;
+                        if (context.Command == "-damage" && context.Of is not null)
                         {
-                            ability = abinf.Split(':')[1].Trim();
+                            holder = context.Of;
                         }
                         else if (
-                            abinf.Contains(':')
-                            && abinf.Split(':')[0].Contains(playerInfo.PlayerValue!)
+                            context.Command == "-damage"
+                            && AttackerDamagingItems.Contains(item)
                         )
                         {
-                            if (!abinf.Contains("[of]") && !ContainsLineAnOfAbility(line))
-                            {
-                                mon = abinf.Split(':')[1].Trim();
-                            }
-                            else if (abinf.Contains("[of]") && ContainsLineAnOfAbility(line))
-                            {
-                                mon = abinf.Split(':')[1].Trim();
-                            }
+                            holder = null;
                         }
+                        ItemReveal(context, holder, item);
                     }
-                    if (ability != "" && mon != "")
-                    {
-                        var pokemon = AddMonIfNotExists(team.Pokemon, mon);
-                        AbilityUpdate(pokemon, ability);
-                    }
-                }
-                else if (line.Contains("|-ability"))
-                {
-                    var abilityinf = line.Split('|');
-                    if (
-                        abilityinf[2].Contains(':')
-                        && abilityinf[2].Split(':')[0].Contains(playerInfo.PlayerValue!)
-                    )
-                    {
-                        var ability = abilityinf[3].Trim();
-                        var mon = abilityinf[2].Split(':')[1].Trim();
+                    break;
+            }
+        }
 
-                        var pokemon = AddMonIfNotExists(team.Pokemon, mon);
-                        AbilityUpdate(pokemon, ability);
-                    }
-                }
-                else if (line.Contains("|-terastallize"))
+        private static void HandleItemGain(LineContext context)
+        {
+            var item = context.Arg(3);
+            var from = context.From;
+            if (from is "move: Trick" or "move: Switcheroo")
+            {
+                var state = context.State;
+                var originalHolder = SameIdent(context.Main, state.TrickUser)
+                    ? state.TrickTarget
+                    : state.TrickUser;
+                var original = context.Resolve(originalHolder);
+                if (original is not null && !state.ForeignItemHoldersBeforeTrick.Contains(original))
                 {
-                    var terainf = line.Split('|');
-                    if (
-                        terainf[2].Contains(':')
-                        && terainf[2].Split(':')[0].Contains(playerInfo.PlayerValue!)
-                    )
-                    {
-                        var teraType = terainf[3].Trim();
-                        var mon = terainf[2].Split(':')[1].Trim();
+                    ItemUpdate(original, item);
+                }
+                MarkForeignItemHolder(context, context.Main);
+            }
+            else if (from is not null && ItemTransferEffects.Contains(from))
+            {
+                ItemReveal(context, context.Of, item);
+                MarkForeignItemHolder(context, context.Main);
+            }
+            else
+            {
+                // Air Balloon, Frisk, Harvest, Recycle, ...
+                ItemReveal(context, context.Main, item);
+            }
+        }
 
-                        var pokemon = AddMonIfNotExists(team.Pokemon, mon);
-                        TeraUpdate(pokemon, teraType);
-                    }
-                }
-                else if (line.Contains("|win|"))
+        private static void StartItemSwap(LineContext context, string? user, string? target)
+        {
+            var state = context.State;
+            state.TrickUser = user;
+            state.TrickTarget = target;
+            state.ForeignItemHoldersBeforeTrick = [.. state.ForeignItemHolders];
+        }
+
+        private static void MarkForeignItemHolder(LineContext context, string? ident)
+        {
+            var pokemon = context.Resolve(ident);
+            if (pokemon is not null)
+            {
+                context.State.ForeignItemHolders.Add(pokemon);
+            }
+        }
+
+        private static void ItemReveal(LineContext context, string? ident, string? item)
+        {
+            item = item?.Trim();
+            if (string.IsNullOrEmpty(item))
+            {
+                return;
+            }
+            var pokemon = context.Resolve(ident);
+            if (pokemon is not null && !context.State.ForeignItemHolders.Contains(pokemon))
+            {
+                ItemUpdate(pokemon, item);
+            }
+        }
+
+        /// <summary>
+        /// Abilities that copy the ability of the [of] Pokemon ("|-ability|p1a: Holder|Copied|[from] ability: Trace|[of] p2a: Other").
+        /// </summary>
+        private static readonly HashSet<string> CopyingAbilities =
+        [
+            "Trace",
+            "Receiver",
+            "Power of Alchemy"
+        ];
+
+        private static void HandleAbilities(LineContext context)
+        {
+            var command = context.Command;
+            var from = context.From;
+            var of = context.Of;
+            string? ability = null;
+            string? holder = null;
+
+            if (from?.StartsWith("ability:") == true)
+            {
+                ability = from["ability:".Length..].Trim();
+                if (command == "-ability" && CopyingAbilities.Contains(ability))
                 {
-                    var terainf = line.Split('|');
-                    if (replayObject is not null && terainf.Length > 2)
-                    {
-                        replayObject.Winner = terainf[2];
-                        var regexWinner = RegexUtil.Regex(replayObject.Winner).ToLower();
-                        replayObject.WinForTeam = regexWinner.Equals(
-                            RegexUtil.Regex(playerInfo.PlayerName),
-                            StringComparison.CurrentCultureIgnoreCase
-                        );
-                    }
+                    holder = context.Main;
+                    AbilityReveal(context, of, context.Arg(3));
                 }
+                else if (command == "-item")
+                {
+                    // Frisk reveals the item of the main Pokemon, Magician / Pickpocket steal it
+                    holder = ability == "Frisk" ? of : context.Main;
+                }
+                else if (command == "-heal")
+                {
+                    // Absorbing abilities list the attacker as [of]
+                    holder = ability == "Hospitality" ? of : context.Main;
+                }
+                else if (command == "-enditem")
+                {
+                    holder = SameIdent(of, context.Main) ? null : of;
+                }
+                else
+                {
+                    // "[from] ability: X|[of] p1a: Holder", e.g. weather, Flame Body, Toxic Chain
+                    holder = of ?? context.Main;
+                }
+            }
+            else
+            {
+                var abilityPart = context
+                    .Parts.Skip(2)
+                    .FirstOrDefault((part) => part.StartsWith("ability:"));
+                if (abilityPart is not null)
+                {
+                    ability = abilityPart["ability:".Length..].Trim();
+                    // "|-block|p1a: Target|ability: Flower Veil|[of] p1b: Holder"
+                    holder = command == "-block" ? of ?? context.Main : context.Main;
+                }
+                else if (command == "-ability" && from is null)
+                {
+                    ability = context.Arg(3);
+                    holder = context.Main;
+                }
+            }
+
+            AbilityReveal(context, holder, ability);
+        }
+
+        private static void AbilityReveal(LineContext context, string? ident, string? ability)
+        {
+            ability = ability?.Trim();
+            if (string.IsNullOrEmpty(ability))
+            {
+                return;
+            }
+            var pokemon = context.Resolve(ident);
+            if (pokemon is not null)
+            {
+                AbilityUpdate(pokemon, ability);
             }
         }
 
@@ -649,18 +990,6 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             }
         }
 
-        private static bool ContainsLineAnOfAbility(string line)
-        {
-            foreach (var ofAbility in Common.OfAbilities)
-            {
-                if (line.Contains($"ability: {ofAbility}"))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         private static Pokemon AddMonIfNotExists(
             ICollection<Pokemon> pokemonList,
             string pokemonCandidate
@@ -689,6 +1018,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 if (pokemon != null)
                 {
                     pokemon.FormName = pokemonCandidate;
+                    return pokemon;
                 }
                 pokemon = pokemonList.FirstOrDefault(
                     (pokemon) =>
@@ -715,47 +1045,17 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
 
         private static void AbilityUpdate(Pokemon pokemon, string ability)
         {
-            if (pokemon.Ability != null)
-            {
-                if (!pokemon.Ability.Contains(ability))
-                {
-                    pokemon.Ability += " | " + ability;
-                }
-            }
-            else
-            {
-                pokemon.Ability = ability;
-            }
+            pokemon.Ability = Common.MergeAlternatives(pokemon.Ability, ability);
         }
 
         private static void TeraUpdate(Pokemon pokemon, string teraType)
         {
-            if (pokemon.TeraType != null)
-            {
-                if (!pokemon.TeraType.Contains(teraType))
-                {
-                    pokemon.TeraType += " | " + teraType;
-                }
-            }
-            else
-            {
-                pokemon.TeraType = teraType;
-            }
+            pokemon.TeraType = Common.MergeAlternatives(pokemon.TeraType, teraType);
         }
 
-        private static void ItemUpdate(Pokemon pokemon, string item)
+        private static void ItemUpdate(Pokemon pokemon, string? item)
         {
-            if (pokemon.Item == null || pokemon.Item?.Length == 0)
-            {
-                pokemon.Item = item;
-            }
-            else
-            {
-                if (pokemon.Item?.Contains(item) == false)
-                {
-                    pokemon.Item += " | " + item;
-                }
-            }
+            pokemon.Item = Common.MergeAlternatives(pokemon.Item, item);
         }
 
         /// <summary>
@@ -806,8 +1106,25 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             { "Let's Snuggle Forever", "Mimikium Z" },
         };
 
+        /// <summary>
+        /// Status moves whose Z-powered variant ("Z-Move") reveals a specific Z-Crystal.
+        /// </summary>
+        public IDictionary<string, string> ZStatusMoveItems = new Dictionary<string, string>
+        {
+            { "Metronome", "Normalium Z" },
+        };
+
         private void MoveUpdate(Pokemon pokemon, string move)
         {
+            if (move.StartsWith("Z-") && move.Length > 2)
+            {
+                // Z-powered status moves, e.g. "Z-Metronome"
+                move = move[2..];
+                if (ZStatusMoveItems.TryGetValue(move, out string? zCrystal))
+                {
+                    ItemUpdate(pokemon, zCrystal);
+                }
+            }
             if (ItemTransformingMoves.TryGetValue(move, out string? value))
             {
                 ItemUpdate(pokemon, value);
