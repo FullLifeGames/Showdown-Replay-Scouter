@@ -668,6 +668,11 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 case "-enditem":
                     ItemReveal(context, context.Main, context.Arg(3));
                     break;
+                case "-mega":
+                case "-burst":
+                    // "|-mega|p1a: Nick|Venusaur|Venusaurite", "|-burst|p1a: Nick|Necrozma-Ultra|Ultranecrozium Z"
+                    ItemReveal(context, context.Main, context.Arg(4));
+                    break;
                 case "-activate":
                     var effect = context.Arg(3)?.Trim();
                     if (effect is "move: Trick" or "move: Switcheroo")
