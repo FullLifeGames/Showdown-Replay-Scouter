@@ -66,12 +66,12 @@ namespace ShowdownReplayScouter.Core.TeamMergers
                     {
                         foundPokemon.FormName = pokemon.FormName;
                     }
-                    foundPokemon.Item = Common.MergeAlternatives(foundPokemon.Item, pokemon.Item);
-                    foundPokemon.Ability = Common.MergeAlternatives(
+                    foundPokemon.Item = Alternatives.Merge(foundPokemon.Item, pokemon.Item);
+                    foundPokemon.Ability = Alternatives.Merge(
                         foundPokemon.Ability,
                         pokemon.Ability
                     );
-                    foundPokemon.TeraType = Common.MergeAlternatives(
+                    foundPokemon.TeraType = Alternatives.Merge(
                         foundPokemon.TeraType,
                         pokemon.TeraType
                     );

@@ -10,17 +10,17 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
     {
         public static void RevealAbility(this Pokemon pokemon, string ability)
         {
-            pokemon.Ability = Common.MergeAlternatives(pokemon.Ability, ability);
+            pokemon.Ability = Alternatives.Merge(pokemon.Ability, ability);
         }
 
         public static void RevealItem(this Pokemon pokemon, string? item)
         {
-            pokemon.Item = Common.MergeAlternatives(pokemon.Item, item);
+            pokemon.Item = Alternatives.Merge(pokemon.Item, item);
         }
 
         public static void RevealTeraType(this Pokemon pokemon, string teraType)
         {
-            pokemon.TeraType = Common.MergeAlternatives(pokemon.TeraType, teraType);
+            pokemon.TeraType = Alternatives.Merge(pokemon.TeraType, teraType);
         }
     }
 }

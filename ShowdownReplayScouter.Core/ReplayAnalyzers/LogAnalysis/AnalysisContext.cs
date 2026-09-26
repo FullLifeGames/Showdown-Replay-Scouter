@@ -59,25 +59,6 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
                 : null;
         }
 
-        /// <summary>
-        /// Species with a hyphen in their name, which are no form of another species
-        /// (e.g. "Porygon-Z" is no form of "Porygon").
-        /// </summary>
-        private static readonly HashSet<string> HyphenatedSpecies =
-        [
-            "Nidoran-F",
-            "Nidoran-M",
-            "Ho-Oh",
-            "Porygon-Z",
-            "Jangmo-o",
-            "Hakamo-o",
-            "Kommo-o",
-            "Wo-Chien",
-            "Chien-Pao",
-            "Ting-Lu",
-            "Chi-Yu"
-        ];
-
         private Pokemon AddMonIfNotExists(string pokemonCandidate)
         {
             var pokemonList = Team.Pokemon;
@@ -91,28 +72,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis
             {
                 // A form of a known Pokemon, e.g. "Zoroark-Hisui" or "Tauros-Paldea-Combat"
                 pokemon = pokemonList.FirstOrDefault(
-                    (pokemon) =>
-                        pokemon.Name is not null
-                        && !HyphenatedSpecies.Contains(pokemonCandidate)
-                        && pokemonCandidate.StartsWith(
-                            $"{pokemon.Name}-",
-                            StringComparison.OrdinalIgnoreCase
-                        )
-                );
-                if (pokemon != null)
-                {
-                    pokemon.FormName = pokemonCandidate;
-                    return pokemon;
-                }
-                pokemon = pokemonList.FirstOrDefault(
-                    (pokemon) =>
-                    {
-                        return Common.FormPokemonList.Any(
-                            (formPokemon) =>
-                                formPokemon == pokemon.Name
-                                && pokemonCandidate.Contains(formPokemon)
-                        );
-                    }
+                    (pokemon) => SpeciesForms.IsFormOf(pokemonCandidate, pokemon.Name)
                 );
                 if (pokemon != null)
                 {

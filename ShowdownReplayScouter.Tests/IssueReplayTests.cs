@@ -326,6 +326,25 @@ namespace ShowdownReplayScouter.Tests
         }
 
         [Test]
+        public async Task FormesHiddenInTeamPreviewAreMatchedOnSwitchIn()
+        {
+            // "|poke|p1|Urshifu-*, M|" and later "|switch|p1a: Fishy|Urshifu-Rapid-Strike, M|..."
+            var (playerOne, _) = await AnalyzeAsync("sim-gen9-hidden-formes").ConfigureAwait(false);
+
+            Assert.That(playerOne.Pokemon, Has.Count.EqualTo(3));
+            Assert.That(
+                playerOne.Pokemon.Select((pokemon) => pokemon.FormName ?? pokemon.Name),
+                Is.EquivalentTo(
+                    new[] { "Urshifu-Rapid-Strike", "Dudunsparce-Three-Segment", "Greninja" }
+                )
+            );
+            Assert.That(
+                PokemonByNickname(playerOne, "Fishy").Moves,
+                Is.EqualTo(new[] { "Surging Strikes" })
+            );
+        }
+
+        [Test]
         public async Task UnknownFormsAreMatchedToTheirBasePokemon()
         {
             // Pokemon referenced before they switched in, e.g. because of a broken switch line

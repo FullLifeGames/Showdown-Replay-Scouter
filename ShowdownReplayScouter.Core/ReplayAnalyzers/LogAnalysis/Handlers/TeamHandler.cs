@@ -106,11 +106,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis.Handlers
             if (pokemon == null)
             {
                 pokemon = unclaimed.FirstOrDefault(
-                    (pokemon) =>
-                        Common.FormPokemonList.Any(
-                            (formPokemon) =>
-                                formPokemon == pokemon.Name && species.Contains(formPokemon)
-                        )
+                    (pokemon) => SpeciesForms.IsFormOf(species, pokemon.Name)
                 );
                 pokemon ??= unclaimed.FirstOrDefault(
                     (pokemon) =>
@@ -155,24 +151,13 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers.LogAnalysis.Handlers
                     actual.Moves.Add(move);
                 }
             }
-            actual.RevealItem(AddedAlternatives(disguiseBefore.Item, disguise.Item));
+            actual.RevealItem(Alternatives.Added(disguiseBefore.Item, disguise.Item));
             disguise.Item = disguiseBefore.Item;
-            actual.Ability = Common.MergeAlternatives(
+            actual.Ability = Alternatives.Merge(
                 actual.Ability,
-                AddedAlternatives(disguiseBefore.Ability, disguise.Ability)
+                Alternatives.Added(disguiseBefore.Ability, disguise.Ability)
             );
             disguise.Ability = disguiseBefore.Ability;
-        }
-
-        private static string? AddedAlternatives(string? before, string? after)
-        {
-            if (string.IsNullOrEmpty(after))
-            {
-                return null;
-            }
-            var previous = before?.Split(Common.AlternativeSeparator) ?? [];
-            var added = after.Split(Common.AlternativeSeparator).Except(previous).ToList();
-            return added.Count > 0 ? string.Join(Common.AlternativeSeparator, added) : null;
         }
 
         private static void HandleDetailsChange(ProtocolLine line, AnalysisContext context)

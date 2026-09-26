@@ -157,6 +157,27 @@ Ability: Natural Cure
 - Calm Mind`,
     choices: [['team 1', 'team 1'], ['move 2 dynamax', 'move 2'], ['move 1', 'move 2'], ['move 1', 'move 2'], ['move 1', 'move 2']],
   },
+  {
+    // Team preview hides some formes ("Urshifu-*"), nicknamed Pokemon reveal them only on switch in
+    id: 'sim-gen9-hidden-formes',
+    formatid: 'gen9customgame',
+    format: '[Gen 9] Custom Game',
+    p1: `Fishy (Urshifu-Rapid-Strike) @ Choice Band
+Ability: Unseen Fist
+- Surging Strikes
+
+Worm (Dudunsparce-Three-Segment) @ Leftovers
+Ability: Serene Grace
+- Glare
+
+Frog (Greninja) @ Life Orb
+Ability: Protean
+- Hydro Pump`,
+    p2: `Toxapex @ Leftovers
+Ability: Regenerator
+- Recover`,
+    choices: [['team 123', 'team 1'], ['move 1', 'move 1'], ['switch 2', 'move 1'], ['move 1', 'move 1'], ['switch 3', 'move 1'], ['move 1', 'move 1']],
+  },
 ];
 
 const outputDirectory = process.argv[2] || '.';
