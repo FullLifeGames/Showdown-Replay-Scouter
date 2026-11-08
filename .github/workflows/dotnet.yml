@@ -12,9 +12,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         dotnet-version: 8.x
     - name: Restore dependencies
@@ -23,21 +23,3 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
-      
-  publish:
-
-    runs-on: windows-latest
-    
-    needs: build
-    if: github.ref == 'refs/heads/master'
-    
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 8.x
-    - name: Create Package
-      run:  dotnet pack "ShowdownReplayScouter.Core/ShowdownReplayScouter.Core.csproj" --include-symbols -c Release
-    - name: Push Package
-      run:  dotnet nuget push "**\*.nupkg" --api-key ${{ secrets.NUGET_KEY }} --skip-duplicate -s https://api.nuget.org/v3/index.json
