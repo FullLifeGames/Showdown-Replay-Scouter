@@ -469,7 +469,6 @@ namespace ShowdownReplayScouter.Tests
                                 Link = new Uri(
                                     $"https://replay.pokemonshowdown.com/gen9ou-{index}"
                                 ),
-                                Log = "",
                                 Players = ["player-one", "player-two"],
                             },
                         ],
