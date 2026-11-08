@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ShowdownReplayScouter.Core.Data;
 using ShowdownReplayScouter.Core.ReplayAnalyzers;
@@ -22,8 +23,18 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
             return ScoutReplaysAsync(scoutingRequest).Result;
         }
 
+        public virtual Task<ScoutingResult?> ScoutReplaysAsync(ScoutingRequest scoutingRequest)
+        {
+            return ScoutReplaysAsync(scoutingRequest, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Scouts the replays and stops downloading and analyzing them when the token is canceled
+        /// (e.g. the client of a request went away), throwing an <see cref="OperationCanceledException"/>.
+        /// </summary>
         public virtual async Task<ScoutingResult?> ScoutReplaysAsync(
-            ScoutingRequest scoutingRequest
+            ScoutingRequest scoutingRequest,
+            CancellationToken cancellationToken
         )
         {
             if (scoutingRequest == null)
@@ -49,11 +60,13 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
                                     {
                                         await AnalyzeReplayAsync(
                                                 new CollectedReplay(replay, user),
-                                                teamCollection
+                                                teamCollection,
+                                                cancellationToken
                                             )
                                             .ConfigureAwait(false);
                                     }
                                     catch (Exception)
+                                        when (!cancellationToken.IsCancellationRequested)
                                     {
                                         Console.WriteLine($"Error on {replay}");
                                     }
@@ -65,17 +78,19 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
                                 {
                                     await AnalyzeReplayAsync(
                                             new CollectedReplay(replay, null),
-                                            teamCollection
+                                            teamCollection,
+                                            cancellationToken
                                         )
                                         .ConfigureAwait(false);
                                 }
-                                catch (Exception)
+                                catch (Exception) when (!cancellationToken.IsCancellationRequested)
                                 {
                                     Console.WriteLine($"Error on {replay}");
                                 }
                             }
                         },
-                        maxDegreeOfParallelism
+                        maxDegreeOfParallelism,
+                        cancellationToken: cancellationToken
                     )
                     .ConfigureAwait(false);
             }
@@ -83,20 +98,25 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
             {
                 await ParallelHelper
                     .AsyncParallelForEachAsync(
-                        ReplayCollector.CollectReplaysAsync(scoutingRequest),
+                        ReplayCollector.CollectReplaysAsync(scoutingRequest, cancellationToken),
                         async (collectedReplay) =>
                         {
                             try
                             {
-                                await AnalyzeReplayAsync(collectedReplay, teamCollection)
+                                await AnalyzeReplayAsync(
+                                        collectedReplay,
+                                        teamCollection,
+                                        cancellationToken
+                                    )
                                     .ConfigureAwait(false);
                             }
-                            catch (Exception)
+                            catch (Exception) when (!cancellationToken.IsCancellationRequested)
                             {
                                 Console.WriteLine($"Error on {collectedReplay}");
                             }
                         },
-                        maxDegreeOfParallelism
+                        maxDegreeOfParallelism,
+                        cancellationToken: cancellationToken
                     )
                     .ConfigureAwait(false);
             }
@@ -125,11 +145,12 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
 
         private async Task AnalyzeReplayAsync(
             CollectedReplay collectedReplay,
-            ConcurrentBag<Team> teamCollection
+            ConcurrentBag<Team> teamCollection,
+            CancellationToken cancellationToken
         )
         {
             var teams = await ReplayAnalyzer
-                .AnalyzeReplayAsync(collectedReplay.Replay, collectedReplay.User)
+                .AnalyzeReplayAsync(collectedReplay.Replay, collectedReplay.User, cancellationToken)
                 .ConfigureAwait(false);
             foreach (var team in teams)
             {

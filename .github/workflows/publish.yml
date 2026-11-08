@@ -1,0 +1,53 @@
+name: Publish NuGet package
+
+# Publishes ShowdownReplayScouter.Core to nuget.org with NuGet Trusted Publishing:
+# GitHub's OIDC token is exchanged for an API key that is valid for one hour, so no
+# long-lived key has to be stored as a secret.
+# Needs a Trusted Publishing policy on nuget.org: owner FullLifeGames, repository
+# Showdown-Replay-Scouter, workflow file publish.yml.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "ShowdownReplayScouter.Core/**"
+      - ".github/workflows/publish.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-nuget
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      id-token: write # GitHub OIDC token for NuGet Trusted Publishing
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Test (without the live tests against replay.pokemonshowdown.com)
+        run: dotnet test ShowdownReplayScouter.Tests/ShowdownReplayScouter.Tests.csproj -c Release --filter "FullyQualifiedName!~ShowdownReplayScouter.Tests.TestShowdownReplayScouter"
+
+      - name: Pack
+        run: dotnet pack ShowdownReplayScouter.Core/ShowdownReplayScouter.Core.csproj -c Release --include-symbols -p:SymbolPackageFormat=snupkg -o artifacts
+
+      - name: NuGet login (OIDC token to temporary API key)
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: FullLifeGames # nuget.org profile name, not the email address
+
+      - name: Push
+        # Also pushes the matching .snupkg; a version that is already on nuget.org is skipped
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

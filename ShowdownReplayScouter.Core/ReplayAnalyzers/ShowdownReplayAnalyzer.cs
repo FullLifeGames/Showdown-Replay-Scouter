@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -47,7 +48,15 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             return await AnalyzeReplayAsync(new Uri(replay)).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Team>> AnalyzeReplayAsync(Uri replay)
+        public Task<IEnumerable<Team>> AnalyzeReplayAsync(Uri replay)
+        {
+            return AnalyzeBothPlayersAsync(replay, CancellationToken.None);
+        }
+
+        private async Task<IEnumerable<Team>> AnalyzeBothPlayersAsync(
+            Uri replay,
+            CancellationToken cancellationToken
+        )
         {
             var jsonLink = GetJsonLink(replay);
             var cachedPlayerOneTeam = await GetFromCache(null, "p1", jsonLink)
@@ -59,7 +68,8 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 return [cachedPlayerOneTeam, cachedPlayerTwoTeam];
             }
 
-            var replayObject = await GetReplayFromUrl(jsonLink).ConfigureAwait(false);
+            var replayObject = await GetReplayFromUrl(jsonLink, cancellationToken)
+                .ConfigureAwait(false);
             if (replayObject is null)
             {
                 return [cachedPlayerOneTeam ?? new Team(), cachedPlayerTwoTeam ?? new Team()];
@@ -81,18 +91,29 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             return await AnalyzeReplayAsync(new Uri(replay), user).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Team>> AnalyzeReplayAsync(Uri replay, string? user)
+        public Task<IEnumerable<Team>> AnalyzeReplayAsync(Uri replay, string? user)
+        {
+            return AnalyzeReplayAsync(replay, user, CancellationToken.None);
+        }
+
+        public async Task<IEnumerable<Team>> AnalyzeReplayAsync(
+            Uri replay,
+            string? user,
+            CancellationToken cancellationToken
+        )
         {
             if (user == null)
             {
-                return await AnalyzeReplayAsync(replay).ConfigureAwait(false);
+                return await AnalyzeBothPlayersAsync(replay, cancellationToken)
+                    .ConfigureAwait(false);
             }
-            return [await GetTeamFromUrl(replay, user).ConfigureAwait(false)];
+            return [await GetTeamFromUrl(replay, user, cancellationToken).ConfigureAwait(false)];
         }
 
         private async Task<Team> GetTeamFromUrl(
             Uri link,
-            string? user = null,
+            string? user,
+            CancellationToken cancellationToken,
             string playerValue = ""
         )
         {
@@ -104,7 +125,8 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
                 return cachedTeam;
             }
 
-            var replayObject = await GetReplayFromUrl(jsonLink).ConfigureAwait(false);
+            var replayObject = await GetReplayFromUrl(jsonLink, cancellationToken)
+                .ConfigureAwait(false);
             if (replayObject is null)
             {
                 return new Team();
@@ -129,21 +151,30 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             return jsonLink;
         }
 
-        private static async Task<DownloadedReplay?> GetReplayFromUrl(string jsonLink)
+        private static async Task<DownloadedReplay?> GetReplayFromUrl(
+            string jsonLink,
+            CancellationToken cancellationToken
+        )
         {
-            var replayResult = await Common.HttpClient.GetAsync(jsonLink).ConfigureAwait(false);
+            var replayResult = await Common
+                .HttpClient.GetAsync(jsonLink, cancellationToken)
+                .ConfigureAwait(false);
             if (!replayResult.IsSuccessStatusCode)
             {
                 // No success might mean 404 or the server is down, anyway we shut this down gracefully
                 return null;
             }
 
-            var replayJson = await replayResult.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var replayJson = await replayResult
+                .Content.ReadAsStringAsync(cancellationToken)
+                .ConfigureAwait(false);
             // Old error handling, sometimes "<" is returned from the API
             if (replayJson.StartsWith("<"))
             {
                 // Use get String as the assumption is the first request went through, this will so as well
-                replayJson = await Common.HttpClient.GetStringAsync(jsonLink).ConfigureAwait(false);
+                replayJson = await Common
+                    .HttpClient.GetStringAsync(jsonLink, cancellationToken)
+                    .ConfigureAwait(false);
                 // If return twice, at least don't break everything
                 if (replayJson.StartsWith("<"))
                 {

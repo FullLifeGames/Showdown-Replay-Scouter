@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using ShowdownReplayScouter.Core.Data;
 using ShowdownReplayScouter.Core.ReplayAnalyzers;
@@ -43,10 +44,11 @@ namespace ShowdownReplayScouter.Core.ReplayScouter
         }
 
         public override async Task<ScoutingResult?> ScoutReplaysAsync(
-            ScoutingRequest scoutingRequest
+            ScoutingRequest scoutingRequest,
+            CancellationToken cancellationToken
         )
         {
-            var result = await base.ScoutReplaysAsync(scoutingRequest);
+            var result = await base.ScoutReplaysAsync(scoutingRequest, cancellationToken);
             _cache?.Store();
             return result;
         }
