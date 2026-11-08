@@ -129,7 +129,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             return jsonLink;
         }
 
-        private static async Task<Replay?> GetReplayFromUrl(string jsonLink)
+        private static async Task<DownloadedReplay?> GetReplayFromUrl(string jsonLink)
         {
             var replayResult = await Common.HttpClient.GetAsync(jsonLink).ConfigureAwait(false);
             if (!replayResult.IsSuccessStatusCode)
@@ -154,7 +154,7 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             {
                 return null;
             }
-            return JsonConvert.DeserializeObject<Replay>(replayJson);
+            return JsonConvert.DeserializeObject<DownloadedReplay>(replayJson);
         }
 
         private async Task<Team> GetTeamFromReplay(
@@ -162,16 +162,17 @@ namespace ShowdownReplayScouter.Core.ReplayAnalyzers
             string? user,
             string playerValue,
             string jsonLink,
-            Replay sourceReplayObject
+            DownloadedReplay sourceReplayObject
         )
         {
             var playerInfo = new PlayerInfo { PlayerName = "", PlayerValue = playerValue };
 
             var team = new Team();
+            // The clone is a plain Replay without the log, so the team does not keep the log alive
             var replayObject = sourceReplayObject.Clone();
             team.Replays.Add(replayObject);
             replayObject.Link = link;
-            var replayLog = replayObject.Log;
+            var replayLog = sourceReplayObject.Log;
             team.Format = replayObject.Format;
             if (playerValue == "p1")
             {

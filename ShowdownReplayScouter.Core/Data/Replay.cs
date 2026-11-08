@@ -11,7 +11,6 @@ namespace ShowdownReplayScouter.Core.Data
         public string? P1 { get; set; }
         public string? P2 { get; set; }
         public string Format { get; set; } = null!;
-        public string Log { internal get; set; } = null!;
         public int UploadTime { get; set; }
         public int Views { get; set; }
         public string? P1Id { get; set; }
@@ -38,7 +37,6 @@ namespace ShowdownReplayScouter.Core.Data
                 P1 = P1,
                 P2 = P2,
                 Format = Format,
-                Log = Log,
                 UploadTime = UploadTime,
                 Views = Views,
                 P1Id = P1Id,
