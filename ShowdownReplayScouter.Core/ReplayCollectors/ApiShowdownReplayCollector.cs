@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -21,8 +23,16 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             _cache = cache;
         }
 
-        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(
+        public IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(
             ScoutingRequest scoutingRequest
+        )
+        {
+            return CollectReplaysAsync(scoutingRequest, CancellationToken.None);
+        }
+
+        public async IAsyncEnumerable<CollectedReplay> CollectReplaysAsync(
+            ScoutingRequest scoutingRequest,
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             if (
@@ -40,7 +50,8 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                             var showdownReplay in RetrieveReplaysForUserAndTier(
                                 user,
                                 tier,
-                                scoutingRequest
+                                scoutingRequest,
+                                cancellationToken
                             )
                         )
                         {
@@ -69,7 +80,8 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                         var showdownReplay in RetrieveReplaysForUserAndTier(
                             user,
                             tier: null,
-                            scoutingRequest
+                            scoutingRequest,
+                            cancellationToken
                         )
                     )
                     {
@@ -129,7 +141,9 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             {
                 foreach (var tier in scoutingRequest.Tiers)
                 {
-                    await foreach (var showdownReplay in RetrieveReplaysForTier(tier))
+                    await foreach (
+                        var showdownReplay in RetrieveReplaysForTier(tier, cancellationToken)
+                    )
                     {
                         foreach (
                             var showdownReplayUrl in CollectShowdownReplayUrl(
@@ -150,7 +164,8 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
         private async IAsyncEnumerable<string> RetrieveReplaysForUserAndTier(
             string user,
             string? tier,
-            ScoutingRequest scoutingRequest
+            ScoutingRequest scoutingRequest,
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
             var regexUser = RegexUtil.Regex(user);
@@ -165,13 +180,17 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 : fullUrl;
             var cacheKey = currentUrl;
 
-            var response = await Common.HttpClient.GetAsync(currentUrl).ConfigureAwait(false);
+            var response = await Common
+                .HttpClient.GetAsync(currentUrl, cancellationToken)
+                .ConfigureAwait(false);
             // Broken request
             if (!response.IsSuccessStatusCode)
             {
                 yield break;
             }
-            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var json = await response
+                .Content.ReadAsStringAsync(cancellationToken)
+                .ConfigureAwait(false);
 
             var cachedPages = await GetCachedPages(cacheKey, currentUrl, json)
                 .ConfigureAwait(false);
@@ -195,14 +214,16 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             while (ShouldContinuePaging(replayList, scoutingRequest))
             {
                 response = await Common
-                    .HttpClient.GetAsync($"{fullUrl}&before={before}")
+                    .HttpClient.GetAsync($"{fullUrl}&before={before}", cancellationToken)
                     .ConfigureAwait(false);
                 // Broken request
                 if (!response.IsSuccessStatusCode)
                 {
                     yield break;
                 }
-                json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                json = await response
+                    .Content.ReadAsStringAsync(cancellationToken)
+                    .ConfigureAwait(false);
                 replayList = JsonConvert.DeserializeObject<ReplayEntry[]>(json);
                 before = replayList?.LastOrDefault()?.Uploadtime;
                 // Error handling, sometimes "<" is returned from the API
@@ -210,7 +231,7 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
                 {
                     // Assume that the request will work
                     json = await Common
-                        .HttpClient.GetStringAsync($"{fullUrl}&before={before}")
+                        .HttpClient.GetStringAsync($"{fullUrl}&before={before}", cancellationToken)
                         .ConfigureAwait(false);
                     // If return twice, at least don't break everything
                     if (json.StartsWith("<"))
@@ -265,13 +286,18 @@ namespace ShowdownReplayScouter.Core.ReplayCollectors
             return true;
         }
 
-        private static async IAsyncEnumerable<string> RetrieveReplaysForTier(string tier)
+        private static async IAsyncEnumerable<string> RetrieveReplaysForTier(
+            string tier,
+            [EnumeratorCancellation] CancellationToken cancellationToken
+        )
         {
             var regexTier = RegexUtil.Regex(tier);
 
             var fullUrl = $"https://replay.pokemonshowdown.com/search.json?format={regexTier}";
 
-            yield return await Common.HttpClient.GetStringAsync(fullUrl).ConfigureAwait(false);
+            yield return await Common
+                .HttpClient.GetStringAsync(fullUrl, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         private async Task<IEnumerable<string>?> GetCachedPages(

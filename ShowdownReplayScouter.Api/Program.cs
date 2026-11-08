@@ -18,17 +18,25 @@ builder.Services.AddOpenApiDocument(settings =>
 });
 builder.Services.Configure<KestrelServerOptions>(x => x.AllowSynchronousIO = true);
 builder.Services.AddRateLimiter(config =>
-    config.AddFixedWindowLimiter(
-        policyName: "fixed",
-        options =>
-        {
-            options.PermitLimit = 10;
-            options.Window = TimeSpan.FromSeconds(5);
-            options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            options.QueueLimit = 2;
-        }
-    )
-);
+{
+    config.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    // One window per client IP (taken from X-Forwarded-For by UseForwardedHeaders),
+    // so a single client cannot use up the requests of everybody else
+    config.AddPolicy(
+        "fixed",
+        context =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 10,
+                    Window = TimeSpan.FromSeconds(5),
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 2,
+                }
+            )
+    );
+});
 builder.Services.AddResponseCaching();
 builder.Services.AddOutputCache(x => x.AddPostPolicy());
 var insightsConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
@@ -70,6 +78,9 @@ app.UseSwaggerUi((config) => config.DocumentTitle = "Showdown Replay Scouter"); 
 app.UseReDoc(); // serve ReDoc UI
 
 //}
+
+// Before the output cache, so cached answers count as well
+app.UseRateLimiter();
 
 app.UseOutputCache();
 app.UseResponseCaching();
