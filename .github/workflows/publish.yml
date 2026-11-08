@@ -49,5 +49,7 @@ jobs:
           user: FullLifeGames # nuget.org profile name, not the email address
 
       - name: Push
-        # Also pushes the matching .snupkg; a version that is already on nuget.org is skipped
-        run: dotnet nuget push "artifacts/*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        # Also pushes the matching .snupkg; a version that is already on nuget.org is skipped.
+        # Backslash on purpose: on Windows, dotnet nuget push only expands the wildcard in
+        # "artifacts\*.nupkg", with "artifacts/*.nupkg" it reports "File does not exist".
+        run: dotnet nuget push "artifacts\*.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
